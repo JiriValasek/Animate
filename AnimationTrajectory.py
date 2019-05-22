@@ -22,6 +22,8 @@ class AnimationTrajectory:
 	
 	def __init__(self, fp):
 		"""
+		__init__(self, fp)
+		
 		Initialization method for AnimationTrajectory. A class instance is
 		created and made a `Proxy` for a generic `Part::FeaturePython` object. 
 		During initialization number of properties are specified and preset 
@@ -89,6 +91,8 @@ class AnimationTrajectory:
 
 	def onChanged(self, fp, prop):
 		"""
+		onChanged(self, fp, prop)
+		
 		Event handler for a property change in Data table. The property 
 		value validity is checked here.
 		
@@ -153,6 +157,8 @@ class AnimationTrajectory:
 			
 	def execute(self, fp):
 		"""
+		execute(self, fp)
+		
 		Event handler called to recompute the object after a property 
 		was changed to new valid value (processed by onChange()). 
 		
@@ -185,7 +191,10 @@ class AnimationTrajectory:
 			
 	# supporting methods-------------------------------------------------------
 	def change_trajectory(self, fp, traj):
-		""" Changes trajectory for animated object.
+		"""
+		change_trajectory(self, fp, traj)
+		
+		Changes trajectory for animated object.
 		
 		Parameters
 		----------
@@ -216,7 +225,10 @@ class AnimationTrajectory:
 
 
 	def is_trajectory_property(self, prop):
-		""" Checks if a `prop` property is a `Trajectory` group property.
+		"""
+		is_trajectory_property(self, prop)
+		
+		Checks if a `prop` property is a `Trajectory` group property.
 		
 		Parameters
 		----------
@@ -237,7 +249,10 @@ class AnimationTrajectory:
 
 
 	def is_ValidTrajectory(self, x):
-		""" Checks if a `x` dictionary is a valid trajectory.
+		"""
+		is_ValidTrajectory(self, x)
+		
+		Checks if a `x` dictionary is a valid trajectory.
 		
 		Parameters
 		----------
@@ -283,7 +298,10 @@ class AnimationTrajectory:
 			return True
 	
 	def find_timestamp_indices_and_weights(self, fp):
-		""" Finds indices and weights for current `Time` in `Timestamp` list 
+		""" 
+		find_timestamp_indices_and_weights(self, fp)
+		
+		Finds indices and weights for current `Time` in `Timestamp` list 
 		so that current pose can be computed. Both `Time` and `Timestamp` are 
 		properties in `fp`.
 		
@@ -348,7 +366,9 @@ class ViewProviderAnimationTrajectory:
 	
 	# standard methods---------------------------------------------------------   
 	def __init__(self, vp):
-		""" 
+		"""
+		__init__(self, vp)
+		
 		Initialization method for AnimationTrajectory view provider. 
 		A class instance is created and made a `Proxy` for a generic
 		`Gui::ViewProviderDocumentObject` object. During initialization 
@@ -390,6 +410,8 @@ class ViewProviderAnimationTrajectory:
 
 	def attach(self, vp):
 		""" 
+		attach(self, vp)
+		
 		Sets up the Inventor scene sub-graph of the view provider and then 
 		calls onChanged for parameters from view table which are necessary
 		for proper graphics (i.e. colors, lengths etc.)
@@ -477,6 +499,8 @@ class ViewProviderAnimationTrajectory:
 		
 	def onChanged(self, vp, prop):
 		""" 
+		onChanged(self, vp, prop)
+		
 		Event handler for a property change in View table. The change is
 		relayed to be reflected in Inventor scene sub-graph.
 		
@@ -523,6 +547,8 @@ class ViewProviderAnimationTrajectory:
 		
 	def updateData(self, fp, prop):
 		""" 
+		updateData(self, fp, prop)
+		
 		Event handler for a property change in Data table. The change is
 		relayed to be reflected in Inventor scene sub-graph.
 		
@@ -542,6 +568,8 @@ class ViewProviderAnimationTrajectory:
 
 	def getDisplayModes(self,obj):
 		"""
+		getDisplayModes(self,obj)
+		
 		Return a list of display modes.
 		"""
 		modes=[]
@@ -550,6 +578,8 @@ class ViewProviderAnimationTrajectory:
 
 	def getDefaultDisplayMode(self):
 		"""
+		getDefaultDisplayMode(self)
+		
 		Return the name of the default display mode. 
 		It must be defined in getDisplayModes. 
 		"""
@@ -557,6 +587,8 @@ class ViewProviderAnimationTrajectory:
 
 	def setDisplayMode(self, mode):
 		"""
+		setDisplayMode(self, mode)
+		
 		Map the display mode defined in attach with those defined 
 		in getDisplayModes. Since they have the same names nothing needs to
 		be done. This method is optional.
@@ -566,6 +598,8 @@ class ViewProviderAnimationTrajectory:
 
 	def getIcon(self):
 		""" 
+		getIcon(self)
+		
 		Get the icon in XMP format which will appear in the tree view.
 		"""
 		return  \
@@ -608,6 +642,8 @@ class ViewProviderAnimationTrajectory:
 
 	def __getstate__(self):
 		"""
+		__getstate__(self)
+		
 		When saving the document this object gets stored using Python's
 		cPickle module. Since we have some un-pickable here -- the Coin
 		stuff -- we must define this method to return a tuple of all pickable 
@@ -617,6 +653,8 @@ class ViewProviderAnimationTrajectory:
 
 	def __setstate__(self,state):
 		"""
+		__setstate__(self,state)
+		
 		When restoring the pickled object from document we have the chance 
 		to set some internals here. Since no data were pickled nothing needs
 		to be done here.
@@ -626,6 +664,8 @@ class ViewProviderAnimationTrajectory:
 		
 def makeAnimationTrajectory():
 	"""
+	makeAnimationTrajectory()
+	
 	Makes a complete AnimationTrajectory object in currently active document.
 	"""
 	a=FreeCAD.ActiveDocument.addObject("App::FeaturePython",
