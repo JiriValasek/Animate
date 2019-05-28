@@ -208,6 +208,9 @@ def startServer(addr, port):
 #------------------------------------------====================================
 
 import FreeCAD
+from os import path
+
+_PATH_RESOURCES = path.join(FreeCAD.getHomePath(),"Mod","Animate","Resources")
 
 class AnimationServer: 
 
@@ -269,9 +272,18 @@ class AnimationServer:
 
 class ViewProviderAnimationServer:
 	
-	def __init__(self, obj):
+	_icon = None
+	
+	def __init__(self, vp):
 		''' Set this object to the proxy object of the actual view provider '''
-		obj.Proxy = self
+		vp.Proxy = self
+		
+		if vp.Object.Running:
+			self._icon = path.join(_PATH_RESOURCES,"Icons",
+							       "AnimateServerRunning.xpm")
+		else:
+			self._icon = path.join(_PATH_RESOURCES,"Icons","AnimateServer.xpm")
+			
 
 	def getDefaultDisplayMode(self):
 		''' Return the name of the default display mode. It must be defined in getDisplayModes. '''
@@ -296,13 +308,48 @@ class ViewProviderAnimationServer:
 				vp.Object.setEditorMode("Address", 1)
 				vp.Object.setEditorMode("Port", 1)
 				vp.Object.Running = True
+				self._icon = path.join(_PATH_RESOURCES,"Icons",
+								       "AnimateServerRunning.xpm")
 		elif vp.Object.Running:
 			vp.Object.setEditorMode("Address", 0)
 			vp.Object.setEditorMode("Port",0)
 			vp.Object.Running = False
+			self._icon = path.join(_PATH_RESOURCES,"Icons","AnimateServer.xpm")
+			
+	def getIcon(self):
+		""" 
+		getIcon(self)
+		
+		Get the icon in XMP format which will appear in the tree view.
+		"""
+		return  self.icon
+	
 
-a=FreeCAD.ActiveDocument.addObject("Part::FeaturePython","AnimationServer")
-AnimationServer(a)
-if FreeCAD.GuiUp:
-	ViewProviderAnimationServer(a.ViewObject)
-FreeCAD.ActiveDocument.recompute()
+
+class AnimationServerCommand(object):
+	"""Create Object command"""
+
+	def GetResources(self):
+		return {'Pixmap'  : path.join(_PATH_RESOURCES,"Icons",
+									  "AnimateServerCmd.xpm") ,
+            'MenuText': "Animation Server" ,
+            'ToolTip' : "Create AnimationServer instance."}
+ 
+	def Activated(self):
+		doc = FreeCAD.ActiveDocument
+		a=doc.addObject("Part::FeaturePython","AnimationServer")
+		AnimationServer(a)
+		if FreeCAD.GuiUp:
+			ViewProviderAnimationServer(a.ViewObject)
+		doc.recompute()
+		return
+   
+	def IsActive(self):
+		if FreeCAD.ActiveDocument == None:
+			return False
+		else:
+			return True
+
+	def getHelp(self):
+		return ["This is help for Animation Server\n",
+				"and it needs to be written."]
