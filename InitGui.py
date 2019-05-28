@@ -5,60 +5,41 @@ Created on Mon Apr 22 23:32:41 2019
 @author: jirka
 """
 import FreeCAD, FreeCADGui, Workbench
+from os import path
 
-
-class AnimationServer(Workbench):
+class Animate(Workbench):
+    "Animate workbench object"
+	
+    def __init__(self):
+        self.__class__.Icon = path.join (FreeCAD.getResourceDir(), "Mod",
+										 "Animate","Resources","Icons",
+										 "Animate.xpm")
+        self.__class__.MenuText = "Animate"
+        self.__class__.ToolTip = "Animation workbench"
     
-    MenuText = "Animation Server"
-    ToolTip = "Creates animations based on external data."
-    Icon =  """
-            /* XPM */ 
-            static const unsigned char * animationserver_xpm[] = {
-            "16 16 11 1",
-            " 	c None",
-            "!	c white",
-            "#	c #F8F8F8",
-            "$	c #FF0000",
-            "%	c #FFFBF0",
-            "&	c #00BA00",
-            "'	c #6DFF24",
-            "(	c #00D900",
-            ")	c black",
-            "*	c #007C00",
-            "+	c #EBEBEB",
-            "!!!!!!!!!!!!!!!!",
-            "###########$%$##",
-            "##########$$$$$#",
-            "##########$$$$$#",
-            "#%&&&&&&&&$$$$$#",
-            "#'((((((((($$$%#",
-            "#'((()))(((($&%#",
-            "#'((()(*)((($&%#",
-            "#'((()((*)(($&%#",
-            "#'((()(((*)($&%#",
-            "#'((()((')(((&%#",
-            "+'((()(')((((&%#",
-            "#'((()))(((((&%#",
-            "#''((((((((((&%#",
-            "#%'''''''''''%%#",
-            "################"};"""
 
     def Initialize(self):
         "This function is executed when FreeCAD starts"
-        #import MyModuleA, MyModuleB # import here all the needed files that create your FreeCAD commands
-        self.list = ["MyCommand1, MyCommand2"] # A list of command names created in the line above
-        self.appendToolbar("My Commands",self.list) # creates a new toolbar with your commands
-        self.appendMenu("My New Menu",self.list) # creates a new menu
-        self.appendMenu(["An existing Menu","My submenu"],self.list) # appends a submenu to an existing menu
+		# import here all the needed files that create your FreeCAD commands
+        import AnimationServer, AnimationControl, AnimationTrajectory
+		# A list of command names created in the line above
+        self.list = ["AnimationServerCommand","AnimationControlCommand",
+					 "AnimationTrajectoryCommand"]
+		# creates a new toolbar with your commands
+        self.appendToolbar("Animation Commands",self.list)
+		# creates a new menu
+        self.appendMenu("AnimationCommands",self.list)
+		# appends a submenu to an existing menu
+        #self.appendMenu(["An existing Menu","My submenu"],self.list)
 
     def Activated(self):
         "This function is executed when the workbench is activated"
-        Msg("Animation workbench activated\n")
+        FreeCAD.Console.PrintMessage("Animation workbench activated\n")
         return
 
     def Deactivated(self):
         "This function is executed when the workbench is deactivated"
-        Msg("Animation workbench deactivated\n")
+        FreeCAD.Console.PrintMessage("Animation workbench deactivated\n")
         return
 
     def ContextMenu(self, recipient):
@@ -70,4 +51,4 @@ class AnimationServer(Workbench):
         # this function is mandatory if this is a full python workbench
         return "Gui::PythonWorkbench"
        
-Gui.addWorkbench(AnimationServer())
+FreeCADGui.addWorkbench(Animate())
