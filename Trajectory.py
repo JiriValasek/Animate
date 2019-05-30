@@ -4,88 +4,44 @@ Created on Fri May 17 22:25:12 2019
 
 @author: jirka
 """
-import FreeCAD
+import FreeCAD, FreeCADGui
+
 from bisect import bisect
 from pivy import coin
+from os import path
 
-class AnimationTrajectory:
+
+_PATH_ICONS = path.join(FreeCAD.getHomePath(),"Mod","Animate","Resources",
+						"Icons")
+
+class Trajectory:
 	""" 
-	AnimationTrajectory is a Proxy object made to be connected to 
-	`Part::FeaturePython` AnimationTrajectory object. 
-	Use makeAnimationTrajectory() to do that together with connecting a 
-	ViewProvider Proxy (recommended) or do:
+	Trajectory is a Proxy object made to be connected to 
+	`Part::FeaturePython` Trajectory object. 
+	
+	To connect them use:
 	
 	>>> a=FreeCAD.ActiveDocument.addObject("App::FeaturePython",
-									       "AnimationTrajectory")
-	>>> AnimationTrajectory(a)
+									       "Trajectory")
+	>>> Trajectory(a)
 	"""
 	
 	def __init__(self, fp):
 		"""
 		__init__(self, fp)
 		
-		Initialization method for AnimationTrajectory. A class instance is
+		Initialization method for Trajectory. A class instance is
 		created and made a `Proxy` for a generic `Part::FeaturePython` object. 
 		During initialization number of properties are specified and preset 
 		if necessary.
 		
 		Parameters
 		----------
-		fp : Part::FeaturePython AnimationTrajectory object
+		fp : Part::FeaturePython Trajectory object
 			`fp` is a generic barebone instance made to extended. 
 		"""
 		# add (and preset) properties
-		fp.addProperty("App::PropertyLinkList","AnimatedObjects","General",
-						"Objects that will be animated.")
-		fp.addProperty("App::PropertyBool","Interpolate","General",
-						"Interpolate trajectory between timestamps."
-						).Interpolate = True
-		fp.addProperty("App::PropertyBool","ReceiveUpdates","General",
-						"Should this object receive updates from a server."
-						).ReceiveUpdates = True
-		fp.addProperty("App::PropertyFloat","Time","General",
-						"Animation time in seconds.").Time = 0
-		
-		fp.addProperty("App::PropertyFloatList","Timestamps","Trajectory",
-						"Timestamps at which we define\n" +
-						"translation and rotation.")
-		fp.addProperty("App::PropertyFloatList","TranslationX","Trajectory",
-						"Object translation along global X direction.")
-		fp.addProperty("App::PropertyFloatList","TranslationY","Trajectory",
-						"Object translation along global Y direction.")
-		fp.addProperty("App::PropertyFloatList","TranslationZ","Trajectory",
-						"Object translation along global Z direction.")
-		
-		fp.addProperty("App::PropertyFloatList","RotationPointX",
-						"Trajectory",
-						"Object rotation point X coordinate.")
-		fp.addProperty("App::PropertyFloatList","RotationPointY",
-						"Trajectory",
-						"Object rotation point Y coordinate.")
-		fp.addProperty("App::PropertyFloatList","RotationPointZ",
-						"Trajectory",
-						"Object rotation point Z coordinate.")
-		
-		fp.addProperty("App::PropertyFloatList","RotationAxisX",
-						"Trajectory", "Object rotation axis component X.")
-		fp.addProperty("App::PropertyFloatList","RotationAxisY",
-						"Trajectory", "Object rotation axis component Y.")
-		fp.addProperty("App::PropertyFloatList","RotationAxisZ",
-						"Trajectory", "Object rotation axis component Z.")
-		fp.addProperty("App::PropertyFloatList","RotationAngle","Trajectory",
-						"Rotation angle in degrees.")
-		
-		fp.addProperty("App::PropertyBool","ValidTrajectory","General",
-						"This property records if trajectory was changed."
-						).ValidTrajectory = False
-						
-		fp.addProperty("App::PropertyPlacement","Placement","Base",
-						"Current palacement for animated objects")
-		# make some properties read-only
-		fp.setEditorMode("Placement", 1)
-		
-		# hide some properties
-		fp.setEditorMode("ValidTrajectory", 2)
+		self.setProperties(fp)
 		fp.Proxy = self
 		
 
@@ -101,7 +57,7 @@ class AnimationTrajectory:
 		
 		Parameters
 		----------
-		fp : Part::FeaturePython AnimationTrajectory object
+		fp : Part::FeaturePython Trajectory object
 			`fp` is an object which property has changed.
 		prop : String
 			`prop` is a name of a changed property.
@@ -126,8 +82,9 @@ class AnimationTrajectory:
 				
 		# update placement according to current time and trajectory and go 
 		# to self.execute (by calling fp.recompute)
-		if prop != "Placement" and \
-		   hasattr(fp,"ValidTrajectory") and fp.ValidTrajectory:
+		if hasattr(fp,"ValidTrajectory") and fp.ValidTrajectory and \
+		   (self.is_trajectory_property(prop) or \
+		    prop in ["Time", "AnimatedObjects", "Interpolate"]):
 			indices,weights = self.find_timestamp_indices_and_weights(fp)
 			fp.Placement = FreeCAD.Placement(
 							FreeCAD.Vector(
@@ -167,7 +124,7 @@ class AnimationTrajectory:
 		
 		Parameters
 		----------
-		fp : Part::FeaturePython AnimationTrajectory object
+		fp : Part::FeaturePython Trajectory object
 			`fp` is an object which property has changed.
 		"""
 		# Check that there is an object to animate
@@ -188,8 +145,126 @@ class AnimationTrajectory:
 			o.Placement = fp.Placement
 			o.recompute()
 			
-			
+	def onDocumentRestored(self, fp):
+		fp.ViewObject.Proxy.setProperties(fp.ViewObject)
+		self.setProperties(fp)
+
 	# supporting methods-------------------------------------------------------
+	def setProperties(self, fp):
+		# add (and preset) properties
+		if not hasattr(fp,"ValidTrajectory"):
+			fp.addProperty("App::PropertyBool","ValidTrajectory","General",
+						   "This property records if trajectory was changed."
+						   ).ValidTrajectory = False
+						
+		if not hasattr(fp,"AnimatedObjects"):
+			fp.addProperty("App::PropertyLinkList","AnimatedObjects","General",
+						   "Objects that will be animated.")
+		if not hasattr(fp,"Interpolate"):
+			fp.addProperty("App::PropertyBool","Interpolate","General",
+						   "Interpolate trajectory between timestamps."
+						   ).Interpolate = True
+		if not hasattr(fp,"ReceiveUpdates"):
+			fp.addProperty("App::PropertyBool","ReceiveUpdates","General",
+						   "Should this object receive updates from a server."
+						   ).ReceiveUpdates = True
+		if not hasattr(fp,"Time"):
+			fp.addProperty("App::PropertyFloat","Time","General",
+						   "Animation time in seconds.").Time = 0
+		
+		if not hasattr(fp,"Timestamps"):
+			fp.addProperty("App::PropertyFloatList","Timestamps","Trajectory",
+						   "Timestamps at which we define\n" +
+						   "translation and rotation.")
+		if not hasattr(fp,"TranslationX"):
+			fp.addProperty("App::PropertyFloatList","TranslationX",
+					       "Trajectory",
+						   "Object translation along global X direction.")
+		if not hasattr(fp,"TranslationY"):
+			fp.addProperty("App::PropertyFloatList","TranslationY",
+						   "Trajectory",
+						   "Object translation along global Y direction.")
+		if not hasattr(fp,"TranslationZ"):
+			fp.addProperty("App::PropertyFloatList","TranslationZ",
+						   "Trajectory",
+						   "Object translation along global Z direction.")
+		
+		if not hasattr(fp,"RotationPointX"):
+			fp.addProperty("App::PropertyFloatList","RotationPointX",
+						   "Trajectory",
+						   "Object rotation point X coordinate.")
+		if not hasattr(fp,"RotationPointY"):
+			fp.addProperty("App::PropertyFloatList","RotationPointY",
+						   "Trajectory",
+						   "Object rotation point Y coordinate.")
+		if not hasattr(fp,"RotationPointZ"):
+			fp.addProperty("App::PropertyFloatList","RotationPointZ",
+						   "Trajectory",
+						   "Object rotation point Z coordinate.")
+		
+		if not hasattr(fp,"RotationAxisX"):
+			fp.addProperty("App::PropertyFloatList","RotationAxisX",
+						   "Trajectory", "Object rotation axis component X.")
+		if not hasattr(fp,"RotationAxisY"):
+			fp.addProperty("App::PropertyFloatList","RotationAxisY",
+						   "Trajectory", "Object rotation axis component Y.")
+		if not hasattr(fp,"RotationAxisZ"):
+			fp.addProperty("App::PropertyFloatList","RotationAxisZ",
+						   "Trajectory", "Object rotation axis component Z.")
+		if not hasattr(fp,"RotationAngle"):
+			fp.addProperty("App::PropertyFloatList","RotationAngle",
+						   "Trajectory",
+						   "Rotation angle in degrees.")
+		
+		if not hasattr(fp,"ShowFrame"):
+			fp.addProperty("App::PropertyBool","ShowFrame","Frame",
+						   "Show a frame for current pose."
+						   ).ShowFrame = True
+		if not hasattr(fp,"FrameTransparency"):
+			fp.addProperty("App::PropertyPercent","FrameTransparency","Frame",
+						   "Transparency of the frame in percents."
+						   ).FrameTransparency = 0
+		if not hasattr(fp,"ShowArrowheads"):
+			fp.addProperty("App::PropertyBool","ShowArrowheads","Frame",
+				           "Show arrowheads for frame axis arrow's."
+						   ).ShowArrowheads = True
+		if not hasattr(fp,"ArrowheadLength"):
+			fp.addProperty("App::PropertyFloatConstraint","ArrowheadLength",
+						   "Frame", "Frame axis arrow's arrowhead length."
+						   ).ArrowheadLength = (10,1.0,1e6,1)
+		else:
+			fp.ArrowheadLength = (fp.ArrowheadLength,1.0,1e6,1)
+		if not hasattr(fp,"ArrowheadRadius"):
+			fp.addProperty("App::PropertyFloatConstraint","ArrowheadRadius",
+						   "Frame", 
+						   "Frame axis arrow's arrowhead bottom radius."
+						   ).ArrowheadRadius = (5,0.5,1e6,0.5)
+		else:
+			fp.ArrowheadRadius = (fp.ArrowheadRadius,0.5,1e6,0.5)
+		if not hasattr(fp,"ShaftLength"):
+			fp.addProperty("App::PropertyFloatConstraint","ShaftLength",
+						   "Frame", "Frame axis arrow's shaft length."
+						   ).ShaftLength = (20,1.0,1e6,1)
+		else:
+			fp.ShaftLength = (fp.ShaftLength,1.0,1e6,1)
+		if not hasattr(fp,"ShaftWidth"):
+			fp.addProperty("App::PropertyFloatConstraint","ShaftWidth",
+					       "Frame", "Frame axis arrow's shaft width."
+						   ).ShaftWidth = (4,1.0,64,1)
+		else:
+			fp.ShaftWidth = (fp.ShaftWidth,1.0,64,1)
+
+		if not hasattr(fp,"Placement"):
+			fp.addProperty("App::PropertyPlacement","Placement","Base",
+						   "Current palacement for animated objects")
+			
+			
+		# make some properties read-only
+		fp.setEditorMode("Placement", 1)
+		
+		# hide some properties
+		fp.setEditorMode("ValidTrajectory", 2)
+		
 	def change_trajectory(self, fp, traj):
 		"""
 		change_trajectory(self, fp, traj)
@@ -198,7 +273,7 @@ class AnimationTrajectory:
 		
 		Parameters
 		----------
-		fp : Part::FeaturePython AnimationTrajectory object
+		fp : Part::FeaturePython Trajectory object
 			`fp` is an object to which trajectory should be changed.
 		traj : dict
 			`traj` must be a dictionary with keys "RotationAngle", 
@@ -281,6 +356,13 @@ class AnimationTrajectory:
 				FreeCAD.Console.PrintWarning("Trajectory misses key" + 
 											 key + ".\n")
 				return False
+		
+		# check there no key has an empty list
+		if 0 in list_lengths:
+			FreeCAD.Console.PrintWarning("Trajectory has list/lists of " +
+										 "zero lengths.\n")
+			return False
+			
 			
 		# check that lists for all keys have the same length
 		if any([l != list_lengths[0] for l in list_lengths]):
@@ -307,7 +389,7 @@ class AnimationTrajectory:
 		
 		Parameters
 		----------
-		fp : Part::FeaturePython AnimationTrajectory object
+		fp : Part::FeaturePython Trajectory object
 			`fp` is an object in which we need to find `Timestamp` list 
 			indices corresponding (just before and after) to current `Time`.
 			
@@ -352,16 +434,16 @@ class AnimationTrajectory:
 		
 
 
-class ViewProviderAnimationTrajectory:
+class ViewProviderTrajectory:
 	""" 
-	ViewProviderAnimationTrajectory is a Proxy object made to be connected to 
-	`Part::FeaturePython` AnimationTrajectory object's ViewObject. 
-	Use makeAnimationTrajectory() to do that together with connecting a 
-	AnimationTrajectory Proxy (recommended) or do:
+	ViewProviderTrajectory is a Proxy object made to be connected to 
+	`Part::FeaturePython` Trajectory object's ViewObject. 
+	 
+	To connect them use:
 	
 	>>> a=FreeCAD.ActiveDocument.addObject("App::FeaturePython",
-									       "AnimationTrajectory")
-	>>> ViewProviderAnimationTrajectory(a.ViewObject)
+									       "Trajectory")
+	>>> ViewProviderTrajectory(a.ViewObject)
 	"""
 	
 	# standard methods---------------------------------------------------------   
@@ -369,7 +451,7 @@ class ViewProviderAnimationTrajectory:
 		"""
 		__init__(self, vp)
 		
-		Initialization method for AnimationTrajectory view provider. 
+		Initialization method for Trajectory view provider. 
 		A class instance is created and made a `Proxy` for a generic
 		`Gui::ViewProviderDocumentObject` object. During initialization 
 		number of properties are specified and preset if necessary.
@@ -378,35 +460,10 @@ class ViewProviderAnimationTrajectory:
 		----------
 		vp : ViewProviderDocumentObject
 			View provider object `vp` should be a `ViewObject` belonging
-			to `Part::FeaturePython` AnimationTrajectory object.
+			to `Part::FeaturePython` Trajectory object.
 		"""
-		vp.addProperty("App::PropertyBool","ShowFrame","Base",
-					   "Show a frame for current pose.").ShowFrame = True
-		vp.addProperty("App::PropertyPercent","FrameTransparency","Base",
-					   "Transparency of the frame in percents."
-					   ).FrameTransparency = 0
-		vp.addProperty("App::PropertyBool","ShowArrowheads","Frame Look",
-					   "Show arrowheads for frame axis arrow's."
-					   ).ShowArrowheads = True
-		vp.addProperty("App::PropertyFloatConstraint","ArrowheadLength",
-					   "Frame Look", "Frame axis arrow's arrowhead length."
-					   ).ArrowheadLength = (10,1.0,1e6,1.0)
-		vp.addProperty("App::PropertyFloatConstraint","ArrowheadRadius",
-					   "Frame Look", 
-					   "Frame axis arrow's arrowhead bottom radius."
-					   ).ArrowheadRadius = (5,0.5,1e6,0.5)
-		vp.addProperty("App::PropertyFloatConstraint","ShaftLength",
-					   "Frame Look", "Frame axis arrow's shaft length."
-					   ).ShaftLength = (20,1.0,1e6,1)
-		vp.addProperty("App::PropertyFloatConstraint","ShaftWidth",
-					   "Frame Look", "Frame axis arrow's shaft width."
-					   ).ShaftWidth = (4,1.0,64,1)
-
-		# hide unnecessary view properties
-		vp.setEditorMode("DisplayMode", 2)
-		vp.setEditorMode("Visibility", 2)
+		self.setProperties(vp)
 		vp.Proxy = self
-		
 
 	def attach(self, vp):
 		""" 
@@ -420,14 +477,14 @@ class ViewProviderAnimationTrajectory:
 		----------
 		vp : ViewProviderDocumentObject
 			View provider object to which this is a `Proxy`.
-		"""		
+		"""
 		#TODO add text2D at the end of arrows/shafts, in the middle or to
 		# a position which can be set from view menu ?	
 		
 		# make a generic shaft from 0 in Y direction
 		shaft_vertices = coin.SoVertexProperty()
 		shaft_vertices.vertex.setNum(2)
-		shaft_vertices.vertex.set1Value(0,0,0,0)		
+		shaft_vertices.vertex.set1Value(0,0,0,0)	
 		self.shaft =  coin.SoLineSet()
 		self.shaft.vertexProperty.setValue(shaft_vertices)
 		self.shaft.numVertices.setNum(1)
@@ -473,29 +530,20 @@ class ViewProviderAnimationTrajectory:
 		z_arrow.addChild(self.shaft)
 		z_arrow.addChild(self.arrowhead)
 		
-		# prepare transformation to keep pose corresponding to placement
-		self.transform_object2world = coin.SoTransform()
-		
 		# prepare draw style to control shaft width
 		self.drawstyle = coin.SoDrawStyle()
 		
 		# make complete frame and it to shaded display mode
-		self.shaded = coin.SoGroup()
-		self.shaded.addChild(self.transform_object2world)
-		self.shaded.addChild(self.drawstyle)
-		self.shaded.addChild(x_arrow)
-		self.shaded.addChild(y_arrow)
-		self.shaded.addChild(z_arrow)
-		vp.addDisplayMode(self.shaded,"Shaded")
-				
-		# set up all parameters for the scene sub-graph
-		self.onChanged(vp,"ShowFrame")
-		self.onChanged(vp,"FrameTransparency")
-		self.onChanged(vp,"ShaftLength")
-		self.onChanged(vp,"ShaftWidth")
-		self.onChanged(vp,"ArrowheadLength")
-		self.onChanged(vp,"ArrowheadRadius")
-		self.onChanged(vp,"ShowArrowheads")
+		self.frame = coin.SoSwitch()
+		self.frame.addChild(self.drawstyle)
+		self.frame.addChild(x_arrow)
+		self.frame.addChild(y_arrow)
+		self.frame.addChild(z_arrow)
+		vp.RootNode.addChild(self.frame)
+		
+		vp.Object.Proxy.setProperties(vp.Object)
+		self.setProperties(vp)
+
 		
 	def onChanged(self, vp, prop):
 		""" 
@@ -511,39 +559,11 @@ class ViewProviderAnimationTrajectory:
 		prop : String
 			`prop` is a name of a changed property.
 		"""
-		# relay changes from view table propertie to coin's SoNodes fields
-		if prop == "ShowFrame":
-			if vp.ShowFrame:
-				vp.show()
-			else:
-				vp.hide()
-		elif prop == "FrameTransparency":
-			self.color_x.orderedRGBA.\
-				setValue(0xff0000ff - (0xff*vp.FrameTransparency)//100)
-			self.color_y.orderedRGBA.\
-				setValue(0x00ff00ff - (0xff*vp.FrameTransparency)//100)
-			self.color_z.orderedRGBA.\
-				setValue(0x0000ffff - (0xff*vp.FrameTransparency)//100)
-		elif prop == "ShaftLength" and hasattr(vp, "ArrowheadLength"):
-			self.shaft.vertexProperty.getValue().vertex.\
-				set1Value(1,0,vp.ShaftLength,0)
-			self.arrowhead.getByName("ArrowheadTranslation").translation.\
-				setValue(0,vp.ShaftLength + vp.ArrowheadLength/2,0)
-		elif prop == "ShaftWidth":
-			self.drawstyle.lineWidth.setValue(vp.ShaftWidth)
-		elif prop == "ArrowheadLength" and hasattr(vp, "ShaftLength"):
-			self.arrowhead.getByName("ArrowheadCone").height.\
-				setValue(vp.ArrowheadLength)
-			self.arrowhead.getByName("ArrowheadTranslation").translation.\
-				setValue(0,vp.ShaftLength + vp.ArrowheadLength/2,0)
-		elif prop == "ArrowheadRadius":
-			self.arrowhead.getByName("ArrowheadCone").bottomRadius.\
-				setValue(vp.ArrowheadRadius)
-		elif prop == "ShowArrowheads":
-			if vp.ShowArrowheads:
-				self.arrowhead.whichChild.setValue(coin.SO_SWITCH_ALL)
-			else:
-				self.arrowhead.whichChild.setValue(coin.SO_SWITCH_NONE)
+		if prop == "Visibility":
+			#Make all children invisible
+			FreeCAD.Console.PrintLog("Visibility altered\n")
+		
+		
 		
 	def updateData(self, fp, prop):
 		""" 
@@ -554,91 +574,50 @@ class ViewProviderAnimationTrajectory:
 		
 		Parameters
 		----------
-		fp : Part::FeaturePython AnimationTrajectory object
+		fp : Part::FeaturePython Trajectory object
 			`fp` is an object which property has changed.
 		prop : String
 			`prop` is a name of a changed property.
 		"""
-		# keep the frame pose to correspond with placement property
-		if prop == "Placement":
-			self.transform_object2world.rotation.setValue(
-					fp.Placement.Rotation.Q)
-			self.transform_object2world.translation.setValue(
-					fp.Placement.Base)
+		if hasattr(fp,"ShowFrame"):
+			if fp.ShowFrame:
+				self.frame.whichChild.setValue(coin.SO_SWITCH_ALL)
+			else:
+				self.frame.whichChild.setValue(coin.SO_SWITCH_NONE)
+		if hasattr(fp,"FrameTransparency"):
+			self.color_x.orderedRGBA.\
+				setValue(0xff0000ff - (0xff*fp.FrameTransparency)//100)
+			self.color_y.orderedRGBA.\
+				setValue(0x00ff00ff - (0xff*fp.FrameTransparency)//100)
+			self.color_z.orderedRGBA.\
+				setValue(0x0000ffff - (0xff*fp.FrameTransparency)//100)
+		if hasattr(fp,"ShaftLength") and hasattr(fp, "ArrowheadLength"):
+			self.shaft.vertexProperty.getValue().vertex.\
+				set1Value(1,0,fp.ShaftLength,0)
+			self.arrowhead.getByName("ArrowheadTranslation").translation.\
+				setValue(0,fp.ShaftLength + fp.ArrowheadLength/2,0)
+			self.arrowhead.getByName("ArrowheadCone").height.\
+				setValue(fp.ArrowheadLength)
+		if hasattr(fp,"ShaftWidth"):
+			self.drawstyle.lineWidth.setValue(fp.ShaftWidth)
+		if hasattr(fp,"ArrowheadRadius"):
+			self.arrowhead.getByName("ArrowheadCone").bottomRadius.\
+				setValue(fp.ArrowheadRadius)
+		if hasattr(fp,"ShowArrowheads"):
+			if fp.ShowArrowheads:
+				self.arrowhead.whichChild.setValue(coin.SO_SWITCH_ALL)
+			else:
+				self.arrowhead.whichChild.setValue(coin.SO_SWITCH_NONE)
 
-	def getDisplayModes(self,obj):
-		"""
-		getDisplayModes(self,obj)
-		
-		Return a list of display modes.
-		"""
-		modes=[]
-		modes.append("Shaded")
-		return modes
-
-	def getDefaultDisplayMode(self):
-		"""
-		getDefaultDisplayMode(self)
-		
-		Return the name of the default display mode. 
-		It must be defined in getDisplayModes. 
-		"""
-		return "Shaded"
-
-	def setDisplayMode(self, mode):
-		"""
-		setDisplayMode(self, mode)
-		
-		Map the display mode defined in attach with those defined 
-		in getDisplayModes. Since they have the same names nothing needs to
-		be done. This method is optional.
-		"""
-		return mode
 				
-
 	def getIcon(self):
 		""" 
 		getIcon(self)
 		
 		Get the icon in XMP format which will appear in the tree view.
 		"""
-		return  \
-		"""
-		/* XPM */ 
-		static const unsigned char * ViewProviderAnimationTrajectory_xpm[] = {
-		"16 16 15 1",
-		" 	c None",
-		"!	c black",
-		"#	c #6C6C6C",
-		"$	c #C0C0C0",
-		"%	c white",
-		"&	c #5D0000",
-		"'	c #3E0000",
-		"(	c #090909",
-		")	c #7C0000",
-		"*	c #9B0000",
-		"+	c #BA0000",
-		",	c #D90000",
-		"-	c #0000FF",
-		".	c #FF2424",
-		"0	c #F00000",
-		"!!!!!!!!#$$$$$$$",
-		"!%%%%%%%%&&&''($",
-		"!%%%%%))))%%%%%#",
-		"!%%%**)%%%%%%%%!",
-		"!%%**%%%%%%%%%%!",
-		"!%%%**%%%%%%%%%!",
-		"!%%%%**++%%%%%%!",
-		"!%%%%%%%++++,%%#",
-		"!%%!!%%%%%%+,,,$",
-		"#%!--!.%%%%%%%,,",
-		"$!----!...00%0,,",
-		"!------!...000,$",
-		"!------!...00,%#",
-		"$!----!...00%%%!",
-		"#%!--!.%%%%%%%%!",
-		"!#$!!$$#!!!!!!!!"};
-		"""
+		return path.join(_PATH_ICONS, "Trajectory.xpm")
+	
 
 	def __getstate__(self):
 		"""
@@ -659,33 +638,52 @@ class ViewProviderAnimationTrajectory:
 		to set some internals here. Since no data were pickled nothing needs
 		to be done here.
 		"""
-		return None
-
-		
-def makeAnimationTrajectory():
-	"""
-	makeAnimationTrajectory()
+		pass
 	
-	Makes a complete AnimationTrajectory object in currently active document.
-	"""
-	a=FreeCAD.ActiveDocument.addObject("App::FeaturePython",
-									   "AnimationTrajectory")
-	AnimationTrajectory(a)
-	ViewProviderAnimationTrajectory(a.ViewObject)
+	def setProperties(self, vp):
+		# hide unnecessary view properties
+		vp.setEditorMode("AngularDeflection", 2)
+		vp.setEditorMode("BoundingBox", 2)
+		vp.setEditorMode("Deviation", 2)
+		vp.setEditorMode("DisplayMode", 2)
+		vp.setEditorMode("DrawStyle", 2)
+		vp.setEditorMode("Lighting", 2)
+		vp.setEditorMode("LineColor", 2)
+		vp.setEditorMode("LineWidth", 2)
+		vp.setEditorMode("PointColor", 2)
+		vp.setEditorMode("PointSize", 2)
+		vp.setEditorMode("Selectable", 2)
+		vp.setEditorMode("SelectionStyle", 2)
+		vp.setEditorMode("ShapeColor", 2)
+		vp.setEditorMode("Transparency", 2)
+		vp.setEditorMode("Visibility", 2)
 
+class TrajectoryCommand(object):
+	"""Create Object command"""
 
-makeAnimationTrajectory()
-at = FreeCAD.ActiveDocument.AnimationTrajectory
-traj = {}
-traj["RotationAngle"] = [0,360,720]
-traj["RotationAxisX"] = [1,0,0]
-traj["RotationAxisY"] = [0,1,0]
-traj["RotationAxisZ"] = [0,0,1]
-traj["RotationPointX"] = [0,-5,-5]
-traj["RotationPointY"] = [0,0,-5]
-traj["RotationPointZ"] = [0,0,0]
-traj["TranslationX"] = [0,10,20]
-traj["TranslationY"] = [0,10,20]
-traj["TranslationZ"] = [0,10,20]
-traj["Timestamps"] = [0,10,20]
-at.Proxy.change_trajectory(at,traj)
+	def GetResources(self):
+		return {'Pixmap'  : path.join(_PATH_ICONS, "TrajectoryCmd.xpm") ,
+            'MenuText': "Trajectory" ,
+            'ToolTip' : "Create Trajectory instance."}
+ 
+	def Activated(self):
+		doc = FreeCAD.ActiveDocument
+		a=doc.addObject("Part::FeaturePython","Trajectory")
+		Trajectory(a)
+		if FreeCAD.GuiUp:
+			ViewProviderTrajectory(a.ViewObject)
+		doc.recompute()
+		return
+   
+	def IsActive(self):
+		if FreeCAD.ActiveDocument == None:
+			return False
+		else:
+			return True
+
+	def getHelp(self):
+		return ["This is help for Trajectory\n",
+				"and it needs to be written."]
+		
+if FreeCAD.GuiUp:
+	FreeCADGui.addCommand('TrajectoryCommand',TrajectoryCommand())
