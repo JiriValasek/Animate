@@ -39,44 +39,195 @@ import FreeCAD, FreeCADGui
 import communication as com
 
 from PySide2.QtWidgets import QMessageBox
-from PySide2.QtCore import Qt
 from os import path
 
 _PATH_ICONS = path.join(FreeCAD.getHomePath(),"Mod","Animate","Resources",
 						"Icons")
 
 
+class ServersDocumentObserver:
+	
+	featurepython_proxy = None
+	target_doc = None
+	
+	def __init__(self, fp_proxy):
+		self.featurepython_proxy = fp_proxy
+		
+	def slotDeletedDocument(self, doc):
+		if doc == self.target_doc:
+			self.featurepython_proxy.onDocumentClosed()
+
 class Server: 
 
-	updated = False
 	server = None	
+	observer = None
 
-	def __init__(self, obj):
+	def __init__(self, fp):
 		'''"App two point properties" '''
-		obj.addProperty("App::PropertyString","Address","Server settings",
-						 "Address address where the server will listen for connection.\n" + 
-						 "Valid values are Addressv4 and Addressv6 addresses or 'localhost'."
+		self.setProperties(fp)
+		fp.Proxy = self
+			
+		
+	def onDocumentRestored(self,fp):
+		self.setProperties(fp)
+		fp.ViewObject.Proxy.setProperties(fp.ViewObject)
+		
+	def onDocumentClosed(self):
+		if isinstance(self.server,com.Srv):
+			FreeCAD.Console.PrintMessage("Closing server with it's document\n")
+			self.server.close()
+		
+		
+	def setProperties(self,fp):
+		if not hasattr(fp,"Address"):
+			fp.addProperty("App::PropertyString","Address","Server settings",
+					       "Address address where the server will listen for connection.\n" + 
+						   "Valid values are Addressv4 and Addressv6 addresses or 'localhost'."
 						 ).Address = "localhost"
-		obj.addProperty("App::PropertyIntegerConstraint","Port","Server settings",
+		if not hasattr(fp,"Port"):
+			fp.addProperty("App::PropertyIntegerConstraint","Port","Server settings",
 						 "Port where the server will listen for connections.\n" +
 						 "Valid port numers are in range <0 | 65535>,\n" +
 						 "but some may be already taken!"
 						 ).Port = (54321,0,65535,1)
-		obj.addProperty("App::PropertyBool","Running","Server settings",
+		if not hasattr(fp,"Running"):
+			fp.addProperty("App::PropertyBool","Running","Server settings",
 						 "If Server Running is true, then Server listens for new connections."
 						 ).Running = False
-		obj.Proxy = self
 
-		obj.setEditorMode("Placement",2)
-		obj.setEditorMode("Running",1)
+		fp.setEditorMode("Placement",2)
+		fp.setEditorMode("Running",1)
+		
+		if fp.Running:
+			self.server = com.startServer(fp.Address, fp.Port)
+			if self.server == com.INVALID_ADDRESS: 
+				fp.ViewObject.Proxy._icon = path.join(_PATH_ICONS, 
+													  "Server.xpm")
+				QMessageBox.warning(None, 'Error while starting server',
+							 "The address was not in supported format.")
+				fp.Running = False
+			elif self.server == com.PORT_OCCUPIED:
+				fp.ViewObject.Proxy._icon = path.join(_PATH_ICONS, 
+													  "Server.xpm")
+				QMessageBox.warning(None, 'Error while starting server',
+								    "The port requested is already occupied.")
+				fp.Running = False
+			else:
+				fp.setEditorMode("Address", 1)
+				fp.setEditorMode("Port", 1)
+				fp.Running = True
+				fp.ViewObject.Proxy._icon = path.join(_PATH_ICONS, 
+													  "ServerRunning.xpm")
 			
+		self.observer = ServersDocumentObserver(self)
+		FreeCAD.addDocumentObserver(self.observer)
+		self.observer.target_doc = FreeCAD.ActiveDocument
+		
+	def __getstate__(self):
+		"""
+		__getstate__(self)
+		
+		When saving the document this object gets stored using Python's
+		cPickle module. Since we have some un-pickable here -- the Coin
+		stuff -- we must define this method to return a tuple of all pickable 
+		objects or None.
+		"""
+		# necessary to avoid JSON Serializable errors while trying to autosave
+		# server and documentobserver
+		return None
+
+	def __setstate__(self,state):
+		"""
+		__setstate__(self,state)
+		
+		When restoring the pickled object from document we have the chance 
+		to set some internals here. Since no data were pickled nothing needs
+		to be done here.
+		"""
+		# necessary to avoid JSON Serializable errors while trying to autosave
+		# server and documentobserver
+		return None
 
 class ViewProviderServer:
 	
-	_icon = None
+	_icon = path.join(_PATH_ICONS, "Server.xpm")
 	
 	def __init__(self, vp):
 		''' Set this object to the proxy object of the actual view provider '''
+		self.setProperties(vp)
+			
+	def onDelete(self, vp, subelements):
+		if vp.Object.Running:
+			FreeCAD.Console.PrintMessage("Deleting server safely.\n")
+			vp.Object.Proxy.server.close()
+		return True
+
+	def doubleClicked(self, vp):
+		if not vp.Object.Running:
+			vp.Object.Proxy.server = com.startServer(vp.Object.Address, vp.Object.Port)
+			if isinstance(vp.Object.Proxy.server,int):
+				if vp.Object.Proxy.server == com.INVALID_ADDRESS: 
+					QMessageBox.warning(None, 'Error while starting server',
+							 "The address was not in supported format.")
+				elif vp.Object.Proxy.server == com.PORT_OCCUPIED:
+					QMessageBox.warning(None, 'Error while starting server',
+								    "The port requested is already occupied.")
+			else:
+				vp.Object.setEditorMode("Address", 1)
+				vp.Object.setEditorMode("Port", 1)
+				vp.Object.Running = True
+				self._icon = path.join(_PATH_ICONS, "ServerRunning.xpm")
+		elif vp.Object.Running:
+			vp.Object.Proxy.server.close()
+			vp.Object.setEditorMode("Address", 0)
+			vp.Object.setEditorMode("Port",0)
+			vp.Object.Running = False
+			self._icon = path.join(_PATH_ICONS, "Server.xpm")
+		
+		FreeCAD.Console.PrintLog("Server is running: " + str(vp.Object.Running) + " and icon is " + str(self._icon))
+		vp.Object.touch()
+		return True
+	
+	
+	def setupContextMenu(self, vp, menu):
+		menu.clear()
+		if vp.Object.Running:	 
+			action = menu.addAction("Disconnect Server")
+			action.triggered.connect(lambda f=self.doubleClicked, arg=vp:f(arg))
+		else:
+			action = menu.addAction("Connect Server")
+			action.triggered.connect(lambda f=self.doubleClicked, arg=vp:f(arg))
+
+	def getIcon(self):
+		""" 
+		getIcon(self)
+		
+		Get the icon in XMP format which will appear in the tree view.
+		"""
+		return  self._icon
+
+	def __getstate__(self):
+		"""
+		__getstate__(self)
+		
+		When saving the document this object gets stored using Python's
+		cPickle module. Since we have some un-pickable here -- the Coin
+		stuff -- we must define this method to return a tuple of all pickable 
+		objects or None.
+		"""
+		return None
+
+	def __setstate__(self,state):
+		"""
+		__setstate__(self,state)
+		
+		When restoring the pickled object from document we have the chance 
+		to set some internals here. Since no data were pickled nothing needs
+		to be done here.
+		"""
+		return None
+	
+	def setProperties(self,vp):
 		vp.setEditorMode("AngularDeflection", 2)
 		vp.setEditorMode("BoundingBox", 2)
 		vp.setEditorMode("Deviation", 2)
@@ -98,52 +249,6 @@ class ViewProviderServer:
 			self._icon = path.join(_PATH_ICONS, "ServerRunning.xpm")
 		else:
 			self._icon = path.join(_PATH_ICONS,"Server.xpm")
-			
-
-	def getDefaultDisplayMode(self):
-		''' Return the name of the default display mode. It must be defined in getDisplayModes. '''
-		return "Flat Lines"
-
-	
-	def doubleClicked(self, vp):
-		if not vp.Object.Running:
-			vp.Object.Proxy.server = com.startServer(vp.Object.Address, vp.Object.Port)
-			if isinstance(vp.Object.Proxy.server,int):
-				if vp.Object.Proxy.server == com.INVALID_ADDRESS: 
-					diag = QMessageBox(QMessageBox.Warning, 'Error while starting server',
-							 "The address was not in supported format.")
-					diag.setWindowModality(Qt.ApplicationModal)
-					diag.exec()
-				elif vp.Object.Proxy.server == com.PORT_OCCUPIED:
-					diag = QMessageBox(QMessageBox.Warning, 'Error while starting server',
-							 "The port requested is already occupied.")
-					diag.setWindowModality(Qt.ApplicationModal)
-					diag.exec()
-			else:
-				vp.Object.setEditorMode("Address", 1)
-				vp.Object.setEditorMode("Port", 1)
-				vp.Object.Running = True
-				self._icon = path.join(_PATH_ICONS, "ServerRunning.xpm")
-		elif vp.Object.Running:
-			vp.Object.Proxy.server.close()
-			vp.Object.setEditorMode("Address", 0)
-			vp.Object.setEditorMode("Port",0)
-			vp.Object.Running = False
-			self._icon = path.join(_PATH_ICONS, "Server.xpm")
-			FreeCAD.ActiveDocument.recompute()
-		return True
-	
-	def setupContextMenu(self, menu):
-		FreeCAD.Console.PrintLog("Setup called for " + str(menu) + "\n")
-		pass
-			
-	def getIcon(self):
-		""" 
-		getIcon(self)
-		
-		Get the icon in XMP format which will appear in the tree view.
-		"""
-		return  self._icon
 	
 
 
