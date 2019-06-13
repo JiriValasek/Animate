@@ -1,283 +1,443 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sun Apr 21 13:47:29 2019
 
-@author: jirka
-"""
-#!/usr/bin/env python
+"""@package Server
+ Classes related to Server component of Animate Workbench.
 
-############################################################################
-# 
-#  Copyright (C) 2004-2005 Trolltech AS. All rights reserved.
-# 
-#  This file is part of the example classes of the Qt Toolkit.
-# 
-#  This file may be used under the terms of the GNU General Public
-#  License version 2.0 as published by the Free Software Foundation
-#  and appearing in the file LICENSE.GPL included in the packaging of
-#  self file.  Please review the following information to ensure GNU
-#  General Public Licensing requirements will be met:
-#  http://www.trolltech.com/products/qt/opensource.html
-# 
-#  If you are unsure which license is appropriate for your use, please
-#  review the following information:
-#  http://www.trolltech.com/products/qt/licensing.html or contact the
-#  sales department at sales@trolltech.com.
-# 
-#  This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-#  WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-# 
-############################################################################
-# -*- coding: utf-8 -*-
-"""
-Created on Tue May 21 23:23:30 2019
-
-@author: jirka
+The classes in this module provides funcionality for a `FeaturePython` Server
+instance (except an interprocess communication which is in the `communication`
+module) and creates a command to be used in a workbench.
 """
 
-import FreeCAD, FreeCADGui
+import FreeCAD
+import FreeCADGui
 import communication as com
 
 from PySide2.QtWidgets import QMessageBox
 from os import path
 
-_PATH_ICONS = path.join(FreeCAD.getHomePath(),"Mod","Animate","Resources",
-						"Icons")
+## Path to a folder with the necessary icons.
+PATH_TO_ICONS = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
+                          "Icons")
 
 
-class ServersDocumentObserver:
-	
-	featurepython_proxy = None
-	target_doc = None
-	
-	def __init__(self, fp_proxy):
-		self.featurepython_proxy = fp_proxy
-		
-	def slotDeletedDocument(self, doc):
-		if doc == self.target_doc:
-			self.featurepython_proxy.onDocumentClosed()
+class ServersDocumentObserver(object):
+    """
+Server's Document Observer to detect a document is closing.
 
-class Server: 
+ServersDocumentObserver is a `DocumentObserver` which will notify the
+ServerProxy `sp` when the target document `target` is being closed.
+The `sp` may need this to free a `Port` it's using, so it can
+be used in other documents.
 
-	server = None	
-	observer = None
+Attributes:
+    sp: A ServerProxy class instance to notify when target document is closing.
+    target: A FreeCAD's `App.Document` to observe when it's closing.
 
-	def __init__(self, fp):
-		'''"App two point properties" '''
-		self.setProperties(fp)
-		fp.Proxy = self
-			
-		
-	def onDocumentRestored(self,fp):
-		self.setProperties(fp)
-		fp.ViewObject.Proxy.setProperties(fp.ViewObject)
-		
-	def onDocumentClosed(self):
-		if isinstance(self.server,com.Srv):
-			FreeCAD.Console.PrintMessage("Closing server with it's document\n")
-			self.server.close()
-		
-		
-	def setProperties(self,fp):
-		if not hasattr(fp,"Address"):
-			fp.addProperty("App::PropertyString","Address","Server settings",
-					       "Address address where the server will listen for connection.\n" + 
-						   "Valid values are Addressv4 and Addressv6 addresses or 'localhost'."
-						 ).Address = "localhost"
-		if not hasattr(fp,"Port"):
-			fp.addProperty("App::PropertyIntegerConstraint","Port","Server settings",
-						 "Port where the server will listen for connections.\n" +
-						 "Valid port numers are in range <0 | 65535>,\n" +
-						 "but some may be already taken!"
-						 ).Port = (54321,0,65535,1)
-		if not hasattr(fp,"Running"):
-			fp.addProperty("App::PropertyBool","Running","Server settings",
-						 "If Server Running is true, then Server listens for new connections."
-						 ).Running = False
+To make ServersDocumentObserver active do:
+        observer = ServersDocumentObserver(server_proxy,
+            target=FreeCAD.ActiveDocument)
+        FreeCAD.addDocumentObserver(observer)
+    """
 
-		fp.setEditorMode("Placement",2)
-		fp.setEditorMode("Running",1)
-		
-		if fp.Running:
-			self.server = com.startServer(fp.Address, fp.Port)
-			if self.server == com.INVALID_ADDRESS: 
-				fp.ViewObject.Proxy._icon = path.join(_PATH_ICONS, 
-													  "Server.xpm")
-				QMessageBox.warning(None, 'Error while starting server',
-							 "The address was not in supported format.")
-				fp.Running = False
-			elif self.server == com.PORT_OCCUPIED:
-				fp.ViewObject.Proxy._icon = path.join(_PATH_ICONS, 
-													  "Server.xpm")
-				QMessageBox.warning(None, 'Error while starting server',
-								    "The port requested is already occupied.")
-				fp.Running = False
-			else:
-				fp.setEditorMode("Address", 1)
-				fp.setEditorMode("Port", 1)
-				fp.Running = True
-				fp.ViewObject.Proxy._icon = path.join(_PATH_ICONS, 
-													  "ServerRunning.xpm")
-			
-		self.observer = ServersDocumentObserver(self)
-		FreeCAD.addDocumentObserver(self.observer)
-		self.observer.target_doc = FreeCAD.ActiveDocument
-		
-	def __getstate__(self):
-		"""
-		__getstate__(self)
-		
-		When saving the document this object gets stored using Python's
-		cPickle module. Since we have some un-pickable here -- the Coin
-		stuff -- we must define this method to return a tuple of all pickable 
-		objects or None.
-		"""
-		# necessary to avoid JSON Serializable errors while trying to autosave
-		# server and documentobserver
-		return None
+    def __init__(self, sp, target=None):
+        """
+Initialization method for ServersDocumentObserver.
 
-	def __setstate__(self,state):
-		"""
-		__setstate__(self,state)
-		
-		When restoring the pickled object from document we have the chance 
-		to set some internals here. Since no data were pickled nothing needs
-		to be done here.
-		"""
-		# necessary to avoid JSON Serializable errors while trying to autosave
-		# server and documentobserver
-		return None
+A class instance is created, `sp` and `target` attributes are
+initialized.
 
-class ViewProviderServer:
-	
-	_icon = path.join(_PATH_ICONS, "Server.xpm")
-	
-	def __init__(self, vp):
-		''' Set this object to the proxy object of the actual view provider '''
-		self.setProperties(vp)
-			
-	def onDelete(self, vp, subelements):
-		if vp.Object.Running:
-			FreeCAD.Console.PrintMessage("Deleting server safely.\n")
-			vp.Object.Proxy.server.close()
-		return True
+Args:
+    sp: A ServerProxy instance to notify.
 
-	def doubleClicked(self, vp):
-		if not vp.Object.Running:
-			vp.Object.Proxy.server = com.startServer(vp.Object.Address, vp.Object.Port)
-			if isinstance(vp.Object.Proxy.server,int):
-				if vp.Object.Proxy.server == com.INVALID_ADDRESS: 
-					QMessageBox.warning(None, 'Error while starting server',
-							 "The address was not in supported format.")
-				elif vp.Object.Proxy.server == com.PORT_OCCUPIED:
-					QMessageBox.warning(None, 'Error while starting server',
-								    "The port requested is already occupied.")
-			else:
-				vp.Object.setEditorMode("Address", 1)
-				vp.Object.setEditorMode("Port", 1)
-				vp.Object.Running = True
-				self._icon = path.join(_PATH_ICONS, "ServerRunning.xpm")
-		elif vp.Object.Running:
-			vp.Object.Proxy.server.close()
-			vp.Object.setEditorMode("Address", 0)
-			vp.Object.setEditorMode("Port",0)
-			vp.Object.Running = False
-			self._icon = path.join(_PATH_ICONS, "Server.xpm")
-		
-		FreeCAD.Console.PrintLog("Server is running: " + str(vp.Object.Running) + " and icon is " + str(self._icon))
-		vp.Object.touch()
-		return True
-	
-	
-	def setupContextMenu(self, vp, menu):
-		menu.clear()
-		if vp.Object.Running:	 
-			action = menu.addAction("Disconnect Server")
-			action.triggered.connect(lambda f=self.doubleClicked, arg=vp:f(arg))
-		else:
-			action = menu.addAction("Connect Server")
-			action.triggered.connect(lambda f=self.doubleClicked, arg=vp:f(arg))
+Kwargs:
+    target: A FreeCAD App.Document to observe and detect it's closing.
+        """
+        self.sp = sp
+        self.target = target
 
-	def getIcon(self):
-		""" 
-		getIcon(self)
-		
-		Get the icon in XMP format which will appear in the tree view.
-		"""
-		return  self._icon
+    def slotDeletedDocument(self, doc):
+        """
+Qt slot method called if a document is about to be closed.
 
-	def __getstate__(self):
-		"""
-		__getstate__(self)
-		
-		When saving the document this object gets stored using Python's
-		cPickle module. Since we have some un-pickable here -- the Coin
-		stuff -- we must define this method to return a tuple of all pickable 
-		objects or None.
-		"""
-		return None
+This method is used to notify ServerProxy `sp` that document will be closed.
 
-	def __setstate__(self,state):
-		"""
-		__setstate__(self,state)
-		
-		When restoring the pickled object from document we have the chance 
-		to set some internals here. Since no data were pickled nothing needs
-		to be done here.
-		"""
-		return None
-	
-	def setProperties(self,vp):
-		vp.setEditorMode("AngularDeflection", 2)
-		vp.setEditorMode("BoundingBox", 2)
-		vp.setEditorMode("Deviation", 2)
-		vp.setEditorMode("DisplayMode", 2)
-		vp.setEditorMode("DrawStyle", 2)
-		vp.setEditorMode("Lighting", 2)
-		vp.setEditorMode("LineColor", 2)
-		vp.setEditorMode("LineWidth", 2)
-		vp.setEditorMode("PointColor", 2)
-		vp.setEditorMode("PointSize", 2)
-		vp.setEditorMode("Selectable", 2)
-		vp.setEditorMode("SelectionStyle", 2)
-		vp.setEditorMode("ShapeColor", 2)
-		vp.setEditorMode("Transparency", 2)
-		vp.setEditorMode("Visibility", 2)
-		vp.Proxy = self
-		
-		if vp.Object.Running:
-			self._icon = path.join(_PATH_ICONS, "ServerRunning.xpm")
-		else:
-			self._icon = path.join(_PATH_ICONS,"Server.xpm")
-	
+Args:
+    doc: A FreeCAD's `App.Document` document about to be closed.
+        """
+        if doc == self.target:
+            self.sp.onDocumentClosed()
+
+
+class ServerProxy(object):
+    """
+Proxy class for a `FeaturePython` Server instance.
+
+A ServerProxy instance adds properties to a `FeaturePython` Server
+instance and responds to theirs changes. It creates a
+communication.CommandServer `server` when `Running` is set to True by double
+clicking on it in Tree View or right clicking and selecting *Connect Server*
+option from context menu. It closes the `server` when `Running` is set to
+False or `observer` detects that a document with Server instance is closing
+
+Because communication.CommandServer `server` occupies a `Port` at selected
+`Address`, you cannot have duplicit Servers running simultaneously in a file,
+a FreeCAD window nor on one computer.
+
+Attributes:
+    server: A communication.CommandServer instance to handle incoming commands.
+    observer: A ServersDocumentObserver instance detecting closing document.
+
+To connect this `Proxy` object to a `FeaturePython` Server do:
+
+        a=FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Server")
+        Server(a)
+    """
+
+    server = None
+    observer = None
+
+    def __init__(self, fp):
+        """
+Initialization method for ServerProxy.
+
+A class instance is created and made a `Proxy` for a generic `FeaturePython`
+Server object. During initialization number of properties are specified and
+preset.
+
+Args:
+    fp: A barebone `FeaturePython` Server object to be extended.
+        """
+        self.setProperties(fp)
+        fp.Proxy = self
+
+    def onDocumentRestored(self, fp):
+        """
+Method called when document is restored to make sure everything is as it was.
+
+Reinitialization method - it creates properties and sets them to
+default, if they were not restored automatically. It restarts a
+server if it was running when document was closed. Properties of
+connected `ViewObject` are also recreated and reset if necessary.
+
+Args:
+    fp : A restored `FeaturePython` Server object.
+        """
+        self.setProperties(fp)
+        fp.ViewObject.Proxy.setProperties(fp.ViewObject)
+
+    def onDocumentClosed(self):
+        """
+Method called by `observer` when document with this class instance is closing.
+
+This method is to be called from ServersDocumentObserver so that
+the `Port` is freed when document is closed.
+        """
+        # Check there is a server to close and close it
+        if isinstance(self.server, com.CommandServer):
+            FreeCAD.Console.PrintMessage("Closing server with it's document\n")
+            self.server.close()
+
+    def setProperties(self, fp):
+        """
+Method to set properties during initialization or document restoration.
+
+The properties are set if they are not already present. Constrained properties
+have their boundaries reset even if present, because constrains are not saved.
+Also `server` is restarted if it was running previously and `observer` is
+recreated.
+
+Args:
+    fp : A restored or barebone `FeaturePython` Server object.
+        """
+        # Check properties are present and create them if not
+        if not hasattr(fp, "Address"):
+            fp.addProperty("App::PropertyString", "Address", "Server settings",
+                           "Address address where the server will listen for "
+                           + "connection.\nValid values are Addressv4 and "
+                           + "Addressv6 addresses or 'localhost'."
+                           ).Address = "localhost"
+        if not hasattr(fp, "Port"):
+            fp.addProperty("App::PropertyIntegerConstraint", "Port",
+                           "Server settings", "Port where the server will "
+                           + "listen for connections.\n" +
+                           "Valid port numers are in range <0 | 65535>,\n"
+                           + "but some may be already taken!"
+                           ).Port = (54321, 0, 65535, 1)
+        else:
+            fp.Port = (fp.Port, 0, 65535, 1)
+        if not hasattr(fp, "Running"):
+            fp.addProperty("App::PropertyBool", "Running", "Server settings",
+                           "If Server Running is true, then Server listens "
+                           + "for new connections."
+                           ).Running = False
+
+        # hide Placement property as there is nothing to display/move
+        fp.setEditorMode("Placement", 2)
+        # make Running property read-only as it's set from context menu/
+        # by double clicking
+        fp.setEditorMode("Running", 1)
+
+        # try to start server, if it was running before closing
+        if fp.Running:
+            self.server = com.startServer(fp.Address, fp.Port)
+            if self.server == com.SERVER_ERROR_INVALID_ADDRESS:
+                fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
+                                                      "Server.xpm")
+                QMessageBox.warning(None, 'Error while starting server',
+                                    "The address was not in supported format.")
+                fp.Running = False
+            elif self.server == com.SERVER_ERROR_PORT_OCCUPIED:
+                fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
+                                                      "Server.xpm")
+                QMessageBox.warning(None, 'Error while starting server',
+                                    "The port requested is already occupied.")
+                fp.Running = False
+            else:
+                fp.setEditorMode("Address", 1)
+                fp.setEditorMode("Port", 1)
+                fp.Running = True
+                fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
+                                                      "ServerRunning.xpm")
+
+        # Make an document observer to be notified when it will be closed
+        self.observer = ServersDocumentObserver(self,
+                                                target=FreeCAD.ActiveDocument)
+        FreeCAD.addDocumentObserver(self.observer)
+
+    def __getstate__(self):
+        """
+Necessary method to avoid errors when trying to save unserializable objects.
+
+This method is used by JSON to serialize unserializable objects during
+autosave. Without this an Error would rise when JSON would try to do
+that itself.
+
+We need this for unserializable `server` and `observer` attributes,
+but we don't serialize them, because it's enough to reset them
+when object is restored.
+
+Returns:
+    None, because we don't serialize anything.
+        """
+        return None
+
+
+class ViewProviderServerProxy(object):
+    """
+Proxy class for a `Gui.ViewProviderDocumentObject` Server.ViewObject.
+
+A ViewProviderServerProxy instance changes a `FeaturePython` Server's icon in
+Tree view to show if Server is `Running` or not. It also closes/starts
+ServerProxy's `server` if the `FeaturePython` is double-clicked, deleted or
+chosen to be connected/disconnected through its context view. The context view
+is also provided by this class.
+
+Attributes:
+    _icon: A path to icon image to be displayed in the Tree View.
+
+To connect this `Proxy` object to a `Gui.ViewProviderDocumentObject`
+Server.ViewObject do:
+
+        a = FreeCAD.ActiveDocument.addObject("Part::FeaturePython", "Server")
+        ViewProviderServerProxy(a.ViewObject)
+    """
+
+    _icon = path.join(PATH_TO_ICONS, "Server.xpm")
+
+    def __init__(self, vp):
+        """
+Initialization method for ViewProviderServerProxy.
+
+A class instance is created and made a `Proxy` for a generic
+`Gui.ViewProviderDocumentObject`Server.ViewObject.This method selects
+ appropriate icon for `FeaturePython` Server and hides unnecessary unused
+ View properties.
+
+Args:
+    vp: A barebone `Gui.ViewProviderDocumentObject` Server.ViewObject.
+        """
+        self.setProperties(vp)
+        vp.Proxy = self
+
+    def onDelete(self, vp, subelements):
+        """
+Method called when `FeaturePython` Server is about to be deleted.
+
+This method is used to close ServerProxy's `server` as not to leave a `Port`
+occupied.
+
+Args:
+    vp: A `Gui.ViewProviderDocumentObject` Server.ViewObject being closed
+    subelements: An unused argument from C++ binding.
+
+Returns:
+    True to specify that it was implemented and executed.
+        """
+        if vp.Object.Running:
+            FreeCAD.Console.PrintMessage("Deleting server safely.\n")
+            vp.Object.Proxy.server.close()
+        return True
+
+    def doubleClicked(self, vp):
+        """
+Method called when `FeaturePython` Server is double-clicked in the Tree View.
+
+This methods tries to start ServerProxy's `server` if it wasn't running and
+closes it in the opposite case. It shows warning dialogs if something failed.
+If action is successful, then the icon in the Tree View is changed
+(You may need to recompute the document to see the change).
+
+
+Args:
+    vp: A double-clicked `Gui.ViewProviderDocumentObject` Server.ViewObject.
+
+Returns:
+    True to specify that it was implemented and executed.
+        """
+        if not vp.Object.Running:
+            vp.Object.Proxy.server = com.startServer(vp.Object.Address,
+                                                     vp.Object.Port)
+            if isinstance(vp.Object.Proxy.server, int):
+                if vp.Object.Proxy.server == com.SERVER_ERROR_INVALID_ADDRESS:
+                    QMessageBox.warning(None, 'Error while starting server',
+                                        "The address was not in supported "
+                                        + "format.")
+                elif vp.Object.Proxy.server == com.SERVER_ERROR_PORT_OCCUPIED:
+                    QMessageBox.warning(None, 'Error while starting server',
+                                        "The port requested is already "
+                                        + "occupied.")
+            else:
+                vp.Object.setEditorMode("Address", 1)
+                vp.Object.setEditorMode("Port", 1)
+                vp.Object.Running = True
+                self._icon = path.join(PATH_TO_ICONS, "ServerRunning.xpm")
+        elif vp.Object.Running:
+            vp.Object.Proxy.server.close()
+            vp.Object.setEditorMode("Address", 0)
+            vp.Object.setEditorMode("Port", 0)
+            vp.Object.Running = False
+            self._icon = path.join(PATH_TO_ICONS, "Server.xpm")
+        vp.Object.touch()
+        return True
+
+    def setupContextMenu(self, vp, menu):
+        """
+Method editing a context menu for right click on `FeaturePython` Server.
+
+The *Transform* and *Set colors...* items are removed from the context menu
+shown upon right click on `FeaturePython` Server in the Tree View.
+The option to *Disconnect Server*, or *Connect Server* is added instead.
+
+Args:
+    vp: A right-clicked `Gui.ViewProviderDocumentObject` Server.ViewObject.
+    menu: A Qt's QMenu to be edited.
+        """
+        menu.clear()
+        if vp.Object.Running:
+            action = menu.addAction("Disconnect Server")
+            action.triggered.connect(lambda f=self.doubleClicked,
+                                     arg=vp: f(arg))
+        else:
+            action = menu.addAction("Connect Server")
+            action.triggered.connect(lambda f=self.doubleClicked,
+                                     arg=vp: f(arg))
+
+    def getIcon(self):
+        """
+Method used to get a path to an icon which will appear in the tree view.
+
+Returns:
+    A path to the icon stored in `_icon`.
+        """
+        return self._icon
+
+    def setProperties(self, vp):
+        """
+Method to hide properties and select appropriate icon to show it the Tree View.
+
+This method is called during initialization or document restoration. All unused
+unnecessary view properties are hidden and icon is chosen in accordance with
+ServerProxy's `Running` state.
+
+Args:
+    vp : A `Gui.ViewProviderDocumentObject` Server.ViewObject.
+        """
+        vp.setEditorMode("AngularDeflection", 2)
+        vp.setEditorMode("BoundingBox", 2)
+        vp.setEditorMode("Deviation", 2)
+        vp.setEditorMode("DisplayMode", 2)
+        vp.setEditorMode("DrawStyle", 2)
+        vp.setEditorMode("Lighting", 2)
+        vp.setEditorMode("LineColor", 2)
+        vp.setEditorMode("LineWidth", 2)
+        vp.setEditorMode("PointColor", 2)
+        vp.setEditorMode("PointSize", 2)
+        vp.setEditorMode("Selectable", 2)
+        vp.setEditorMode("SelectionStyle", 2)
+        vp.setEditorMode("ShapeColor", 2)
+        vp.setEditorMode("Transparency", 2)
+        vp.setEditorMode("Visibility", 2)
+
+        if vp.Object.Running:
+            self._icon = path.join(PATH_TO_ICONS, "ServerRunning.xpm")
+        else:
+            self._icon = path.join(PATH_TO_ICONS, "Server.xpm")
 
 
 class ServerCommand(object):
-	"""Create Object command"""
+    """
+ServerCommand class specifing Animate workbench's Server button/command.
 
-	def GetResources(self):
-		return {'Pixmap'  : path.join(_PATH_ICONS, "ServerCmd.xpm") ,
-            'MenuText': " Server" ,
-            'ToolTip' : "Create Server instance."}
- 
-	def Activated(self):
-		doc = FreeCAD.ActiveDocument
-		a=doc.addObject("Part::FeaturePython","Server")
-		Server(a)
-		if FreeCAD.GuiUp:
-			ViewProviderServer(a.ViewObject)
-		doc.recompute()
-		return
-   
-	def IsActive(self):
-		if FreeCAD.ActiveDocument == None:
-			return False
-		else:
-			return True
+This class provides toolbar button with an icon, tooltip and also menu button
+for Animate Workbench. It includes callbacks to be called after these buttons
+are clicked(Activated).
+    """
 
-	def getHelp(self):
-		return ["This is help for  Server\n",
-				"and it needs to be written."]
-		
+    def GetResources(self):
+        """
+Method used by FreeCAD to retrieve resources to use for this command.
+
+Returns:
+    A dict with items `'PixMap'`, `'MenuText'` and `'ToolTip'` which contain
+    path to command icon, text to be shown in menu and tooltip message.
+        """
+        return {'Pixmap': path.join(PATH_TO_ICONS, "ServerCmd.xpm"),
+                'MenuText': "Server",
+                'ToolTip': "Create Server instance."}
+
+    def Activated(self):
+        """
+Method used as callback after toolbar button or menu item is clicked.
+
+This method creates a `FeaturePython` Server instance in currently active
+document. Afterwards it adds a ServerProxy as a `Proxy` to this instance as
+well as ViewProviderServerProxy to its `ViewObject.Proxy` if FreeCAD runs in
+Graphic mode.
+        """
+        doc = FreeCAD.ActiveDocument
+        a = doc.addObject("Part::FeaturePython", "Server")
+        ServerProxy(a)
+        if FreeCAD.GuiUp:
+            ViewProviderServerProxy(a.ViewObject)
+        doc.recompute()
+
+    def IsActive(self):
+        """
+Method to specify when toolbar button and menu item are enabled.
+
+The toolbar button `Server` and menu item `Server` are set to be active only
+when there is an active document in which a `FeaturePython` Server instance
+can be created.
+
+Returns:
+    True if buttons shall be enabled and False otherwise.
+        """
+        if FreeCAD.ActiveDocument is None:
+            return False
+        else:
+            return True
+
+
+# Add command to FreeCAD Gui when importing this module in InitGui
 if FreeCAD.GuiUp:
-	FreeCADGui.addCommand('ServerCommand',ServerCommand())
+    FreeCADGui.addCommand('ServerCommand', ServerCommand())

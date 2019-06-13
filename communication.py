@@ -1,199 +1,474 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed May 29 08:08:28 2019
 
-@author: jirka
+"""@package communication
+ Classes related to interprocess communications.
+
+The Classes in this module...
 """
-import FreeCAD
+
+import sys
+try:
+    import FreeCAD
+except ImportError:
+    pass
+
 from PySide2.QtCore import QThread, QByteArray, QDataStream, QIODevice
-from PySide2.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket, QHostAddress
+from PySide2.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket, \
+                              QHostAddress
 
+## Size of uint16 in bytes used to leave space at the beggining of each message
+# to specify tcp message lenght (maximal length is 65535 bytes).
 SIZEOF_UINT16 = 2
-PORT = 31313
-INVALID_ADDRESS = 1
-PORT_OCCUPIED = 2
+## Error code used in startServer() when trying to connect CommandServer to an
+# invalid address.
+SERVER_ERROR_INVALID_ADDRESS = 1
+## Error code used in startServer() when trying to connect CommandServer to an
+# occupied port.
+SERVER_ERROR_PORT_OCCUPIED = 2
+## Time to wait in miliseconds - used to wait for incomming message etc.
 WAIT_TIME_MS = 30000
+## Message send from a `CommandServer` to a `CommandClient.sendCommand()` or 
+# `sendClientCommand()` after successfull execution of a command.
+COMMAND_EXECUTED_CONFIRMATION_MESSAGE = "Command executed successfully"
+## `CommandClient.sendCommand()` or `sendClientCommand()` return value after
+# confirmation of successfull command execution.
+CLIENT_COMMAND_EXECUTED = 0
+## `CommandClient.sendCommand()` or `sendClientCommand()` return value if
+# command execution failed (invalid command string).
+CLIENT_COMMAND_FAILED = 1
+## `CommandClient.sendCommand()` or `sendClientCommand()` error code to signal
+# that response was no received complete.
+CLIENT_ERROR_RESPONSE_NOT_COMPLETE = 2
+## `CommandClient.sendCommand()` or `sendClientCommand()` error code to signal
+# that no response from `CommandServer` was received.
+CLIENT_ERROR_NO_RESPONSE = 3
+## `CommandClient.sendCommand()` or `sendClientCommand()` error code to signal
+# that message block was not written to a TCP socket.
+CLIENT_ERROR_BLOCK_NOT_WRITTEN = 4
+## `CommandClient.sendCommand()` or `sendClientCommand()` error code to signal
+# that connection a host `CommandServer` was not established.
+CLIENT_ERROR_NO_CONNECTION = 5
+
 
 class CommandThread(QThread):
+    """
+`QThread` class used to receive commands, try to execute and respond to them.
 
-	def __init__(self, socketDescriptor, parent):
-		super(CommandThread, self).__init__(parent)
-		self.socketDescriptor = socketDescriptor
-		self.blockSize = 0
+This class describes a `QThread` used to receive a command string from
+a `QTcpSocket`, try to execute received string and send a repspondse
+whether the execution was successfull or not.
+
+Attributes:
+    socketDescriptor: A Qt's qintptr socket descriptor to initialize tcpSocket.
+    blockSize: An int representing size of incomming tcp message.
+    """
+
+    def __init__(self, socketDescriptor, parent):
+        """
+Initialization method for CommandThread.
+
+A class instance is created, `socketDescriptor` and `blockSize` are
+initializated.
+
+Args:
+    socketDescriptor: A Qt's qintptr socket descriptor to initialize tcpSocket.
+    parent: A reference to an instance which will take thread's ownership.
+        """
+        super(CommandThread, self).__init__(parent)
+        self.socketDescriptor = socketDescriptor
+        self.blockSize = 0
+
+    def run(self):
+        """
+Thread's functionality method.
+
+The starting point for the thread. After calling start(), the newly created
+thread calls this function. This function then tries to make QTcpSocket.
+It waits `WAIT_TIME_MS` for an incomming message. If message is received
+it checks its a whole message using blockSize sent in the first word as
+an UINT16 number. If a whole message is received, the thread tries to execute
+the message string and sends back an appropriate response. The response is
+*Command failed - "error string"* if the execution failed, or *Commmand
+executed successfully* otherwise. Then the thread is terminated.
+        """
+        # Try to connect to an incomming tcp socket using its socket descriptor
+        tcpSocket = QTcpSocket()
+        if not tcpSocket.setSocketDescriptor(self.socketDescriptor):
+            FreeCAD.Console.PrintError("Socket not accepted.\n")
+            return
+
+        # Wait for an incomming message
+        if not tcpSocket.waitForReadyRead(msecs=WAIT_TIME_MS):
+            FreeCAD.Console.PrintError("No request send.\n")
+            return
+
+        # Make an input data stream
+        instr = QDataStream(tcpSocket)
+        instr.setVersion(QDataStream.Qt_4_0)
+
+        # Try to read the message size
+        if self.blockSize == 0:
+            if tcpSocket.bytesAvailable() < 2:
+                return
+            self.blockSize = instr.readUInt16()
+
+        # Check message is sent complete
+        if tcpSocket.bytesAvailable() < self.blockSize:
+            return
+
+        # Read message and inform about it
+        instr = instr.readString()
+        FreeCAD.Console.PrintLog("CommandServer received> "
+                                 + str(instr) + "\n")
+
+        # Try to execute the message string and prepare  a response
+        try:
+            exec(str(instr))
+        except Exception as e:
+            FreeCAD.Console.PrintError("Executing external command failed:"
+                                       + str(e) + "\n")
+            message = "Command failed - " + str(e)
+        else:
+            FreeCAD.Console.PrintLog("Executing external command succeded!\n")
+            message = COMMAND_EXECUTED_CONFIRMATION_MESSAGE
+
+        # Prepare the data block to send back and inform about it
+        FreeCAD.Console.PrintLog("CommandServer sending> " + message + " \n")
+        block = QByteArray()
+        outstr = QDataStream(block, QIODevice.WriteOnly)
+        outstr.setVersion(QDataStream.Qt_4_0)
+        outstr.writeUInt16(0)
+        outstr.writeQString(message)
+        outstr.device().seek(0)
+        outstr.writeUInt16(block.size() - 2)
+
+        # Send the block, disconnect from the socket and terminate the QThread
+        tcpSocket.write(block)
+        tcpSocket.disconnectFromHost()
+        tcpSocket.waitForDisconnected()
 
 
-	def run(self):
-		tcpSocket = QTcpSocket()
-		if not tcpSocket.setSocketDescriptor(self.socketDescriptor):
-			self.error.emit(tcpSocket.error())
-			return
+class CommandServer(QTcpServer):
+    """
+`QTcpServer` class used to receive commands and execute them.
 
-		if not tcpSocket.waitForReadyRead(msecs=WAIT_TIME_MS):
-			FreeCAD.Console.PrintError("No request send.\n")
-			return
+This class is used by a `ServerProxy` instance to provide the interprocess
+communication between itself and outside client.
+    """
+    def __init__(self, parent=None):
+        """
+Initialization method for CommandServer.
 
-		instr = QDataStream(tcpSocket)
-		instr.setVersion(QDataStream.Qt_4_0)
+A class instance is created.
 
-		if self.blockSize == 0:
-			if tcpSocket.bytesAvailable() < 2:
-				return
-			self.blockSize = instr.readUInt16()
+Args:
+    parent: A reference to an instance which will take servers's ownership.
+        """
+        super(CommandServer, self).__init__(parent)
 
-		if tcpSocket.bytesAvailable() < self.blockSize:
-			return
+    def incomingConnection(self, socketDescriptor):
+        """
+Method to handle an incomming connection by dispatching a `CommandThread`.
 
-		instr = instr.readString()
-		FreeCAD.Console.PrintLog("Server received> " + str(instr) + "\n")
-		
-		try:
-			exec(str(instr))
-		except Exception as e :
-			FreeCAD.Console.PrintError("Executing external command failed:" +\
-									   str(e) + "\n")
-			message = "Command failed - " + str(e)
-		else:
-			FreeCAD.Console.PrintLog("Executing external command succeded!\n")
-			message = "Command executed succesfully"
-		
-		FreeCAD.Console.PrintLog("Server sending> " + message + " \n")
-		block = QByteArray()
-		outstr = QDataStream(block, QIODevice.WriteOnly)
-		outstr.setVersion(QDataStream.Qt_4_0)
-		outstr.writeUInt16(0)
-		outstr.writeQString(message)
-		outstr.device().seek(0)
-		outstr.writeUInt16(block.size() - 2)
-	
-		tcpSocket.write(block)
-		tcpSocket.disconnectFromHost()
-		tcpSocket.waitForDisconnected()
-		
+This method is called by Qt when an incomming connection with a socket
+descriptor is received. A new `CommandThread` is created to serve to a received
+request from the socket description. The `CommandThread` is set to terminate
+when finished and then started.
 
-class Srv(QTcpServer):
-	def __init__(self, parent=None):
-		super(Srv, self).__init__(parent)
+Args:
+    socketDescriptor: A Qt's qintptr socket descriptor to initialize tcpSocket.
+        """
+        thread = CommandThread(socketDescriptor, self)
+        thread.finished.connect(thread.deleteLater)
+        thread.start()
 
-	def incomingConnection(self, socketDescriptor):
-		thread = CommandThread(socketDescriptor, self)
-		thread.finished.connect(thread.deleteLater)
-		thread.start()
-		
-	def close(self):
-		super(Srv, self).close()
-		FreeCAD.Console.PrintLog("Server closed.\n")
+    def close(self):
+        """
+Method used to close the CommandServer and inform user about it.
+        """
+        super(CommandServer, self).close()
+        FreeCAD.Console.PrintLog("Server closed.\n")
 
 
-def check_ip_valid(ip):
-	if ip.upper() == "LOCALHOST":
-		return True
-	numbers = ip.split(".")
-	if len(numbers) == 4:
-		if all([(0 <= int(num) <=255) for num in numbers]):
-			return  True
-	return False
+def checkIPIsValid(ip):
+    """
+Method used to check a selected IP is possible to use with a Qt's QHostAddress.
+
+The IP can be either IPv4 address or *"localhost"* string with possible capital
+letters anywhere. IPv6 is not supported for now.
+
+Args:
+    ip: A str with an IP address selected.
+    """
+    if ip.upper() == "LOCALHOST":
+        return True
+
+    numbers = ip.split(".")
+    if len(numbers) == 4:
+        if all([(0 <= int(num) <= 255) for num in numbers]):
+            return True
+
+    return False
+
 
 def startServer(addr, port):
-	""" addr = IPv4 address string or localhost"""
-	FreeCAD.Console.PrintMessage ( str(addr) + "\n")
+    """
+Method used to try to start a `CommandServer` at a valid IP address and port.
 
-	if not check_ip_valid(addr):
-		return INVALID_ADDRESS
+This method checks that a chosen `addr` is valid IP address to be used to
+create Qt's QHostAddress using `checkIPIsValid()`. If the IP address is valid,
+then a `CommandServer` instance is created and tried to be made listen at
+selected `addr` and `port`. If it fails, then the used port had to be occupied.
 
-	if addr.upper() == "LOCALHOST":
-		addr = QHostAddress(QHostAddress.LocalHost)
-	else:
-		addr = QHostAddress(addr)
-		
-	server = Srv()
-	if not server.listen(addr, port): 
-		FreeCAD.Console.PrintLog( "Unable to start the server: %s.\n" % server.errorString())
-		return PORT_OCCUPIED
-	else:
-		FreeCAD.Console.PrintLog("The server is running on port %d.\n" % server.serverPort())
-		return server
+Args:
+    addr: A str with a valid IPv4 Address or *"localhost"*.
+    port: An int selecting a port to be used for the `CommandServer`.
 
-class Client:
-	
-	def __init__(self, HOST, PORT):
-		self.host = HOST
-		self.port = PORT
-		self.tcpSocket = QTcpSocket()
-		self.blockSize = 0
+Returns:
+    An integer error code signifying that and error occured(either
+    `ERROR_INVALID ADDRESS` or `ERROR_PORT_OCCUPIED`) or a CommnadServer
+    instance if everything went hunky-dory.
+    """
 
-		self.tcpSocket.connectToHost(self.host, self.port, QIODevice.ReadWrite)
-		if not self.tcpSocket.waitForConnected(msecs=WAIT_TIME_MS):
-			FreeCAD.Console.PrintError("No connection\n")
+    if not checkIPIsValid(addr):
+        return SERVER_ERROR_INVALID_ADDRESS
 
-		message = 'FreeCAD.Console.PrintWarning("Finally\\n")\n'
-		FreeCAD.Console.PrintMessage("Client sending> " + message + "\n")
-		block = QByteArray()
-		outstr = QDataStream(block, QIODevice.WriteOnly)
-		outstr.setVersion(QDataStream.Qt_4_0)
-		outstr.writeUInt16(0)
-		outstr.writeQString(message)
-		outstr.device().seek(0)
-		outstr.writeUInt16(block.size() - 2)
+    if addr.upper() == "LOCALHOST":
+        addr = QHostAddress(QHostAddress.LocalHost)
+    else:
+        addr = QHostAddress(addr)
 
-		self.tcpSocket.write(block)
-		if not self.tcpSocket.waitForBytesWritten(msecs=WAIT_TIME_MS):
-			FreeCAD.Console.PrintError("Bytes not written\n")
+    server = CommandServer()
+    if not server.listen(addr, port):
+        FreeCAD.Console.PrintLog("Unable to start the server: %s.\n"
+                                 % server.errorString())
+        return SERVER_ERROR_PORT_OCCUPIED
 
-		self.tcpSocket.readyRead.connect(self.dealCommunication)
-		self.tcpSocket.error.connect(self.displayError)
+    else:
+        FreeCAD.Console.PrintLog("The server is running on address %s"
+                                 % server.serverAddress().toString()
+                                 + " and port %d.\n" % server.serverPort())
+        return server
 
 
-	def dealCommunication(self):
-		instr = QDataStream(self.tcpSocket)
-		instr.setVersion(QDataStream.Qt_4_0)
-		if self.blockSize == 0:
-			if self.tcpSocket.bytesAvailable() < 2:
-				return
-			self.blockSize = instr.readUInt16()
-		
-		if self.tcpSocket.bytesAvailable() < self.blockSize:
-			return
-		
-		FreeCAD.Console.PrintMessage("Client received> " + instr.readString() + "\n")
-		
-	def displayError(self, socketError):
-		if socketError == QAbstractSocket.RemoteHostClosedError:
-			pass
-		else:
-			FreeCAD.Console.PrintError("The following error occurred: %s." % \
-									   self.tcpSocket.errorString() + "\n")
+class CommandClient:
+    """
+Class to be used for sending commands.
+
+This class can be used in FreeCAD's or regular python console to send commands
+to a `CommandServer` using `sendCommand()`. The class prints logs as it moves
+along.
+
+Attributes:
+    host: A QtHostAddress to the `CommandServer`.
+    port: An int of port at which `CommandServer` is listening.
+    tcpSocket: A QTcpSocket used to contact `CommandSErver`
+    blockSize: An int representing size of incomming tcp message.
+
+    from PySide2.QtNetwork import QHostAddress
+    from communication import CommandClient
+    host = QHostAddress(QHostAddress.LocalHost)
+    client = CommandClient(host,54321)
+    client.sendCommand('FreeCAD.Console.PrintWarning("Hello World\\n")\n')
+    """
+
+    def __init__(self, host, port):
+        """
+Initialization method for CommandClient.
+
+A class instance is created and its attributes are initialized.
+
+Args:
+    host: A QtHostAddress to the `CommandServer`.
+    port: An int of port at which `CommandServer` is listening.
+        """
+        self.host = host
+        self.port = port
+        self.tcpSocket = QTcpSocket()
+        self.blockSize = 0
+
+    def sendCommand(self, cmd):
+        """
+Method used to send commands from client to `CommandServer`.
+
+This method tries to connect to a specified host `CommandServer` via
+`tcpSocket`. If connection was successfull, the command `cmd` is sent.
+Then the response is expected. If the response is equal to
+COMMAND_EXECUTED_CONFIRMATION_MESSAGE, then the execution was successfull.
+The progress and result of `sendCommand` can be obtained from printed logs and
+return value.
+
+Args:
+    cmd: A str command to be executed.
+
+Returns:
+    `CLIENT_COMMAND_EXECUTED` if all went great and command was executed.
+    `CLIENT_COMMAND_FAILED` if `cmd` execution failed.
+    `CLIENT_ERROR_RESPONSE_NOT_COMPLETE` if a response received was incomplete.
+    `CLIENT_ERROR_NO_RESPONSE` if there was no response within `WAIT_TIME_MS`.
+    `CLIENT_ERROR_BLOCK_NOT_WRITTEN` if communication failed during sending.
+    `CLIENT_ERROR_NO_CONNECTION` if no connection to a host was established.
+        """
+
+        # connect a Qt slot to receive and print errors
+        self.tcpSocket.error.connect(self.displayError)
+
+        # Try to connect to a host server
+        self.tcpSocket.connectToHost(self.host, self.port, QIODevice.ReadWrite)
+        if not self.tcpSocket.waitForConnected(msecs=WAIT_TIME_MS):
+            if "FreeCAD" in sys.modules:
+                FreeCAD.Console.PrintError("CommandClient.sendCommand error: "
+                                           + "No connection\n")
+            else:
+                print("CommandClient.sendCommand error: No connection\n")
+            return CLIENT_ERROR_NO_CONNECTION
+
+        # Prepare a command message to be sent
+        block = QByteArray()
+        outstr = QDataStream(block, QIODevice.WriteOnly)
+        outstr.setVersion(QDataStream.Qt_4_0)
+        outstr.writeUInt16(0)
+        outstr.writeQString(cmd)
+        outstr.device().seek(0)
+        outstr.writeUInt16(block.size() - 2)
+
+        # Try to send the message
+        if "FreeCAD" in sys.modules:
+            FreeCAD.Console.PrintMessage("CommandClient sending> "
+                                         + cmd + "\n")
+        else:
+            print("CommandClient sending> " + cmd + "\n")
+        self.tcpSocket.write(block)
+        if not self.tcpSocket.waitForBytesWritten(msecs=WAIT_TIME_MS):
+            if "FreeCAD" in sys.modules:
+                FreeCAD.Console.PrintError("CommandClient.sendCommand error: "
+                                           + "Block not written\n")
+            else:
+                print("CommandClient.sendCommand error: Block not written\n")
+            return CLIENT_ERROR_BLOCK_NOT_WRITTEN
+
+        # Wait for a response from the host server
+        if not self.tcpSocket.waitForReadyRead(msecs=WAIT_TIME_MS):
+            if "FreeCAD" in sys.modules:
+                FreeCAD.Console.PrintError("CommandClient.sendCommand error: "
+                                           + "No response received.\n")
+            else:
+                print("CommandClient.sendCommand error: "
+                      + "No response received.\n")
+            return CLIENT_ERROR_NO_RESPONSE
+
+        # Try to read the response
+        instr = QDataStream(self.tcpSocket)
+        instr.setVersion(QDataStream.Qt_4_0)
+        if self.blockSize == 0:
+            if self.tcpSocket.bytesAvailable() < 2:
+                return CLIENT_ERROR_RESPONSE_NOT_COMPLETE
+            self.blockSize = instr.readUInt16()
+
+        if self.tcpSocket.bytesAvailable() < self.blockSize:
+            return CLIENT_ERROR_RESPONSE_NOT_COMPLETE
+        response = instr.readString()
+        if "FreeCAD" in sys.modules:
+            FreeCAD.Console.PrintMessage("CommandClient received> "
+                                         + response + "\n")
+        else:
+            print("CommandClient received> " + response + "\n")
+
+        # Wait until the host server terminates the connection
+        self.tcpSocket.waitForDisconnected()
+        # Reset blockSize to prepare for sending next command
+        self.blockSize = 0
+
+        # Return value representing a command execution status
+        if response == COMMAND_EXECUTED_CONFIRMATION_MESSAGE:
+            return CLIENT_COMMAND_EXECUTED
+        else:
+            return CLIENT_COMMAND_FAILED
+
+    def displayError(self, socketError):
+        """
+`Qt`'s slot method to print out received `tcpSocket`'s error.
+
+QAbstractSocket.RemoteHostClosedError is not printed, because it occurs
+naturaly when the `tcpSocket` closes after a transaction is over. Except that
+all errors are printed.
+
+Args:
+    socketError: A QAbstractSocket::SocketError enum describing occured error.
+        """
+        if socketError != QAbstractSocket.RemoteHostClosedError:
+            if "FreeCAD" in sys.modules:
+                FreeCAD.Console.PrintError("CommandClient error occurred> %s."
+                                           % self.tcpSocket.errorString()
+                                           + "\n")
+            else:
+                print("CommandClient error occurred> %s."
+                      % self.tcpSocket.errorString() + "\n")
 
 
+def sendClientCommand(host, port, cmd, wait_time=WAIT_TIME_MS):
+    """
+Method to be used for sending commands.
 
+This method is an alternative to using `CommandClient`. It does not print any
+logs, just returns a value saying how the execution went.
 
-def send_request(host, port, command, wait_time=WAIT_TIME_MS):
-	tcpSocket = QTcpSocket()
-	blockSize = 0
-	tcpSocket.connectToHost(host, port, QIODevice.ReadWrite)
-	if not tcpSocket.waitForConnected(msecs=wait_time):
-		print("sending request> No connection made.")
-		return
-	print("sending request> request: " + command)
-	block = QByteArray()
-	outstr = QDataStream(block, QIODevice.WriteOnly)
-	outstr.setVersion(QDataStream.Qt_4_0)
-	outstr.writeUInt16(0)
-	outstr.writeQString(command)
-	outstr.device().seek(0)
-	outstr.writeUInt16(block.size() - 2)
-	tcpSocket.write(block)
-	if not tcpSocket.waitForBytesWritten(msecs=wait_time):
-		print("sending request> Bytes not written.")
-		return
-	if not tcpSocket.waitForReadyRead(msecs=10000):
-		print("sending request> No response received.")
-		return
-	instr = QDataStream(tcpSocket)
-	instr.setVersion(QDataStream.Qt_4_0)
-	if blockSize == 0:
-		if tcpSocket.bytesAvailable() < 2:
-			return
-		blockSize = instr.readUInt16()
-	if tcpSocket.bytesAvailable() < blockSize:
-		return
-	print("sending request> response: " + instr.readString())
+Args:
+    cmd: A str command to be executed.
+    host: A QtHostAddress to the `CommandServer`.
+    port: An int of port at which `CommandServer` is listening.
+
+Kwargs:
+    wait_time: An int setting miliseconds to wait for connection or message.
+
+Returns:
+    `CLIENT_COMMAND_EXECUTED` if all went great and command was executed.
+    `CLIENT_COMMAND_FAILED` if `cmd` execution failed.
+    `CLIENT_ERROR_RESPONSE_NOT_COMPLETE` if a response received was incomplete.
+    `CLIENT_ERROR_NO_RESPONSE` if there was no response within `WAIT_TIME_MS`.
+    `CLIENT_ERROR_BLOCK_NOT_WRITTEN` if communication failed during sending.
+    `CLIENT_ERROR_NO_CONNECTION` if no connection to a host was established.
+    """
+    # Try to connect to a host server
+    tcpSocket = QTcpSocket()
+    tcpSocket.connectToHost(host, port, QIODevice.ReadWrite)
+    if not tcpSocket.waitForConnected(msecs=wait_time):
+        return CLIENT_ERROR_NO_CONNECTION
+
+    # Prepare a command message to be sent
+    block = QByteArray()
+    outstr = QDataStream(block, QIODevice.WriteOnly)
+    outstr.setVersion(QDataStream.Qt_4_0)
+    outstr.writeUInt16(0)
+    outstr.writeQString(cmd)
+    outstr.device().seek(0)
+    outstr.writeUInt16(block.size() - 2)
+    tcpSocket.write(block)
+
+    # Try to send the message
+    if not tcpSocket.waitForBytesWritten(msecs=wait_time):
+        return CLIENT_ERROR_BLOCK_NOT_WRITTEN
+
+    # Wait for a response from the host server
+    if not tcpSocket.waitForReadyRead(msecs=10000):
+        return CLIENT_ERROR_NO_RESPONSE
+
+    # Try to read the response
+    instr = QDataStream(tcpSocket)
+    instr.setVersion(QDataStream.Qt_4_0)
+    blockSize = 0
+    if blockSize == 0:
+        if tcpSocket.bytesAvailable() < 2:
+            return CLIENT_ERROR_RESPONSE_NOT_COMPLETE
+        blockSize = instr.readUInt16()
+    if tcpSocket.bytesAvailable() < blockSize:
+        return CLIENT_ERROR_RESPONSE_NOT_COMPLETE
+
+    # Wait until the host server terminates the connection
+    tcpSocket.waitForDisconnected()
+
+    # Return value representing a command execution status
+    if instr.readString() == COMMAND_EXECUTED_CONFIRMATION_MESSAGE:
+        return CLIENT_COMMAND_EXECUTED
+    else:
+        return CLIENT_COMMAND_FAILED

@@ -1,0 +1,39 @@
+#titlearea {
+    background-color: black;
+    color: white;
+}
+
+.navpath ul {
+    background-image: none;
+    background-repeat: no-repeat;
+    background-color: black;
+}
+
+.navpath li.navelem a {
+    color: #999;
+    text-shadow: 0px 1px 1px #eee;
+}
+
+.navpath li.navelem a:hover {
+    color: #d8d8d8;
+    text-shadow: 0px 1px 1px #f7f7f7;
+    text-decoration: none;
+}
+
+.navpath li.footer {
+    color: #bbb;
+}
+
+.navpath li.footer a{
+    text-decoration: none;
+    font-family: 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
+    color: #fff;
+    font-weight: bold;
+}
+
+.navpath li.footer a:hover{
+    text-decoration: none;
+    font-family: 'Lucida Grande',Geneva,Helvetica,Arial,sans-serif;
+    color: #ffff99;
+    font-weight: bold;
+}
