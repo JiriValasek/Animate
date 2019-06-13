@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['viewprovidercontrol',['ViewProviderControl',['../class_control_1_1_view_provider_control.html',1,'Control']]],
-  ['viewproviderserverproxy',['ViewProviderServerProxy',['../class_server_1_1_view_provider_server_proxy.html',1,'Server']]],
-  ['viewprovidertrajectory',['ViewProviderTrajectory',['../class_trajectory_1_1_view_provider_trajectory.html',1,'Trajectory']]]
+  ['welcome_20to_20the_20documentation_20for_20programmers',['Welcome to the documentation for programmers',['../index.html',1,'']]],
+  ['wait_5ftime_5fms',['WAIT_TIME_MS',['../namespacecommunication.html#af10c9d6f536228a72bb929834ec519ce',1,'communication']]]
 ];
