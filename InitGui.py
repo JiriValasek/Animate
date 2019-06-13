@@ -6,7 +6,7 @@ Created on Mon Apr 22 23:32:41 2019
 """
 import FreeCAD, FreeCADGui
 
-class Animate(Workbench):
+class Animate(FreeCADGui.Workbench):
 	"Animate workbench object"
 	
 	def __init__(self):
@@ -50,5 +50,5 @@ class Animate(Workbench):
 	def GetClassName(self): 
 		# this function is mandatory if this is a full python workbench
 		return "Gui::PythonWorkbench"
-	   
+	
 FreeCADGui.addWorkbench(Animate())
