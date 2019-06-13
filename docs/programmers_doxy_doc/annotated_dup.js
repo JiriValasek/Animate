@@ -6,6 +6,7 @@ var annotated_dup =
       [ "ControlCommand", "class_control_1_1_control_command.html", "class_control_1_1_control_command" ],
       [ "ViewProviderControl", "class_control_1_1_view_provider_control.html", "class_control_1_1_view_provider_control" ]
     ] ],
+    [ "InitGui", "namespace_init_gui.html", "namespace_init_gui" ],
     [ "Server", "namespace_server.html", "namespace_server" ],
     [ "Trajectory", null, [
       [ "Trajectory", "class_trajectory_1_1_trajectory.html", "class_trajectory_1_1_trajectory" ],

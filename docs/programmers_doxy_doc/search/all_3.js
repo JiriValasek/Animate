@@ -14,6 +14,7 @@ var searchData=
   ['commandserver',['CommandServer',['../classcommunication_1_1_command_server.html',1,'communication']]],
   ['commandthread',['CommandThread',['../classcommunication_1_1_command_thread.html',1,'communication']]],
   ['communication',['communication',['../namespacecommunication.html',1,'']]],
+  ['contextmenu',['ContextMenu',['../class_init_gui_1_1_animate.html#a395cccd09e2e81ec50c1af5c0b0d34ad',1,'InitGui::Animate']]],
   ['control',['Control',['../class_control_1_1_control.html',1,'Control']]],
   ['controlcommand',['ControlCommand',['../class_control_1_1_control_command.html',1,'Control']]]
 ];

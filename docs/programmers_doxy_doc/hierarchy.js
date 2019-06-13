@@ -13,6 +13,9 @@ var hierarchy =
     [ "Trajectory.Trajectory", "class_trajectory_1_1_trajectory.html", null ],
     [ "Control.ViewProviderControl", "class_control_1_1_view_provider_control.html", null ],
     [ "Trajectory.ViewProviderTrajectory", "class_trajectory_1_1_view_provider_trajectory.html", null ],
+    [ "Workbench", null, [
+      [ "InitGui.Animate", "class_init_gui_1_1_animate.html", null ]
+    ] ],
     [ "QTcpServer", null, [
       [ "communication.CommandServer", "classcommunication_1_1_command_server.html", null ]
     ] ],

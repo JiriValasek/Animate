@@ -1,6 +1,8 @@
 var searchData=
 [
-  ['servercommand',['ServerCommand',['../class_server_1_1_server_command.html',1,'Server']]],
-  ['serverproxy',['ServerProxy',['../class_server_1_1_server_proxy.html',1,'Server']]],
-  ['serversdocumentobserver',['ServersDocumentObserver',['../class_server_1_1_servers_document_observer.html',1,'Server']]]
+  ['commandclient',['CommandClient',['../classcommunication_1_1_command_client.html',1,'communication']]],
+  ['commandserver',['CommandServer',['../classcommunication_1_1_command_server.html',1,'communication']]],
+  ['commandthread',['CommandThread',['../classcommunication_1_1_command_thread.html',1,'communication']]],
+  ['control',['Control',['../class_control_1_1_control.html',1,'Control']]],
+  ['controlcommand',['ControlCommand',['../class_control_1_1_control_command.html',1,'Control']]]
 ];

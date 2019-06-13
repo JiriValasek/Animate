@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['observer',['observer',['../class_server_1_1_server_proxy.html#a6ec770c50f1410935b555b700cbd39a8',1,'Server::ServerProxy']]]
+  ['list',['list',['../class_init_gui_1_1_animate.html#a77197f444b8acaf197f1f42cc06389f8',1,'InitGui::Animate']]]
 ];
