@@ -1,4 +1,30 @@
 # -*- coding: utf-8 -*-
+
+# ***************************************************************************
+# *                                                                         *
+# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
+# *                                                                         *
+# *   This file is part of the FreeCAD CAx development system.              *
+# *                                                                         *
+# *   This program is free software; you can redistribute it and/or modify  *
+# *   it under the terms of the GNU Lesser General Public License (LGPL)    *
+# *   as published by the Free Software Foundation; either version 2 of     *
+# *   the License, or (at your option) any later version.                   *
+# *   for detail see the LICENCE text file.                                 *
+# *                                                                         *
+# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+# *   GNU Lesser General Public License for more details.                   *
+# *                                                                         *
+# *   You should have received a copy of the GNU Library General Public     *
+# *   License along with FreeCAD; if not, write to the Free Software        *
+# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
+# *   USA                                                                   *
+# *                                                                         *
+# ***************************************************************************/
+
 """
 Created on Tue May 21 23:23:30 2019
 
@@ -12,10 +38,10 @@ from os import path
 _PATH_ICONS = path.join(FreeCAD.getHomePath(),"Mod","Animate","Resources",
 						"Icons")
 
-class Control: 
+class Control:
 
 	updated = False
-	
+
 	def __init__(self, obj):
 		'''"App two point properties" '''
 		obj.addProperty("App::PropertyFloatConstraint","StartTime","Timing",
@@ -28,15 +54,15 @@ class Control:
 						 "Animation stop time. \nRange is < Start Time + Step Time | inf >."
 						 ).StopTime = (10,0.5,float("inf"),0.5)
 		obj.Proxy = self
-   
+
 	def onChanged(self, fp, prop):
 		"""
-		Event handler for a property change in Data table. The property 
+		Event handler for a property change in Data table. The property
 		value validity is checked here.
-		
+
 		We check if trajectory is valid and if it is, then we recompute
 		current placement with accordance to time.
-		
+
 		Parameters
 		----------
 		fp : Part::FeaturePython Trajectory object
@@ -45,7 +71,7 @@ class Control:
 			`prop` is a name of a changed property.
 		"""
 		# check that a trajectory has valid format
-		
+
 		if self.updated:
 			self.updated = False
 		else:
@@ -56,7 +82,7 @@ class Control:
 				fp.StepTime = (fp.StepTime, 0.01, fp.StopTime - fp.StartTime, 0.1)
 			elif prop == "StopTime":
 				self.updated = True
-				fp.StartTime = (fp.StartTime, -float("inf"), fp.StopTime - fp.StepTime, 
+				fp.StartTime = (fp.StartTime, -float("inf"), fp.StopTime - fp.StepTime,
 								0.5)
 				fp.StepTime = (fp.StepTime, 0.01, fp.StopTime - fp.StartTime, 0.1)
 			elif prop == "StepTime":
@@ -65,15 +91,15 @@ class Control:
 				self.updated = True
 				fp.StartTime = (fp.StartTime, -float("inf"), fp.StopTime - fp.StepTime, 0.5)
 
-			
+
 	def execute(self, fp):
 		"""
-		Event handler called to recompute the object after a property 
-		was changed to new valid value (processed by onChange()). 
-		
+		Event handler called to recompute the object after a property
+		was changed to new valid value (processed by onChange()).
+
 		We change the placement of connected parts/assemblies to agree with
 		computed current placement.
-		
+
 		Parameters
 		----------
 		fp : Part::FeaturePython Trajectory object
@@ -82,7 +108,7 @@ class Control:
 		pass
 
 class ViewProviderControl:
-	
+
 	def __init__(self, obj):
 		''' Set this object to the proxy object of the actual view provider '''
 		obj.setEditorMode("AngularDeflection", 2)
@@ -105,11 +131,11 @@ class ViewProviderControl:
 	def getDefaultDisplayMode(self):
 		''' Return the name of the default display mode. It must be defined in getDisplayModes. '''
 		return None
-	
+
 	def getIcon(self):
-		""" 
+		"""
 		getIcon(self)
-		
+
 		Get the icon in XMP format which will appear in the tree view.
 		"""
 		return path.join(_PATH_ICONS, "Control.xpm")
@@ -122,7 +148,7 @@ class ControlCommand(object):
 		return {'Pixmap'  : path.join(_PATH_ICONS, "ControlCmd.xpm") ,
             'MenuText': "Control" ,
             'ToolTip' : "Create Control instance."}
- 
+
 	def Activated(self):
 		doc = FreeCAD.ActiveDocument
 		a=doc.addObject("Part::FeaturePython","Control")
@@ -131,7 +157,7 @@ class ControlCommand(object):
 			ViewProviderControl(a.ViewObject)
 		doc.recompute()
 		return
-   
+
 	def IsActive(self):
 		if FreeCAD.ActiveDocument == None:
 			return False
@@ -141,6 +167,6 @@ class ControlCommand(object):
 	def getHelp(self):
 		return ["This is help for  Control\n",
 				"and it needs to be written."]
-		
+
 if FreeCAD.GuiUp:
 	FreeCADGui.addCommand('ControlCommand', ControlCommand())
