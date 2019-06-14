@@ -6,16 +6,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Animate: mainpage</title>
 <script type="text/javascript" src="programmers_doxy_doc/jquery.js"></script>
-<script type="text/javascript" src="resize.js"></script>
 <script type="text/javascript">
-/* @license magnet:?xt=urn:btih:cf05388f2679ee054f2beb29a391d25f4e673ac3&amp;dn=gpl-2.0.txt GPL-v2 */
-  $(document).ready(initResizable);
-/* @license-end */</script>
+function makeResizable(){
+var header,content,footer;
+
+function resizeHeight(){
+var headerHeight = header.outerHeight();
+var footerHeight = footer.outerHeight();
+var contentHeight = $(window).height() - headerHeight - footerHeight;
+content.css({height:contentHeight + "px"});
+}
+
+header  = $("#top");
+content = $("#doc-content");
+footer  = $("#nav-path");
+$(window).resize(function() { resizeHeight(); });
+$(window).load(resizeHeight);
+}
+$(document).ready(makeResizable);
+</script>
+<script async defer src="https://buttons.github.io/buttons.js"></script>
 <link href="main_index.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 <div id="top">
 <div id="titlearea">
+<a id="repo" class="banner" href="https://github.com/JiriValasek/Animate">Repository</a>
+<a id="docu" class="banner" href="https://github.com/JiriValasek/Animate">Documentation</a>
+<a id="guide" class="banner" href="https://github.com/JiriValasek/Animate">User Guide</a>
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
@@ -39,6 +57,8 @@
 <div class="contents">
 <div class="textblock">
 <p>This is a crossroad for my domentation, some very basic info will be here and then just one link to documentation for programmers and one for users</p>
+<p>Download it here 
+<a class="github-button" href="https://github.com/ntkme/github-buttons/archive/master.zip" data-icon="octicon-cloud-download" data-size="large" aria-label="Download ntkme/github-buttons on GitHub">Download</a></p>
 <a href="programmers_doxy_doc/index.html">Documentation for Programmers</a>
 </div></div><!-- PageDoc -->
 </div><!-- contents -->
