@@ -44,55 +44,6 @@ from os import path
 PATH_TO_ICONS = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
                           "Icons")
 
-
-class ServersDocumentObserver(object):
-    """
-Server's Document Observer to detect a document is closing.
-
-ServersDocumentObserver is a `DocumentObserver` which will notify the
-ServerProxy `sp` when the target document `target` is being closed.
-The `sp` may need this to free a `Port` it's using, so it can
-be used in other documents.
-
-Attributes:
-    sp: A ServerProxy class instance to notify when target document is closing.
-    target: A FreeCAD's `App.Document` to observe when it's closing.
-
-To make ServersDocumentObserver active do:
-        observer = ServersDocumentObserver(server_proxy,
-            target=FreeCAD.ActiveDocument)
-        FreeCAD.addDocumentObserver(observer)
-    """
-
-    def __init__(self, sp, target=None):
-        """
-Initialization method for ServersDocumentObserver.
-
-A class instance is created, `sp` and `target` attributes are
-initialized.
-
-Args:
-    sp: A ServerProxy instance to notify.
-
-Kwargs:
-    target: A FreeCAD App.Document to observe and detect it's closing.
-        """
-        self.sp = sp
-        self.target = target
-
-    def slotDeletedDocument(self, doc):
-        """
-Qt slot method called if a document is about to be closed.
-
-This method is used to notify ServerProxy `sp` that document will be closed.
-
-Args:
-    doc: A FreeCAD's `App.Document` document about to be closed.
-        """
-        if doc == self.target:
-            self.sp.onDocumentClosed()
-
-
 class ServerProxy(object):
     """
 Proxy class for a `FeaturePython` Server instance.
@@ -115,7 +66,7 @@ Attributes:
 To connect this `Proxy` object to a `FeaturePython` Server do:
 
         a=FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Server")
-        Server(a)
+        ServerProxy(a)
     """
 
     server = None
@@ -225,9 +176,10 @@ Args:
                                                       "ServerRunning.xpm")
 
         # Make an document observer to be notified when it will be closed
-        self.observer = ServersDocumentObserver(self,
-                                                target=FreeCAD.ActiveDocument)
-        FreeCAD.addDocumentObserver(self.observer)
+        import AnimateDocumentObserver
+        AnimateDocumentObserver.addObserver()
+        FreeCAD.animate_observer.addServerToNotify(self,
+                                                   FreeCAD.ActiveDocument.Name)
 
     def __getstate__(self):
         """
@@ -243,6 +195,19 @@ when object is restored.
 
 Returns:
     None, because we don't serialize anything.
+        """
+        return None
+
+    def __setstate__(self, state):
+        """
+Necessary method to avoid errors when trying to restore unserializable objects.
+
+This method is used during a document restoration. We need this for
+unserializable `server` and `observer` attributes, but we do not restore them,
+because it's enough to reset them from saved parameters.
+
+Returns:
+    None, because we don't restore anything.
         """
         return None
 
@@ -342,7 +307,6 @@ Returns:
             vp.Object.setEditorMode("Port", 0)
             vp.Object.Running = False
             self._icon = path.join(PATH_TO_ICONS, "Server.xpm")
-        vp.Object.touch()
         return True
 
     def setupContextMenu(self, vp, menu):
