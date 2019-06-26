@@ -43,78 +43,93 @@ from os import path
 ## Path to a folder with the necessary icons.
 _PATH_ICONS = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
                         "Icons")
+
+## Path to a folder with the necessary user interface files.
 _PATH_UI = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
                      "UIs")
 
 
 class ControlPanel(QObject):
+    """
+Attributes:
+    trajectories
+    previous_times
+    form
+    """
 
-    def __init__(self, tps, forms):
+    def __init__(self, trajectories, forms):
         super(ControlPanel, self).__init__()
-        self.tp = tps
-        self.previousTimes = []
-        for tp in tps:
-            self.previousTimes.append(tp.Time)
-            for prop in tp.PropertiesList:
-                tp.setEditorMode(prop, 1)
-            # return some properties
-            tp.setEditorMode("Placement", 2)
-            tp.setEditorMode("ValidTrajectory", 2)
+        self.trajectories = trajectories
 
-        # this will create a Qt widget from our ui file
+        # Disable editing of Trajectory properties and store previous
+        # times from trajectories
+        self.previous_times = []
+        for trajectory in trajectories:
+            self.previous_times.append(trajectory.Time)
+            for prop in trajectory.PropertiesList:
+                trajectory.setEditorMode(prop, 1)
+            # Leave some properties hidden
+            trajectory.setEditorMode("Placement", 2)
+            trajectory.setEditorMode("ValidTrajectory", 2)
+
+        # Add QDialogs to be displayed in freeCAD
         self.form = forms
+
+        # Add callbacks to sliders on all forms and muve sliders to a position
+        # corresponding with time values
         for i in range(len(forms)):
             forms[i].sld_time.valueChanged.connect(
-                lambda value, form=forms[i], tp=tps[i]:
-                    self.sliderChanged(value, form, tp))
-            val = 100*(tps[i].Time - tps[i].Timestamps[0]) / \
-                (tp.Timestamps[-1] - tp.Timestamps[0])
+                lambda value, form=forms[i],
+                trajectory=trajectories[i]:
+                    self.sliderChanged(value, form, trajectory))
+            val = (100 * (trajectories[i].Time
+                          - trajectories[i].Timestamps[0])) / \
+                  (trajectory.Timestamps[-1]
+                   - trajectory.Timestamps[0])
             forms[i].sld_time.setValue(val)
 
-    def add(self, tp):
-        for t in self.tp:
-            if t == tp:
-                QMessageBox.warning(None,
-                                    'Error while opening trajectory panel',
-                                    "The trajectory panel is already active.\n"
-                                    )
-                return
-        self.tp.append(tp)
-        form = FreeCADGui.PySideUic.loadUi(path.join(_PATH_UI,
-                                                     "AnimationTrajectory.ui"))
-        form.setWindowTitle("random")
-        self.form.append(form)
+    def sliderChanged(self, value, form, trajectory):
+        # Compute a time from the slider position and timestamp range
+        t = value * (trajectory.Timestamps[-1]
+                     - trajectory.Timestamps[0]) / 100 \
+            + trajectory.Timestamps[0]
 
-    def sliderChanged(self, value, form, tp):
-        t = value * (tp.Timestamps[-1] - tp.Timestamps[0]) / 100 \
-            + tp.Timestamps[0]
-        tp.Time = t
+        # Update the time in a trajectory and
+        # recompute the document to show changes
+        trajectory.Time = t
         form.lbl_time.setText("Time: " + ("%5.3f" % t))
         FreeCAD.ActiveDocument.recompute()
         FreeCADGui.updateGui()
 
+    def close(self):
+        # Allow editing of Trajecotry properties again
+        for trajectory in self.trajectories:
+            for prop in trajectory.PropertiesList:
+                trajectory.setEditorMode(prop, 0)
+            trajectory.ViewObject.Proxy.panel = None
+
+            # Keep some properties read-only state if they were in it before
+            trajectory.setEditorMode("ObjectPlacement", 1)
+            trajectory.setEditorMode("ParentFramePlacement", 1)
+
+            # Keep some properties hidden state if they were hidden before
+            trajectory.setEditorMode("Placement", 2)
+            trajectory.setEditorMode("ValidTrajectory", 2)
+        FreeCADGui.Control.closeDialog()
+
     def reject(self):
-        for i in range(len(self.tp)):
-            self.tp[i].Time = self.previousTimes[i]
+        # Return Trajectory times to previous values
+        for i in range(len(self.trajectories)):
+            self.trajectories[i].Time = self.previous_times[i]
+
+        # Close the panel and recompute the document to show changes
         self.close()
         FreeCAD.ActiveDocument.recompute()
         FreeCADGui.updateGui()
 
     def accept(self):
+        # Close the panel
         self.close()
-
-    def close(self):
-        for t in self.tp:
-            for prop in t.PropertiesList:
-                t.setEditorMode(prop, 0)
-            t.ViewObject.Proxy.panel = None
-            # return some properties read-only
-            t.setEditorMode("ObjectPlacement", 1)
-            t.setEditorMode("ParentFramePlacement", 1)
-            # return some properties
-            t.setEditorMode("Placement", 2)
-            t.setEditorMode("ValidTrajectory", 2)
-        FreeCADGui.Control.closeDialog()
 
     def getStandardButtons(self, *args):
         """ To have just one button - close """
@@ -156,7 +171,7 @@ class TrajectoryProxy:
         fp : Part::FeaturePython Trajectory object
             `fp` is a generic barebone instance made to extended.
         """
-        # add (and preset) properties
+        # Add (and preset) properties
         self.setProperties(fp)
         fp.Proxy = self
 
@@ -177,7 +192,7 @@ class TrajectoryProxy:
         prop : String
             `prop` is a name of a changed property.
         """
-        # check that a trajectory has valid format
+        # Check that a trajectory has valid format
         if self.is_trajectory_property(prop):
             traj = {}
             traj["RotationAngle"] = fp.RotationAngle
@@ -194,20 +209,23 @@ class TrajectoryProxy:
             traj_valid = self.is_ValidTrajectory(traj)
             if traj_valid != fp.ValidTrajectory:
                 fp.ValidTrajectory = traj_valid
+
         elif prop == "Placement":
-            # propagate the updates down the chain
+            # Propagate the Placement updates down the chain
             if hasattr(fp, "Group") and len(fp.Group) != 0:
                 for child in fp.Group:
                     child.ParentFramePlacement = fp.Placement
                     child.purgeTouched()
 
-            # display animated objects in a pose specified by the trajectory
+            # Display animated objects in a pose specified by the trajectory
             # and current time
             if hasattr(fp, "AnimatedObjects") and len(fp.AnimatedObjects) != 0:
                 for o in fp.AnimatedObjects:
                     o.Placement = fp.Placement
                     o.purgeTouched()
+
         elif prop == "ParentFramePlacement":
+            # If parent frame changed, recompute placement
             fp.Placement = fp.ParentFramePlacement.multiply(
                        fp.ObjectPlacement)
 
@@ -232,8 +250,7 @@ class TrajectoryProxy:
                                          "is not in a valid format.\n")
             return
 
-        # update placement according to current time and trajectory and go
-        # to self.execute (by calling fp.recompute)
+        # Update placement according to current time and trajectory
         indices, weights = self.find_timestamp_indices_and_weights(fp)
         fp.ObjectPlacement = FreeCAD.Placement(
                         FreeCAD.Vector(
@@ -268,7 +285,7 @@ class TrajectoryProxy:
 
     # supporting methods-------------------------------------------------------
     def setProperties(self, fp):
-        # add (and preset) properties
+        # Add (and preset) properties
         if not hasattr(fp, "ValidTrajectory"):
             fp.addProperty("App::PropertyBool", "ValidTrajectory", "General",
                            "This property records if trajectory was changed."
@@ -385,11 +402,11 @@ class TrajectoryProxy:
                            "General",
                            "Current Object placement in a Parent Frame.")
 
-        # make some properties read-only
+        # Make some properties read-only
         fp.setEditorMode("ObjectPlacement", 1)
         fp.setEditorMode("ParentFramePlacement", 1)
 
-        # hide some properties
+        # Hide some properties
         fp.setEditorMode("Placement", 2)
         fp.setEditorMode("ValidTrajectory", 2)
 
@@ -413,7 +430,7 @@ class TrajectoryProxy:
             "TranslationX", "TranslationY", "TranslationZ" and "Timestamps".
             All these keys must be paired with lists of a same length.
         """
-        # check that trajectory has a correct format
+        # Check that trajectory has a correct format and load it
         if self.is_ValidTrajectory(traj):
             fp.RotationAngle = traj["RotationAngle"]
             fp.RotationAxisX = traj["RotationAxisX"]
@@ -473,7 +490,7 @@ class TrajectoryProxy:
             `True` if `x` has everything valid trajectory should and `False`
             otherwise.
         """
-        # check all keys are included and record lengths of their lists
+        # Check all keys are included and record lengths of their lists
         list_lengths = []
         for key in ["Timestamps", "TranslationX", "TranslationY",
                     "TranslationZ", "RotationPointX", "RotationPointY",
@@ -486,19 +503,19 @@ class TrajectoryProxy:
                                              key + ".\n")
                 return False
 
-        # check there no key has an empty list
+        # Check that no key has an empty list
         if 0 in list_lengths:
             FreeCAD.Console.PrintWarning("Trajectory has list/lists of " +
                                          "zero lengths.\n")
             return False
 
-        # check that lists for all keys have the same length
+        # Check that all lists have the same length
         if any([len_ != list_lengths[0] for len_ in list_lengths]):
             FreeCAD.Console.PrintWarning("Trajectory has lists " +
                                          "with inconsistent lengths.\n")
             return False
 
-        # check timestamps correspond to list of increasing values
+        # Check timestamps correspond to list of increasing values
         if any([x["Timestamps"][i] >= x["Timestamps"][i+1]
                 for i in range(len(x["Timestamps"])-1)]):
             FreeCAD.Console.PrintWarning("Trajectory 'Timestamps' is not " +
@@ -532,20 +549,22 @@ class TrajectoryProxy:
             Weights to be used while computing pose from two successive poses
             whether it's by interpolation or not.
         """
-        # retrieve  indices corresponding to current time
-        # time before an animation
+        # Retrieve indices corresponding to current time
+        # If the time is before the first Timestamp use the first Timestamp
         if fp.Time <= fp.Timestamps[0]:
             indices = [0, 0]
             weights = [1, 0]
 
-        # time after an animation
+        # If the time is after the last Timpestamp use the last Timestamp
         elif fp.Time >= fp.Timestamps[-1]:
             indices = [-1, -1]
             weights = [1, 0]
 
-        # time during an animation
+        # If time is in the range of Timesteps
         else:
+            # Find the index of the closest higher value
             indices = [bisect(fp.Timestamps, fp.Time)]
+            # Add the previous index
             indices.insert(0, indices[0]-1)
             weights = [fp.Timestamps[indices[1]] - fp.Time,
                        fp.Time - fp.Timestamps[indices[0]]]
@@ -560,19 +579,20 @@ class TrajectoryProxy:
         return indices, weights
 
 
-class ViewProviderTrajectory:
+class ViewProviderTrajectoryProxy:
     """
-    ViewProviderTrajectory is a Proxy object made to be connected to
+    ViewProviderTrajectoryProxy is a Proxy object made to be connected to
     `Part::FeaturePython` Trajectory object's ViewObject.
 
     To connect them use:
 
     >>> a=FreeCAD.ActiveDocument.addObject("App::FeaturePython",
                                            "Trajectory")
-    >>> ViewProviderTrajectory(a.ViewObject)
+    >>> ViewProviderTrajectoryProxy(a.ViewObject)
     """
 
     panel = None
+    feature_python = None
 
     # standard methods---------------------------------------------------------
     def __init__(self, vp):
@@ -675,7 +695,7 @@ class ViewProviderTrajectory:
 
         vp.Object.Proxy.setProperties(vp.Object)
         self.setProperties(vp)
-        self.Object = vp.Object
+        self.feature_python = vp.Object
 
     def updateData(self, fp, prop):
         """
@@ -748,15 +768,13 @@ class ViewProviderTrajectory:
                 vp.Object.ShowFrame = vp.Visibility
 
     def claimChildren(self):
-        if hasattr(self, "Object"):
-            if self.Object:
-                return self.Object.Group
+        if hasattr(self, "feature_python") and self.feature_python:
+            return self.feature_python.Group
         return []
 
     def canDropObject(self, obj):
-
         if hasattr(obj, "Proxy") and \
-           isinstance(obj.Proxy, self.Object.Proxy.__class__):
+           isinstance(obj.Proxy, self.feature_python.Proxy.__class__):
             return True
         return False
 
@@ -798,41 +816,71 @@ class ViewProviderTrajectory:
         """
 Double clicked.
         """
+        # Switch to the Task View if a Trajectory panel is already opened
         if self.panel:
             FreeCADGui.Control.showTaskView()
 
+        # Try to open new Trajectory panel
         else:
+            # Check there is a valid trajectory
+            if not vp.Object.ValidTrajectory:
+                QMessageBox.warning(
+                    None,
+                    'Error while opening trajectory panel',
+                    "Valid trajectory is necessary to open "
+                    + "a trajectory panel.")
+                return
+
+            # Load the QDialog from a file and name it after this object
             new_form = [FreeCADGui.PySideUic.loadUi(path.join(_PATH_UI,
                                                     "AnimationTrajectory.ui"))]
             new_form[0].setWindowTitle(vp.Object.Label)
+
+            # Create a control panel and try to show it
             self.panel = ControlPanel([vp.Object], new_form)
             try:
                 FreeCADGui.Control.showDialog(self.panel)
             except RuntimeError as e:
+                # Reset the panel
                 self.panel = None
+
+                # Find all Trajectory feature python objects with
+                # a reference to a Trajectory panel
                 trajectories = []
                 for obj in FreeCAD.ActiveDocument.Objects:
                     if hasattr(obj, "Proxy") and \
-                            obj.Proxy.__class__.__name__ == "Trajectory":
+                            obj.Proxy.__class__.__name__ == "TrajectoryProxy":
                         if obj.ViewObject.Proxy.panel is not None:
                             trajectories.append(obj)
+
                 if len(trajectories) > 0:
+                    # Close opened Trajecotry panel
                     trajectories[0].ViewObject.Proxy.panel.reject()
+
+                    # Load the QDialog form for each Trajectory which
+                    # had a reference to the panel
                     forms = []
-                    tps = []
-                    for traj in trajectories:
+                    for trajectory in trajectories:
                         form = FreeCADGui.PySideUic.loadUi(
                                 path.join(_PATH_UI, "AnimationTrajectory.ui"))
-                        form.setWindowTitle(traj.Label)
+                        form.setWindowTitle(trajectory.Label)
                         forms.append(form)
-                        tps.append(traj)
+
+                    # Load one more QDialog for this Trajectory
                     forms.append(new_form[0])
-                    tps.append(vp.Object)
-                    self.panel = ControlPanel(tps, forms)
-                    for traj in trajectories:
-                        traj.ViewObject.Proxy.panel = self.panel
+
+                    # Add this Trajectory to the list of trajectories
+                    trajectories.append(vp.Object)
+
+                    # Add a reference to the new panel to view providers
+                    # of all trajectories
+                    self.panel = ControlPanel(trajectories, forms)
+                    for trajectory in trajectories:
+                        trajectory.ViewObject.Proxy.panel = self.panel
                     FreeCADGui.Control.showDialog(self.panel)
                     return True
+
+                # Diffeerent Task panel is opened, inform the user
                 else:
                     QMessageBox.warning(
                         None,
@@ -873,7 +921,7 @@ class TrajectoryCommand(object):
         a = doc.addObject("App::DocumentObjectGroupPython", "Trajectory")
         TrajectoryProxy(a)
         if FreeCAD.GuiUp:
-            ViewProviderTrajectory(a.ViewObject)
+            ViewProviderTrajectoryProxy(a.ViewObject)
         doc.recompute()
         return
 

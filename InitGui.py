@@ -79,7 +79,6 @@ are added to the FreeCAD Gui by importing their modules. The names
 of imported commands are then saved in the `list` attribute.
 Afterwards a toolbar and a menu with some of those commands are created.
         """
-        FreeCAD.Console.PrintError("Whatever\n")
         # import here all the needed files that create your FreeCAD commands
         import Server
         import Control

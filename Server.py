@@ -50,18 +50,18 @@ Proxy class for a `FeaturePython` Server instance.
 
 A ServerProxy instance adds properties to a `FeaturePython` Server
 instance and responds to theirs changes. It creates a
-communication.CommandServer `server` when `Running` is set to True by double
-clicking on it in Tree View or right clicking and selecting *Connect Server*
-option from context menu. It closes the `server` when `Running` is set to
-False or `observer` detects that a document with Server instance is closing
+communication. CommandServer `cmd_server` when `Running` is set to True by
+double-clicking on it in Tree View or right clicking and selecting
+*Connect Server* option from context menu. It closes the `cmd_server` when
+`Running` is set to False or an `AnimateDocumentObserver` detects that
+a document with Server instance is closing
 
-Because communication.CommandServer `server` occupies a `Port` at selected
+Because communication.CommandServer `cmd_server` occupies a `Port` at selected
 `Address`, you cannot have duplicit Servers running simultaneously in a file,
 a FreeCAD window nor on one computer.
 
 Attributes:
-    server: A communication.CommandServer instance to handle incoming commands.
-    observer: A ServersDocumentObserver instance detecting closing document.
+    cmd_server: A CommandServer instance to handle external commands.
 
 To connect this `Proxy` object to a `FeaturePython` Server do:
 
@@ -69,8 +69,7 @@ To connect this `Proxy` object to a `FeaturePython` Server do:
         ServerProxy(a)
     """
 
-    server = None
-    observer = None
+    cmd_server = None
 
     def __init__(self, fp):
         """
@@ -92,7 +91,7 @@ Method called when document is restored to make sure everything is as it was.
 
 Reinitialization method - it creates properties and sets them to
 default, if they were not restored automatically. It restarts a
-server if it was running when document was closed. Properties of
+cmd_server if it was running when document was closed. Properties of
 connected `ViewObject` are also recreated and reset if necessary.
 
 Args:
@@ -103,15 +102,16 @@ Args:
 
     def onDocumentClosed(self):
         """
-Method called by `observer` when document with this class instance is closing.
+Method called by `AnimateDocumentObserver` when document with this class
+instance is closing.
 
 This method is to be called from ServersDocumentObserver so that
 the `Port` is freed when document is closed.
         """
-        # Check there is a server to close and close it
-        if isinstance(self.server, com.CommandServer):
+        # Check there is a cmd_server to close and close it
+        if isinstance(self.cmd_server, com.CommandServer):
             FreeCAD.Console.PrintMessage("Closing server with it's document\n")
-            self.server.close()
+            self.cmd_server.close()
 
     def setProperties(self, fp):
         """
@@ -119,8 +119,8 @@ Method to set properties during initialization or document restoration.
 
 The properties are set if they are not already present. Constrained properties
 have their boundaries reset even if present, because constrains are not saved.
-Also `server` is restarted if it was running previously and `observer` is
-recreated.
+Also `cmd_server` is restarted if it was running previously and
+an `AnimateDocumentObserver` is recreated.
 
 Args:
     fp : A restored or barebone `FeaturePython` Server object.
@@ -128,7 +128,7 @@ Args:
         # Check properties are present and create them if not
         if not hasattr(fp, "Address"):
             fp.addProperty("App::PropertyString", "Address", "Server settings",
-                           "Address address where the server will listen for "
+                           "Address where the server will listen for "
                            + "connection.\nValid values are Addressv4 and "
                            + "Addressv6 addresses or 'localhost'."
                            ).Address = "localhost"
@@ -153,16 +153,16 @@ Args:
         # by double clicking
         fp.setEditorMode("Running", 1)
 
-        # try to start server, if it was running before closing
+        # try to start cmd_server, if it was running before closing
         if fp.Running:
-            self.server = com.startServer(fp.Address, fp.Port)
-            if self.server == com.SERVER_ERROR_INVALID_ADDRESS:
+            self.cmd_server = com.startServer(fp.Address, fp.Port)
+            if self.cmd_server == com.SERVER_ERROR_INVALID_ADDRESS:
                 fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
                                                       "Server.xpm")
                 QMessageBox.warning(None, 'Error while starting server',
                                     "The address was not in supported format.")
                 fp.Running = False
-            elif self.server == com.SERVER_ERROR_PORT_OCCUPIED:
+            elif self.cmd_server == com.SERVER_ERROR_PORT_OCCUPIED:
                 fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
                                                       "Server.xpm")
                 QMessageBox.warning(None, 'Error while starting server',
@@ -175,7 +175,7 @@ Args:
                 fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
                                                       "ServerRunning.xpm")
 
-        # Make an document observer to be notified when it will be closed
+        # Make an document observer to be notified when document will be closed
         import AnimateDocumentObserver
         AnimateDocumentObserver.addObserver()
         FreeCAD.animate_observer.addServerToNotify(self,
@@ -189,9 +189,8 @@ This method is used by JSON to serialize unserializable objects during
 autosave. Without this an Error would rise when JSON would try to do
 that itself.
 
-We need this for unserializable `server` and `observer` attributes,
-but we don't serialize them, because it's enough to reset them
-when object is restored.
+We need this for unserializable `cmd_server` attribute, but we don't
+serialize them, because it's enough to reset it when object is restored.
 
 Returns:
     None, because we don't serialize anything.
@@ -203,7 +202,7 @@ Returns:
 Necessary method to avoid errors when trying to restore unserializable objects.
 
 This method is used during a document restoration. We need this for
-unserializable `server` and `observer` attributes, but we do not restore them,
+unserializable `cmd_server` attribute, but we do not restore it,
 because it's enough to reset them from saved parameters.
 
 Returns:
@@ -218,7 +217,7 @@ Proxy class for a `Gui.ViewProviderDocumentObject` Server.ViewObject.
 
 A ViewProviderServerProxy instance changes a `FeaturePython` Server's icon in
 Tree view to show if Server is `Running` or not. It also closes/starts
-ServerProxy's `server` if the `FeaturePython` is double-clicked, deleted or
+ServerProxy's `cmd_server` if the `FeaturePython` is double-clicked, deleted or
 chosen to be connected/disconnected through its context view. The context view
 is also provided by this class.
 
@@ -253,7 +252,7 @@ Args:
         """
 Method called when `FeaturePython` Server is about to be deleted.
 
-This method is used to close ServerProxy's `server` as not to leave a `Port`
+This method is used to close ServerProxy's `cmd_server` as not to leave a `Port`
 occupied.
 
 Args:
@@ -265,14 +264,14 @@ Returns:
         """
         if vp.Object.Running:
             FreeCAD.Console.PrintMessage("Deleting server safely.\n")
-            vp.Object.Proxy.server.close()
+            vp.Object.Proxy.cmd_server.close()
         return True
 
     def doubleClicked(self, vp):
         """
 Method called when `FeaturePython` Server is double-clicked in the Tree View.
 
-This methods tries to start ServerProxy's `server` if it wasn't running and
+This methods tries to start ServerProxy's `cmd_server` if it wasn't running and
 closes it in the opposite case. It shows warning dialogs if something failed.
 If action is successful, then the icon in the Tree View is changed
 (You may need to recompute the document to see the change).
@@ -285,14 +284,14 @@ Returns:
     True to specify that it was implemented and executed.
         """
         if not vp.Object.Running:
-            vp.Object.Proxy.server = com.startServer(vp.Object.Address,
+            vp.Object.Proxy.cmd_server = com.startServer(vp.Object.Address,
                                                      vp.Object.Port)
-            if isinstance(vp.Object.Proxy.server, int):
-                if vp.Object.Proxy.server == com.SERVER_ERROR_INVALID_ADDRESS:
+            if isinstance(vp.Object.Proxy.cmd_server, int):
+                if vp.Object.Proxy.cmd_server == com.SERVER_ERROR_INVALID_ADDRESS:
                     QMessageBox.warning(None, 'Error while starting server',
                                         "The address was not in supported "
                                         + "format.")
-                elif vp.Object.Proxy.server == com.SERVER_ERROR_PORT_OCCUPIED:
+                elif vp.Object.Proxy.cmd_server == com.SERVER_ERROR_PORT_OCCUPIED:
                     QMessageBox.warning(None, 'Error while starting server',
                                         "The port requested is already "
                                         + "occupied.")
@@ -302,7 +301,7 @@ Returns:
                 vp.Object.Running = True
                 self._icon = path.join(PATH_TO_ICONS, "ServerRunning.xpm")
         elif vp.Object.Running:
-            vp.Object.Proxy.server.close()
+            vp.Object.Proxy.cmd_server.close()
             vp.Object.setEditorMode("Address", 0)
             vp.Object.setEditorMode("Port", 0)
             vp.Object.Running = False

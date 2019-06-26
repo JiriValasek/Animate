@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>dlg_trajectory</class>
+ <widget class="QDialog" name="dlg_trajectory">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="lyt_main">
    <item>
     <widget class="QLabel" name="lbl_time">
      <property name="enabled">
@@ -59,7 +59,8 @@
       <cursorShape>PointingHandCursor</cursorShape>
      </property>
      <property name="toolTip">
-      <string>Seek through the animation range.</string>
+      <string>Choose time from
+trajectory range.</string>
      </property>
      <property name="maximum">
       <number>100</number>

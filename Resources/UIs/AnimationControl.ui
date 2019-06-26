@@ -28,7 +28,7 @@
   <property name="modal">
    <bool>false</bool>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="lyt_main">
    <property name="sizeConstraint">
     <enum>QLayout::SetMaximumSize</enum>
    </property>
