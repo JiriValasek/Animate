@@ -150,6 +150,9 @@ class TrajectoryProxy:
     TrajectoryProxy is a Proxy object made to be connected to
     `Part::FeaturePython` Trajectory object.
 
+Attributes:
+    pose
+
     To connect them use:
 
     >>> a=FreeCAD.ActiveDocument.addObject("App::FeaturePython",
@@ -194,19 +197,24 @@ class TrajectoryProxy:
         """
         # Check that a trajectory has valid format
         if self.is_trajectory_property(prop):
-            traj = {}
-            traj["RotationAngle"] = fp.RotationAngle
-            traj["RotationAxisX"] = fp.RotationAxisX
-            traj["RotationAxisY"] = fp.RotationAxisY
-            traj["RotationAxisZ"] = fp.RotationAxisZ
-            traj["RotationPointX"] = fp.RotationPointX
-            traj["RotationPointY"] = fp.RotationPointY
-            traj["RotationPointZ"] = fp.RotationPointZ
-            traj["TranslationX"] = fp.TranslationX
-            traj["TranslationY"] = fp.TranslationY
-            traj["TranslationZ"] = fp.TranslationZ
-            traj["Timestamps"] = fp.Timestamps
-            traj_valid = self.is_ValidTrajectory(traj)
+#            traj = {}
+#            traj["RotationAngle"] = fp.RotationAngle
+#            traj["RotationAxisX"] = fp.RotationAxisX
+#            traj["RotationAxisY"] = fp.RotationAxisY
+#            traj["RotationAxisZ"] = fp.RotationAxisZ
+#            traj["RotationPointX"] = fp.RotationPointX
+#            traj["RotationPointY"] = fp.RotationPointY
+#            traj["RotationPointZ"] = fp.RotationPointZ
+#            traj["TranslationX"] = fp.TranslationX
+#            traj["TranslationY"] = fp.TranslationY
+#            traj["TranslationZ"] = fp.TranslationZ
+#            traj["Timestamps"] = fp.Timestamps
+            traj_valid = self.is_ValidTrajectory(
+                    fp.Timestamps, fp.TranslationX, fp.TranslationY,
+                    fp.TranslationZ, fp.RotationPointX, fp.RotationPointY,
+                    fp.RotationPointZ, fp.RotationAxisX, fp.RotationAxisY,
+                    fp.RotationAxisZ, fp.RotationAngle)
+#            traj_valid = self.is_ValidTrajectory(trajectory=traj)
             if traj_valid != fp.ValidTrajectory:
                 fp.ValidTrajectory = traj_valid
 
@@ -252,30 +260,39 @@ class TrajectoryProxy:
 
         # Update placement according to current time and trajectory
         indices, weights = self.find_timestamp_indices_and_weights(fp)
+
+        self.pose["position"] = (weights[0]*fp.TranslationX[indices[0]] +
+                                 weights[1]*fp.TranslationX[indices[1]],
+                                 weights[0]*fp.TranslationY[indices[0]] +
+                                 weights[1]*fp.TranslationY[indices[1]],
+                                 weights[0]*fp.TranslationZ[indices[0]] +
+                                 weights[1]*fp.TranslationZ[indices[1]])
+        self.pose["rot_axis"] = (weights[0]*fp.RotationAxisX[indices[0]]
+                                 + weights[1]*fp.RotationAxisX[indices[1]],
+                                 weights[0]*fp.RotationAxisY[indices[0]]
+                                 + weights[1]*fp.RotationAxisY[indices[1]],
+                                 weights[0]*fp.RotationAxisZ[indices[0]]
+                                 + weights[1]*fp.RotationAxisZ[indices[1]])
+        self.pose["rot_point"] = (weights[0]*fp.RotationPointX[indices[0]]
+                                  + weights[1]*fp.RotationPointX[indices[1]],
+                                  weights[0]*fp.RotationPointY[indices[0]]
+                                  + weights[1]*fp.RotationPointY[indices[1]],
+                                  weights[0]*fp.RotationPointZ[indices[0]]
+                                  + weights[1]*fp.RotationPointZ[indices[1]])
+        self.pose["rot_angle"] = (weights[0]*fp.RotationAngle[indices[0]]
+                                  + weights[1]*fp.RotationAngle[indices[1]])
+
         fp.ObjectPlacement = FreeCAD.Placement(
-                        FreeCAD.Vector(
-                            weights[0]*fp.TranslationX[indices[0]] +
-                            weights[1]*fp.TranslationX[indices[1]],
-                            weights[0]*fp.TranslationY[indices[0]] +
-                            weights[1]*fp.TranslationY[indices[1]],
-                            weights[0]*fp.TranslationZ[indices[0]] +
-                            weights[1]*fp.TranslationZ[indices[1]]),
-                        FreeCAD.Rotation(FreeCAD.Vector(
-                            weights[0]*fp.RotationAxisX[indices[0]] +
-                            weights[1]*fp.RotationAxisX[indices[1]],
-                            weights[0]*fp.RotationAxisY[indices[0]] +
-                            weights[1]*fp.RotationAxisY[indices[1]],
-                            weights[0]*fp.RotationAxisZ[indices[0]] +
-                            weights[1]*fp.RotationAxisZ[indices[1]]),
-                            weights[0]*fp.RotationAngle[indices[0]] +
-                            weights[1]*fp.RotationAngle[indices[1]]),
-                        FreeCAD.Vector(
-                            weights[0]*fp.RotationPointX[indices[0]] +
-                            weights[1]*fp.RotationPointX[indices[1]],
-                            weights[0]*fp.RotationPointY[indices[0]] +
-                            weights[1]*fp.RotationPointY[indices[1]],
-                            weights[0]*fp.RotationPointZ[indices[0]] +
-                            weights[1]*fp.RotationPointZ[indices[1]]))
+            FreeCAD.Vector(self.pose["position"][0],
+                           self.pose["position"][1],
+                           self.pose["position"][2]),
+            FreeCAD.Rotation(FreeCAD.Vector(self.pose["rot_axis"][0],
+                                            self.pose["rot_axis"][1],
+                                            self.pose["rot_axis"][2]),
+                             self.pose["rot_angle"]),
+            FreeCAD.Vector(self.pose["rot_point"][0],
+                           self.pose["rot_point"][1],
+                           self.pose["rot_point"][2],))
         fp.Placement = fp.ParentFramePlacement.multiply(
                        fp.ObjectPlacement)
 
@@ -285,12 +302,18 @@ class TrajectoryProxy:
 
     # supporting methods-------------------------------------------------------
     def setProperties(self, fp):
+
+        self.pose = {"position":  (0, 0, 0),
+                     "rot_axis":  (0, 0, 0),
+                     "rot_point": (0, 0, 0),
+                     "rot_angle": None}
+
         # Add (and preset) properties
+        # Animation properties
         if not hasattr(fp, "ValidTrajectory"):
             fp.addProperty("App::PropertyBool", "ValidTrajectory", "General",
                            "This property records if trajectory was changed."
                            ).ValidTrajectory = False
-
         if not hasattr(fp, "AnimatedObjects"):
             fp.addProperty("App::PropertyLinkList", "AnimatedObjects",
                            "General", "Objects that will be animated.")
@@ -298,14 +321,27 @@ class TrajectoryProxy:
             fp.addProperty("App::PropertyBool", "Interpolate", "General",
                            "Interpolate trajectory between timestamps."
                            ).Interpolate = True
-        if not hasattr(fp, "ReceiveUpdates"):
-            fp.addProperty("App::PropertyBool", "ReceiveUpdates", "General",
-                           "Should this object receive updates from a server."
-                           ).ReceiveUpdates = True
+        if not hasattr(fp, "AllowServer"):
+            fp.addProperty("App::PropertyBool", "AllowServer", "General",
+                           "Should this object allow a Server object to "
+                           + "change it.").AllowServer = True
+        if not hasattr(fp, "AllowControl"):
+            fp.addProperty("App::PropertyBool", "AllowControl", "General",
+                           "Should this object allow a Control object "
+                           + " to change it."
+                           ).AllowControl = True
         if not hasattr(fp, "Time"):
             fp.addProperty("App::PropertyFloat", "Time", "General",
                            "Animation time in seconds.").Time = 0
+        if not hasattr(fp, "ParentFramePlacement"):
+            fp.addProperty("App::PropertyPlacement", "ParentFramePlacement",
+                           "General", "Current placement of a Parent Frame.")
+        if not hasattr(fp, "ObjectPlacement"):
+            fp.addProperty("App::PropertyPlacement", "ObjectPlacement",
+                           "General",
+                           "Current Object placement in a Parent Frame.")
 
+        # Trajectory properties
         if not hasattr(fp, "Timestamps"):
             fp.addProperty("App::PropertyFloatList", "Timestamps",
                            "Trajectory", "Timestamps at which we define\n" +
@@ -350,6 +386,7 @@ class TrajectoryProxy:
                            "Trajectory",
                            "Rotation angle in degrees.")
 
+        # Frame properties
         if not hasattr(fp, "ShowFrame"):
             fp.addProperty("App::PropertyBool", "ShowFrame", "Frame",
                            "Show a frame for current pose."
@@ -358,23 +395,24 @@ class TrajectoryProxy:
             fp.addProperty("App::PropertyPercent", "FrameTransparency",
                            "Frame", "Transparency of the frame in percents."
                            ).FrameTransparency = 0
-        if not hasattr(fp, "ShowArrowheads"):
-            fp.addProperty("App::PropertyBool", "ShowArrowheads", "Frame",
+        if not hasattr(fp, "ShowFrameArrowheads"):
+            fp.addProperty("App::PropertyBool", "ShowFrameArrowheads", "Frame",
                            "Show arrowheads for frame axis arrow's."
-                           ).ShowArrowheads = True
-        if not hasattr(fp, "ArrowheadLength"):
-            fp.addProperty("App::PropertyFloatConstraint", "ArrowheadLength",
-                           "Frame", "Frame axis arrow's arrowhead length."
-                           ).ArrowheadLength = (10, 1.0, 1e6, 1)
+                           ).ShowFrameArrowheads = True
+        if not hasattr(fp, "FrameArrowheadLength"):
+            fp.addProperty("App::PropertyFloatConstraint",
+                           "FrameArrowheadLength", "Frame",
+                           "Frame axis arrow's arrowhead length."
+                           ).FrameArrowheadLength = (10, 1.0, 1e6, 1)
         else:
-            fp.ArrowheadLength = (fp.ArrowheadLength, 1.0, 1e6, 1)
-        if not hasattr(fp, "ArrowheadRadius"):
-            fp.addProperty("App::PropertyFloatConstraint", "ArrowheadRadius",
-                           "Frame",
+            fp.FrameArrowheadLength = (fp.FrameArrowheadLength, 1.0, 1e6, 1)
+        if not hasattr(fp, "FrameArrowheadRadius"):
+            fp.addProperty("App::PropertyFloatConstraint",
+                           "FrameArrowheadRadius", "Frame",
                            "Frame axis arrow's arrowhead bottom radius."
-                           ).ArrowheadRadius = (5, 0.5, 1e6, 0.5)
+                           ).FrameArrowheadRadius = (5, 0.5, 1e6, 0.5)
         else:
-            fp.ArrowheadRadius = (fp.ArrowheadRadius, 0.5, 1e6, 0.5)
+            fp.FrameArrowheadRadius = (fp.FrameArrowheadRadius, 0.5, 1e6, 0.5)
         if not hasattr(fp, "ShaftLength"):
             fp.addProperty("App::PropertyFloatConstraint", "ShaftLength",
                            "Frame", "Frame axis arrow's shaft length."
@@ -387,20 +425,97 @@ class TrajectoryProxy:
                            ).ShaftWidth = (4, 1.0, 64, 1)
         else:
             fp.ShaftWidth = (fp.ShaftWidth, 1.0, 64, 1)
+        if not hasattr(fp, "ShowFrameLabels"):
+            fp.addProperty("App::PropertyBool", "ShowFrameLabels",
+                           "Frame", "Show label for frame axes."
+                           ).ShowFrameLabels = True
 
+        # Rotation axis properties
+        if not hasattr(fp, "ShowRotationAxis"):
+            fp.addProperty("App::PropertyBool", "ShowRotationAxis",
+                           "RotationAxis",
+                           "Show currently used rotation axis."
+                           ).ShowRotationAxis = True
+        if not hasattr(fp, "AxisLength"):
+            fp.addProperty("App::PropertyFloatConstraint", "AxisLength",
+                           "RotationAxis", "The rotation axis length."
+                           ).AxisLength = (20, 1.0, 1e6, 1)
+        else:
+            fp.AxisLength = (fp.AxisLength, 1.0, 1e6, 1)
+        if not hasattr(fp, "AxisWidth"):
+            fp.addProperty("App::PropertyFloatConstraint", "AxisWidth",
+                           "RotationAxis", "The rotation axis width."
+                           ).AxisWidth = (4, 1.0, 64, 1)
+        else:
+            fp.AxisWidth = (fp.AxisWidth, 1.0, 64, 1)
+        if not hasattr(fp, "AxisColor"):
+            fp.addProperty("App::PropertyColor", "AxisColor",
+                           "RotationAxis", "The rotation axis width."
+                           ).AxisColor = (1.000, 0.667, 0.000)
+        if not hasattr(fp, "AxisTransparency"):
+            fp.addProperty("App::PropertyPercent", "AxisTransparency",
+                           "RotationAxis",
+                           "Transparency of the rotation axis in percents."
+                           ).AxisTransparency = 0
+        if not hasattr(fp, "ShowAxisArrowhead"):
+            fp.addProperty("App::PropertyBool", "ShowAxisArrowhead",
+                           "RotationAxis", "Show arrowhead for axis arrow."
+                           ).ShowAxisArrowhead = True
+        if not hasattr(fp, "AxisArrowheadLength"):
+            fp.addProperty("App::PropertyFloatConstraint",
+                           "AxisArrowheadLength", "RotationAxis",
+                           "Frame axis arrow's arrowhead length."
+                           ).AxisArrowheadLength = (10, 1.0, 1e6, 1)
+        else:
+            fp.AxisArrowheadLength = (fp.AxisArrowheadLength, 1.0, 1e6, 1)
+        if not hasattr(fp, "AxisArrowheadRadius"):
+            fp.addProperty("App::PropertyFloatConstraint",
+                           "AxisArrowheadRadius", "RotationAxis",
+                           "Frame axis arrow's arrowhead bottom radius."
+                           ).AxisArrowheadRadius = (5, 0.5, 1e6, 0.5)
+        else:
+            fp.AxisArrowheadRadius = (fp.AxisArrowheadRadius, 0.5, 1e6, 0.5)
+        if not hasattr(fp, "ShowAxisLabel"):
+            fp.addProperty("App::PropertyBool", "ShowAxisLabel",
+                           "RotationAxis", "Show label for rotation axis."
+                           ).ShowAxisLabel = True
+
+        # Label properties
+        if not hasattr(fp, "FontSize"):
+            fp.addProperty("App::PropertyIntegerConstraint", "FontSize",
+                           "Labels", "Label font size."
+                           ).FontSize = (10, 1, 100, 1)
+        else:
+            fp.FontSize = (fp.FontSize, 1, 100, 1)
+        if not hasattr(fp, "DistanceToAxis"):
+            fp.addProperty("App::PropertyFloatConstraint", "DistanceToAxis",
+                           "Labels", "Distance from label to its axis."
+                           ).DistanceToAxis = (5, 0.5, 1e6, 0.5)
+        else:
+            fp.DistanceToAxis = (fp.DistanceToAxis, 0.5, 1e6, 0.5)
+        if not hasattr(fp, "Subscription"):
+            fp.addProperty("App::PropertyString", "Subscription", "Labels",
+                           "Subscription added to an axis name."
+                           ).Subscription = ""
+        if not hasattr(fp, "Superscription"):
+            fp.addProperty("App::PropertyString", "Superscription", "Labels",
+                           "Superscription added to an axis name."
+                           ).Superscription = ""
+        if not hasattr(fp, "FontFamily"):
+            fp.addProperty("App::PropertyEnumeration", "FontFamily",
+                           "Labels", "Label font family."
+                           ).FontFamily = ["SERIF", "SANS", "TYPEWRITER"]
+        if not hasattr(fp, "FontStyle"):
+            fp.addProperty("App::PropertyEnumeration", "FontStyle",
+                           "Labels", "Label font style."
+                           ).FontStyle = ["NONE", "BOLD", "ITALIC",
+                                          "BOLD ITALIC"]
+
+        # Placement properties
         if not hasattr(fp, "Placement"):
             fp.addProperty("App::PropertyPlacement", "Placement", "Base",
                            "Current placement for animated objects in "
                            + "world frame.")
-
-        if not hasattr(fp, "ParentFramePlacement"):
-            fp.addProperty("App::PropertyPlacement", "ParentFramePlacement",
-                           "General", "Current placement of a Parent Frame.")
-
-        if not hasattr(fp, "ObjectPlacement"):
-            fp.addProperty("App::PropertyPlacement", "ObjectPlacement",
-                           "General",
-                           "Current Object placement in a Parent Frame.")
 
         # Make some properties read-only
         fp.setEditorMode("ObjectPlacement", 1)
@@ -431,7 +546,7 @@ class TrajectoryProxy:
             All these keys must be paired with lists of a same length.
         """
         # Check that trajectory has a correct format and load it
-        if self.is_ValidTrajectory(traj):
+        if self.is_ValidTrajectory(trajectory=traj):
             fp.RotationAngle = traj["RotationAngle"]
             fp.RotationAxisX = traj["RotationAxisX"]
             fp.RotationAxisY = traj["RotationAxisY"]
@@ -469,7 +584,12 @@ class TrajectoryProxy:
                         "RotationPointZ", "RotationAxisX", "RotationAxisY",
                         "RotationAxisZ", "RotationAngle"]
 
-    def is_ValidTrajectory(self, x):
+    def is_ValidTrajectory(self, timestamps=[], translation_x=[],
+                           translation_y=[], translation_z=[],
+                           rotation_point_x=[], rotation_point_y=[],
+                           rotation_point_z=[], rotation_axis_x=[],
+                           rotation_axis_y=[], rotation_axis_z=[],
+                           rotation_angle=[], trajectory=None):
         """
         is_ValidTrajectory(self, x)
 
@@ -491,38 +611,62 @@ class TrajectoryProxy:
             otherwise.
         """
         # Check all keys are included and record lengths of their lists
-        list_lengths = []
-        for key in ["Timestamps", "TranslationX", "TranslationY",
-                    "TranslationZ", "RotationPointX", "RotationPointY",
-                    "RotationPointZ", "RotationAxisX", "RotationAxisY",
-                    "RotationAxisZ", "RotationAngle"]:
-            if key in x.keys():
-                list_lengths.append(len(x[key]))
-            else:
-                FreeCAD.Console.PrintWarning("Trajectory misses key" +
-                                             key + ".\n")
-                return False
-
-        # Check that no key has an empty list
-        if 0 in list_lengths:
-            FreeCAD.Console.PrintWarning("Trajectory has list/lists of " +
-                                         "zero lengths.\n")
-            return False
+        if trajectory is not None and isinstance(trajectory, dict):
+            for key in ["Timestamps", "TranslationX", "TranslationY",
+                        "TranslationZ", "RotationPointX", "RotationPointY",
+                        "RotationPointZ", "RotationAxisX", "RotationAxisY",
+                        "RotationAxisZ", "RotationAngle"]:
+                if key not in trajectory.keys():
+                    FreeCAD.Console.PrintWarning("Trajectory misses key " +
+                                                 key + ".\n")
+                    return False
+            timestamps = trajectory["Timestamps"]
+            translation_x = trajectory["TranslationX"]
+            translation_y = trajectory["TranslationY"]
+            translation_z = trajectory["TranslationZ"]
+            rotation_point_x = trajectory["RotationPointX"]
+            rotation_point_y = trajectory["RotationPointY"]
+            rotation_point_z = trajectory["RotationPointZ"]
+            rotation_axis_x = trajectory["RotationAxisX"]
+            rotation_axis_y = trajectory["RotationAxisY"]
+            rotation_axis_z = trajectory["RotationAxisZ"]
+            rotation_angle = trajectory["RotationAngle"]
 
         # Check that all lists have the same length
-        if any([len_ != list_lengths[0] for len_ in list_lengths]):
-            FreeCAD.Console.PrintWarning("Trajectory has lists " +
-                                         "with inconsistent lengths.\n")
+        if len(timestamps) == 0 or \
+                (len(timestamps) != 0 and
+                 (len(timestamps) != len(timestamps) or
+                  len(timestamps) != len(translation_x) or
+                  len(timestamps) != len(translation_y) or
+                  len(timestamps) != len(translation_z) or
+                  len(timestamps) != len(rotation_point_x) or
+                  len(timestamps) != len(rotation_point_y) or
+                  len(timestamps) != len(rotation_point_z) or
+                  len(timestamps) != len(rotation_axis_x) or
+                  len(timestamps) != len(rotation_axis_y) or
+                  len(timestamps) != len(rotation_axis_z) or
+                  len(timestamps) != len(rotation_angle))):
+            FreeCAD.Console.PrintWarning("Trajectory has lists with "
+                                         + "inconsistent or zero "
+                                         + "lengths.\n")
             return False
 
         # Check timestamps correspond to list of increasing values
-        if any([x["Timestamps"][i] >= x["Timestamps"][i+1]
-                for i in range(len(x["Timestamps"])-1)]):
-            FreeCAD.Console.PrintWarning("Trajectory 'Timestamps' is not " +
-                                         "list of increasing values.\n")
+        if any([timestamps[i] >= timestamps[i+1]
+                for i in range(len(timestamps)-1)]):
+            FreeCAD.Console.PrintWarning("Trajectory 'Timestamps' is not "
+                                         + "list of increasing values.\n")
             return False
-        else:
-            return True
+
+        if any([sum([rotation_axis_x[i]**2,
+                     rotation_axis_y[i]**2,
+                     rotation_axis_z[i]**2]) != 1
+                for i in range(len(rotation_axis_x))]):
+            FreeCAD.Console.PrintWarning("Trajectory 'Rotation Axis' "
+                                         + "elements don't have norm 1.\n")
+            return False
+
+        return True
 
     def find_timestamp_indices_and_weights(self, fp):
         """
@@ -626,72 +770,29 @@ class ViewProviderTrajectoryProxy:
         vp : ViewProviderDocumentObject
             View provider object to which this is a `Proxy`.
         """
-        # TODO add text2D at the end of arrows/shafts, in the middle or to
-        # a position which can be set from view menu ?
-
-        # make a generic shaft from 0 in Y direction
-        shaft_vertices = coin.SoVertexProperty()
-        shaft_vertices.vertex.setNum(2)
-        shaft_vertices.vertex.set1Value(0, 0, 0, 0)
-        self.shaft = coin.SoLineSet()
-        self.shaft.vertexProperty.setValue(shaft_vertices)
-        self.shaft.numVertices.setNum(1)
-        self.shaft.numVertices.setValue(2)
-
-        # make a generic conic arrowhead oriented in Y axis direction and
-        # move it at the end of the shaft
-        trans_y = coin.SoTranslation()
-        trans_y.setName("ArrowheadTranslation")
-        arrowhead_cone = coin.SoCone()
-        arrowhead_cone.setName("ArrowheadCone")
-        self.arrowhead = coin.SoSwitch()
-        self.arrowhead.addChild(trans_y)
-        self.arrowhead.addChild(arrowhead_cone)
-
-        # make rotations to rotate prepared shaft and arrowhead for Y axis
-        # direction also to X and Z
-        rot_y2x = coin.SoRotation()
-        rot_y2x.rotation.setValue(coin.SbRotation(coin.SbVec3f(0, 1, 0),
-                                                  coin.SbVec3f(1, 0, 0)))
-        rot_y2z = coin.SoRotation()
-        rot_y2z.rotation.setValue(coin.SbRotation(coin.SbVec3f(0, 1, 0),
-                                                  coin.SbVec3f(0, 0, 1)))
-
-        # prepare colors for X,Y,Z which will correspond to R,G,B as customary
-        self.color_x = coin.SoPackedColor()
-        self.color_y = coin.SoPackedColor()
-        self.color_z = coin.SoPackedColor()
-
-        # make complete colored and rotated arrows
-        x_arrow = coin.SoSeparator()
-        x_arrow.addChild(rot_y2x)
-        x_arrow.addChild(self.color_x)
-        x_arrow.addChild(self.shaft)
-        x_arrow.addChild(self.arrowhead)
-        y_arrow = coin.SoSeparator()
-        y_arrow.addChild(self.color_y)
-        y_arrow.addChild(self.shaft)
-        y_arrow.addChild(self.arrowhead)
-        z_arrow = coin.SoSeparator()
-        z_arrow.addChild(rot_y2z)
-        z_arrow.addChild(self.color_z)
-        z_arrow.addChild(self.shaft)
-        z_arrow.addChild(self.arrowhead)
-
-        # prepare draw style to control shaft width
-        self.drawstyle = coin.SoDrawStyle()
 
         # prepare transformation to keep pose corresponding to placement
         self.tf_object2world = coin.SoTransform()
 
-        # make complete frame and it to shaded display mode
+        labels = self.makeLabels()
+        self.font = coin.SoFontStyle()
+
+        axis = self.makeRotationAxis(labels[3])
+        axis.insertChild(self.tf_object2world, 0)
+        axis.insertChild(self.font, 1)
+        self.rot_axis = coin.SoSwitch()
+        self.rot_axis.addChild(axis)
+
+        frame = self.makeFrame(labels[:3])
+        frame.insertChild(self.tf_object2world, 0)
+        frame.insertChild(self.font, 1)
         self.frame = coin.SoSwitch()
-        self.frame.addChild(self.tf_object2world)
-        self.frame.addChild(self.drawstyle)
-        self.frame.addChild(x_arrow)
-        self.frame.addChild(y_arrow)
-        self.frame.addChild(z_arrow)
-        vp.RootNode.addChild(self.frame)
+        self.frame.addChild(frame)
+
+        self.visualisations = coin.SoSwitch()
+        self.visualisations.addChild(self.rot_axis)
+        self.visualisations.addChild(self.frame)
+        vp.RootNode.addChild(self.visualisations)
 
         vp.Object.Proxy.setProperties(vp.Object)
         self.setProperties(vp)
@@ -711,44 +812,212 @@ class ViewProviderTrajectoryProxy:
         prop : String
             `prop` is a name of a changed property.
         """
-        if hasattr(fp, "ShowFrame"):
-            if fp.ShowFrame:
-                self.frame.whichChild.setValue(coin.SO_SWITCH_ALL)
-            else:
-                self.frame.whichChild.setValue(coin.SO_SWITCH_NONE)
-            if fp.ShowFrame != fp.ViewObject.Visibility:
-                fp.ViewObject.Visibility = fp.ShowFrame
-            fp.ViewObject.Visibility = fp.ShowFrame
-        if hasattr(fp, "FrameTransparency"):
-            self.color_x.orderedRGBA.\
-                setValue(0xff0000ff - (0xff*fp.FrameTransparency)//100)
-            self.color_y.orderedRGBA.\
-                setValue(0x00ff00ff - (0xff*fp.FrameTransparency)//100)
-            self.color_z.orderedRGBA.\
-                setValue(0x0000ffff - (0xff*fp.FrameTransparency)//100)
-        if hasattr(fp, "ShaftLength") and hasattr(fp, "ArrowheadLength"):
-            self.shaft.vertexProperty.getValue().vertex.\
-                set1Value(1, 0, fp.ShaftLength, 0)
-            self.arrowhead.getByName("ArrowheadTranslation").translation.\
-                setValue(0, fp.ShaftLength + fp.ArrowheadLength/2, 0)
-            self.arrowhead.getByName("ArrowheadCone").height.\
-                setValue(fp.ArrowheadLength)
-        if hasattr(fp, "ShaftWidth"):
-            self.drawstyle.lineWidth.setValue(fp.ShaftWidth)
-        if hasattr(fp, "ArrowheadRadius"):
-            self.arrowhead.getByName("ArrowheadCone").bottomRadius.\
-                setValue(fp.ArrowheadRadius)
-        if hasattr(fp, "ShowArrowheads"):
-            if fp.ShowArrowheads:
-                self.arrowhead.whichChild.setValue(coin.SO_SWITCH_ALL)
-            else:
-                self.arrowhead.whichChild.setValue(coin.SO_SWITCH_NONE)
-        if hasattr(fp, "Placement"):
+        # Placement changes
+        if prop == "Placement" and hasattr(fp, "Placement"):
             trans = fp.Placement.Base
             rot = fp.Placement.Rotation
             self.tf_object2world.translation.setValue((trans.x, trans.y,
                                                        trans.z))
             self.tf_object2world.rotation.setValue(rot.Q)
+            if len(fp.Proxy.pose["rot_point"]) == 3 and \
+                    len(fp.Proxy.pose["rot_axis"]) == 3:
+                self.tf_y2axis.rotation.setValue(
+                    coin.SbRotation(coin.SbVec3f(0, 1, 0),
+                                    coin.SbVec3f(fp.Proxy.pose["rot_axis"][0],
+                                                 fp.Proxy.pose["rot_axis"][1],
+                                                 fp.Proxy.pose["rot_axis"][2])
+                                    ))
+                self.tf_y2axis.translation.setValue(
+                        (fp.Proxy.pose["rot_point"][0],
+                         fp.Proxy.pose["rot_point"][1],
+                         fp.Proxy.pose["rot_point"][2]))
+
+        # Frame changes
+        elif prop == "ShowFrame" and hasattr(fp, "ShowFrame"):
+            if fp.ShowFrame:
+                self.frame.whichChild.setValue(coin.SO_SWITCH_ALL)
+            else:
+                self.frame.whichChild.setValue(coin.SO_SWITCH_NONE)
+
+        elif prop == "FrameTransparency" and hasattr(fp, "FrameTransparency"):
+            self.frame_color_x.orderedRGBA.\
+                setValue(0xff0000ff - (0xff*fp.FrameTransparency)//100)
+            self.frame_color_y.orderedRGBA.\
+                setValue(0x00ff00ff - (0xff*fp.FrameTransparency)//100)
+            self.frame_color_z.orderedRGBA.\
+                setValue(0x0000ffff - (0xff*fp.FrameTransparency)//100)
+
+        elif prop == "ShaftLength" and hasattr(fp, "ShaftLength"):
+            self.frame_shaft.vertexProperty.getValue().vertex.\
+                set1Value(1, 0, fp.ShaftLength, 0)
+            if hasattr(fp, "FrameArrowheadLength"):
+                self.frame_arrowhead_translation.translation.setValue(
+                    0, fp.ShaftLength + fp.FrameArrowheadLength/2, 0)
+            if not fp.ShowFrameArrowheads and hasattr(fp, "DistanceToAxis"):
+                self.label_translations[0].translation.setValue(
+                    0, fp.ShaftLength + fp.DistanceToAxis, 0)
+
+        elif prop == "FrameArrowheadLength" and \
+                hasattr(fp, "FrameArrowheadLength"):
+            self.frame_arrowhead_cone.height.setValue(fp.FrameArrowheadLength)
+            if hasattr(fp, "ShaftLength"):
+                self.frame_arrowhead_translation.translation.setValue(
+                    0, fp.ShaftLength + fp.FrameArrowheadLength/2, 0)
+            if fp.ShowFrameArrowheads and hasattr(fp, "DistanceToAxis"):
+                self.label_translations[0].translation.setValue(
+                    0, fp.FrameArrowheadLength/2 + fp.DistanceToAxis, 0)
+
+        elif prop == "ShaftWidth" and hasattr(fp, "ShaftWidth"):
+            self.frame_drawstyle.lineWidth.setValue(fp.ShaftWidth)
+
+        elif prop == "FrameArrowheadRadius" and \
+                hasattr(fp, "FrameArrowheadRadius"):
+            self.frame_arrowhead_cone.bottomRadius.setValue(
+                fp.FrameArrowheadRadius)
+
+        elif prop == "ShowFrameArrowheads" and \
+                hasattr(fp, "ShowFrameArrowheads"):
+            if fp.ShowFrameArrowheads:
+                self.frame_arrowhead.whichChild.setValue(coin.SO_SWITCH_ALL)
+                if hasattr(fp, "FrameArrowheadLength") and \
+                        hasattr(fp, "DistanceToAxis"):
+                    self.label_translations[0].translation.setValue(
+                        0, fp.FrameArrowheadLength/2 + fp.DistanceToAxis, 0)
+            else:
+                self.frame_arrowhead.whichChild.setValue(coin.SO_SWITCH_NONE)
+                if hasattr(fp, "ShaftLength") and \
+                        hasattr(fp, "DistanceToAxis"):
+                    self.label_translations[0].translation.setValue(
+                        0, fp.ShaftLength + fp.DistanceToAxis, 0)
+
+        elif prop == "ShowFrameLabels" and hasattr(fp, "ShowFrameLabels"):
+            for label in self.labels[:3]:
+                if fp.ShowFrameLabels:
+                    label.whichChild.setValue(coin.SO_SWITCH_ALL)
+                else:
+                    label.whichChild.setValue(coin.SO_SWITCH_NONE)
+
+        # Axis changes
+        elif prop == "ShowRotationAxis" and hasattr(fp, "ShowRotationAxis"):
+            if fp.ShowRotationAxis:
+                self.rot_axis.whichChild.setValue(coin.SO_SWITCH_ALL)
+            else:
+                self.rot_axis.whichChild.setValue(coin.SO_SWITCH_NONE)
+
+        elif prop == "AxisTransparency" and \
+                (hasattr(fp, "AxisColor") and hasattr(fp, "AxisTransparency")):
+            self.rot_axis_color.orderedRGBA.setValue(
+                (round(0xff*fp.AxisColor[0]) << 24)
+                + (round(0xff*fp.AxisColor[1]) << 16)
+                + (round(0xff*fp.AxisColor[2]) << 8)
+                + 0xff*(100 - fp.AxisTransparency)//100)
+
+        elif prop == "AxisColor" and \
+                (hasattr(fp, "AxisColor") and hasattr(fp, "AxisTransparency")):
+            self.rot_axis_color.orderedRGBA.setValue(
+                (round(0xff*fp.AxisColor[0]) << 24)
+                + (round(0xff*fp.AxisColor[1]) << 16)
+                + (round(0xff*fp.AxisColor[2]) << 8)
+                + 0xff*(100 - fp.AxisTransparency)//100)
+            self.axis_label_color.orderedRGBA.setValue(
+                (self.rot_axis_color.orderedRGBA.getValues()[0] & 0xFFFFFF00)
+                + 0xFF)
+
+        elif prop == "AxisWidth" and hasattr(fp, "AxisWidth"):
+            self.rot_axis_drawstyle.lineWidth.setValue(fp.AxisWidth)
+
+        elif prop == "AxisLength" and hasattr(fp, "AxisLength"):
+            self.rot_axis_shaft.vertexProperty.getValue().vertex.\
+                set1Value(1, 0, fp.AxisLength, 0)
+            if hasattr(fp, "AxisArrowheadLength"):
+                self.rot_axis_arrowhead_translation.translation.setValue(
+                    0, fp.AxisLength + fp.AxisArrowheadLength/2, 0)
+            if not fp.ShowAxisArrowhead and hasattr(fp, "DistanceToAxis"):
+                self.label_translations[1].translation.setValue(
+                    0, fp.AxisLength + fp.DistanceToAxis, 0)
+
+        elif prop == "AxisArrowheadLength" and \
+                hasattr(fp, "AxisArrowheadLength"):
+            self.rot_axis_arrowhead_cone.height.setValue(
+                fp.AxisArrowheadLength)
+            if hasattr(fp, "AxisLength"):
+                self.rot_axis_arrowhead_translation.translation.setValue(
+                    0, fp.AxisLength + fp.AxisArrowheadLength/2, 0)
+            if fp.ShowAxisArrowhead and hasattr(fp, "DistanceToAxis"):
+                self.label_translations[1].translation.setValue(
+                    0, fp.AxisArrowheadLength/2 + fp.DistanceToAxis, 0)
+
+        elif prop == "AxisArrowheadRadius" and \
+                hasattr(fp, "AxisArrowheadRadius"):
+            self.rot_axis_arrowhead_cone.bottomRadius.setValue(
+                fp.AxisArrowheadRadius)
+
+        elif prop == "ShowAxisArrowhead" and hasattr(fp, "ShowAxisArrowhead"):
+            if fp.ShowAxisArrowhead:
+                self.rot_axis_arrowhead.whichChild.setValue(
+                    coin.SO_SWITCH_ALL)
+                if hasattr(fp, "AxisArrowheadLength") and \
+                        hasattr(fp, "DistanceToAxis"):
+                    self.label_translations[1].translation.setValue(
+                        0, fp.AxisArrowheadLength/2 + fp.DistanceToAxis, 0)
+            else:
+                self.rot_axis_arrowhead.whichChild.setValue(
+                    coin.SO_SWITCH_NONE)
+                if hasattr(fp, "AxisLength") and hasattr(fp, "DistanceToAxis"):
+                    self.label_translations[1].translation.setValue(
+                        0, fp.AxisLength + fp.DistanceToAxis, 0)
+
+        elif prop == "ShowAxisLabel" and hasattr(fp, "ShowAxisLabel"):
+            if fp.ShowAxisLabel:
+                self.labels[-1].whichChild.setValue(coin.SO_SWITCH_ALL)
+            else:
+                self.labels[-1].whichChild.setValue(coin.SO_SWITCH_NONE)
+
+        # Changes to the labels
+        elif prop == "Subscription" and hasattr(fp, "Subscription"):
+            for l in self.label_texts:
+                l.string.setValues(2, 1, [fp.Subscription])
+
+        elif prop == "Superscription" and hasattr(fp, "Superscription"):
+            for l in self.label_texts:
+                l.string.setValues(0, 1, [fp.Superscription])
+
+        elif prop == "FontFamily" and hasattr(fp, "FontFamily"):
+            if fp.FontFamily == "SERIF":
+                self.font.family.setValue(self.font.SERIF)
+            if fp.FontFamily == "SANS":
+                self.font.family.setValue(self.font.SANS)
+            if fp.FontFamily == "TYPEWRITER":
+                self.font.family.setValue(self.font.TYPEWRITER)
+
+        elif prop == "FontStyle" and hasattr(fp, "FontStyle"):
+            if fp.FontStyle == "NONE":
+                self.font.style.setValue(self.font.NONE)
+            if fp.FontStyle == "BOLD":
+                self.font.style.setValue(self.font.BOLD)
+            if fp.FontStyle == "ITALIC":
+                self.font.style.setValue(self.font.ITALIC)
+            if fp.FontStyle == "BOLD ITALIC":
+                self.font.style.setValue(self.font.BOLD | self.font.ITALIC)
+
+        elif prop == "FontSize" and hasattr(fp, "FontSize"):
+            self.font.size.setValue(fp.FontSize)
+
+        elif prop == "DistanceToAxis" and hasattr(fp, "DistanceToAxis") and \
+            hasattr(fp, "ShowFrameArrowheads") and \
+                hasattr(fp, "ShowAxisArrowhead"):
+            if fp.ShowFrameArrowheads and hasattr(fp, "FrameArrowheadLength"):
+                self.label_translations[0].translation.setValue(
+                    0, fp.FrameArrowheadLength/2 + fp.DistanceToAxis, 0)
+            elif hasattr(fp, "ShaftLength"):
+                self.label_translations[0].translation.setValue(
+                    0, fp.ShaftLength + fp.DistanceToAxis, 0)
+            if fp.ShowAxisArrowhead and hasattr(fp, "AxisArrowheadLength"):
+                self.label_translations[1].translation.setValue(
+                    0, fp.AxisArrowheadLength/2 + fp.DistanceToAxis, 0)
+            elif hasattr(fp, "AxisLength"):
+                self.label_translations[1].translation.setValue(
+                    0, fp.AxisLength + fp.DistanceToAxis, 0)
 
     def onChanged(self, vp, prop):
         """
@@ -763,9 +1032,10 @@ class ViewProviderTrajectoryProxy:
             `prop` is a name of a changed property.
         """
         if prop == "Visibility":
-            # Make all children invisible
-            if vp.Object.ShowFrame != vp.Visibility:
-                vp.Object.ShowFrame = vp.Visibility
+            if vp.Visibility:
+                self.visualisations.whichChild.setValue(coin.SO_SWITCH_ALL)
+            else:
+                self.visualisations.whichChild.setValue(coin.SO_SWITCH_NONE)
 
     def claimChildren(self):
         if hasattr(self, "feature_python") and self.feature_python:
@@ -810,7 +1080,6 @@ class ViewProviderTrajectoryProxy:
     def setProperties(self, vp):
         # hide unnecessary view properties
         vp.setEditorMode("DisplayMode", 2)
-        vp.setEditorMode("Visibility", 2)
 
     def doubleClicked(self, vp):
         """
@@ -829,7 +1098,6 @@ Double clicked.
                     'Error while opening trajectory panel',
                     "Valid trajectory is necessary to open "
                     + "a trajectory panel.")
-                return
 
             # Load the QDialog from a file and name it after this object
             new_form = [FreeCADGui.PySideUic.loadUi(path.join(_PATH_UI,
@@ -906,6 +1174,140 @@ Args:
         action = menu.addAction("Select Time")
         action.triggered.connect(lambda f=self.doubleClicked,
                                  arg=vp: f(arg))
+
+    def makeLabels(self):
+        label_strings = ["X", "Y", "Z", "O"]
+        colors = [0xFF0000FF, 0x00FF00FF, 0x0000FFFF]
+        self.label_texts = []
+        self.label_translations = []
+        # frame translation
+        self.label_translations.append(coin.SoTranslation())
+        # axis translation
+        self.label_translations.append(coin.SoTranslation())
+        self.labels = []
+        for i in range(4):
+            label_group = coin.SoSeparator()
+            if i < 3:
+                label_group.addChild(self.label_translations[0])
+                frame_axis_color = coin.SoPackedColor()
+                frame_axis_color.orderedRGBA.setValue(colors[i])
+                label_group.addChild(frame_axis_color)
+            else:
+                label_group.addChild(self.label_translations[1])
+                self.axis_label_color = coin.SoPackedColor()
+                label_group.addChild(self.axis_label_color)
+            self.label_texts.append(coin.SoText2())
+            self.label_texts[i].string.setValues(
+                0, 3, ["", label_strings[i], ""])
+            self.label_texts[i].justification.setValue(
+                self.label_texts[i].CENTER)
+            self.label_texts[i].spacing.setValue(0.45)
+            label_group.addChild(self.label_texts[i])
+            self.labels.append(coin.SoSwitch())
+            self.labels[i].addChild(label_group)
+        return self.labels
+
+    def makeFrame(self, frame_labels):
+        # make a generic shaft from 0 in Y direction
+        shaft_vertices = coin.SoVertexProperty()
+        shaft_vertices.vertex.setNum(2)
+        shaft_vertices.vertex.set1Value(0, 0, 0, 0)
+        self.frame_shaft = coin.SoLineSet()
+        self.frame_shaft.vertexProperty.setValue(shaft_vertices)
+        self.frame_shaft.numVertices.setNum(1)
+        self.frame_shaft.numVertices.setValue(2)
+
+        # make a generic conic arrowhead oriented in Y axis direction and
+        # move it at the end of the shaft
+        self.frame_arrowhead_translation = coin.SoTranslation()
+        self.frame_arrowhead_cone = coin.SoCone()
+        self.frame_arrowhead = coin.SoSwitch()
+        self.frame_arrowhead.addChild(self.frame_arrowhead_translation)
+        self.frame_arrowhead.addChild(self.frame_arrowhead_cone)
+
+        # make rotations to rotate prepared shaft and arrowhead for Y axis
+        # direction also to X and Z
+        rot_y2x = coin.SoRotation()
+        rot_y2x.rotation.setValue(coin.SbRotation(coin.SbVec3f(0, 1, 0),
+                                                  coin.SbVec3f(1, 0, 0)))
+        rot_y2z = coin.SoRotation()
+        rot_y2z.rotation.setValue(coin.SbRotation(coin.SbVec3f(0, 1, 0),
+                                                  coin.SbVec3f(0, 0, 1)))
+
+        # prepare colors for X,Y,Z which will correspond to R,G,B as customary
+        self.frame_color_x = coin.SoPackedColor()
+        self.frame_color_y = coin.SoPackedColor()
+        self.frame_color_z = coin.SoPackedColor()
+
+        # make complete colored and rotated arrows
+        x_arrow = coin.SoSeparator()
+        x_arrow.addChild(rot_y2x)
+        x_arrow.addChild(self.frame_color_x)
+        x_arrow.addChild(self.frame_shaft)
+        x_arrow.addChild(self.frame_arrowhead)
+        x_arrow.addChild(frame_labels[0])
+        y_arrow = coin.SoSeparator()
+        y_arrow.addChild(self.frame_color_y)
+        y_arrow.addChild(self.frame_shaft)
+        y_arrow.addChild(self.frame_arrowhead)
+        y_arrow.addChild(frame_labels[1])
+        z_arrow = coin.SoSeparator()
+        z_arrow.addChild(rot_y2z)
+        z_arrow.addChild(self.frame_color_z)
+        z_arrow.addChild(self.frame_shaft)
+        z_arrow.addChild(self.frame_arrowhead)
+        z_arrow.addChild(frame_labels[2])
+
+        # prepare draw style to control shaft width
+        self.frame_drawstyle = coin.SoDrawStyle()
+
+        # make complete frame and it to shaded display mode
+        separated_frame = coin.SoSeparator()
+        separated_frame.addChild(self.frame_drawstyle)
+        separated_frame.addChild(x_arrow)
+        separated_frame.addChild(y_arrow)
+        separated_frame.addChild(z_arrow)
+
+        return separated_frame
+
+    def makeRotationAxis(self, axis_label):
+        # make a generic shaft from 0 in Y direction
+        shaft_vertices = coin.SoVertexProperty()
+        shaft_vertices.vertex.setNum(2)
+        shaft_vertices.vertex.set1Value(0, 0, 0, 0)
+        self.rot_axis_shaft = coin.SoLineSet()
+        self.rot_axis_shaft.vertexProperty.setValue(shaft_vertices)
+        self.rot_axis_shaft.numVertices.setNum(1)
+        self.rot_axis_shaft.numVertices.setValue(2)
+
+        # make a generic conic arrowhead oriented in Y axis direction and
+        # move it at the end of the shaft
+        self.rot_axis_arrowhead_translation = coin.SoTranslation()
+        self.rot_axis_arrowhead_cone = coin.SoCone()
+        self.rot_axis_arrowhead = coin.SoSwitch()
+        self.rot_axis_arrowhead.addChild(self.rot_axis_arrowhead_translation)
+        self.rot_axis_arrowhead.addChild(self.rot_axis_arrowhead_cone)
+
+        # make rotations to rotate prepared shaft and arrowhead for Y axis
+        # direction also to X and Z
+        self.tf_y2axis = coin.SoTransform()
+
+        # prepare colors for X,Y,Z which will correspond to R,G,B as customary
+        self.rot_axis_color = coin.SoPackedColor()
+
+        # prepare draw style to control shaft width
+        self.rot_axis_drawstyle = coin.SoDrawStyle()
+
+        # make complete frame and it to shaded display mode
+        separated_axis = coin.SoSeparator()
+        separated_axis.addChild(self.tf_y2axis)
+        separated_axis.addChild(self.rot_axis_drawstyle)
+        separated_axis.addChild(self.rot_axis_color)
+        separated_axis.addChild(self.rot_axis_shaft)
+        separated_axis.addChild(self.rot_axis_arrowhead)
+        separated_axis.addChild(axis_label)
+
+        return separated_axis
 
 
 class TrajectoryCommand(object):
