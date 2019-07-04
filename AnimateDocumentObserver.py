@@ -60,6 +60,7 @@ class AnimateDocumentObserver(object):
         # If any group is about to be changed, start a transaction
         if prop == "Group":
             FreeCAD.ActiveDocument.openTransaction()
+            self.group_before = obj.Group
 
     def slotChangedObject(self, obj, prop):
         # If objects are added to a group
