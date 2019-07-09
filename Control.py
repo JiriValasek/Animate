@@ -126,6 +126,8 @@ To create an instance of this class do:
                                 "The animation is at the end.")
             self.pauseClicked()
         else:
+            # Reset collisions
+            self.resetCollisions()
             # Load current time from the time slider and start playing
             t = self.form.sld_seek.value() \
                 * (self.control_proxy.StopTime
@@ -151,6 +153,8 @@ To create an instance of this class do:
                                 "The animation is at the beginning.")
             self.pauseClicked()
         else:
+            # Reset collisions
+            self.resetCollisions()
             # Load current time from the time slider and start rewinding
             t = self.form.sld_seek.value() \
                 * (self.control_proxy.StopTime
@@ -176,6 +180,8 @@ To create an instance of this class do:
                                 "The animation is at the end.")
             self.pauseClicked()
         else:
+            # Reset collisions
+            self.resetCollisions()
             # Load current time from the time slider and start recording
             t = self.form.sld_seek.value() \
                 * (self.control_proxy.StopTime
@@ -217,6 +223,11 @@ To create an instance of this class do:
                    - self.control_proxy.StartTime) / 100 \
                 + self.control_proxy.StartTime
             self.distributeTime(t)
+            self.updateCollisions()
+
+            # Recompute document to show changed objects
+            FreeCAD.ActiveDocument.recompute()
+            FreeCADGui.updateGui()
 
     def setInvalidButtons(self):
         # Disable invalid buttons with respect to the last clicked button
@@ -279,6 +290,11 @@ Control panel was is closing.
         # Disribute the animaiton time to trajectories so that they change
         # positions of all animated objects
         self.distributeTime(t)
+        self.updateCollisions()
+
+        # Recompute document to show changed objects
+        FreeCAD.ActiveDocument.recompute()
+        FreeCADGui.updateGui()
 
         # Display current progres on the seek slider
         self.form.sld_seek.setValue(
@@ -319,6 +335,11 @@ Control panel was is closing.
         # Disribute the animaiton time to trajectories so that they change
         # positions of all animated objects
         self.distributeTime(t)
+        self.updateCollisions()
+
+        # Recompute document to show changed objects
+        FreeCAD.ActiveDocument.recompute()
+        FreeCADGui.updateGui()
 
         # Display current progres on the seek slider
         self.form.sld_seek.setValue(
@@ -356,6 +377,11 @@ Control panel was is closing.
         # Disribute the animaiton time to trajectories so that they change
         # positions of all animated objects, save the image
         self.distributeTime(t)
+        self.updateCollisions()
+
+        # Recompute document to show changed objects
+        FreeCAD.ActiveDocument.recompute()
+        FreeCADGui.updateGui()
         self.saveImage()
 
         # Display current progres on the seek slider
@@ -390,9 +416,25 @@ Control panel was is closing.
                 obj.Time = t
                 objects += obj.Group
 
-        # Recompute document to show changed object
-        FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.updateGui()
+    def updateCollisions(self):
+        # Load list of objects inside Control group
+        objects = self.control_proxy.Group
+
+        # if they are CollisionDetectors, then check for collisions
+        while len(objects) > 0:
+            obj = objects.pop(0)
+            if obj.Proxy.__class__.__name__ == "CollisionDetectorProxy":
+                obj.touch()
+
+    def resetCollisions(self):
+        # Load list of objects inside Control group
+        objects = self.control_proxy.Group
+
+        # if they are CollisionDetectors, then check for collisions
+        while len(objects) > 0:
+            obj = objects.pop(0)
+            if obj.Proxy.__class__.__name__ == "CollisionDetectorProxy":
+                obj.Proxy.reset()
 
     def saveImage(self):
 
@@ -813,7 +855,8 @@ Set this object to the proxy object of the actual view provider.
         # Allow only some objects to be dropped into the Control group
         if hasattr(obj, "Proxy") and \
            (obj.Proxy.__class__.__name__ == "ServerProxy" or
-           obj.Proxy.__class__.__name__ == "TrajectoryProxy"):
+           obj.Proxy.__class__.__name__ == "TrajectoryProxy" or
+           obj.Proxy.__class__.__name__ == "CollisionDetectorProxy"):
             return True
         return False
 

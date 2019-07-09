@@ -83,8 +83,10 @@ Afterwards a toolbar and a menu with some of those commands are created.
         import Server
         import Control
         import Trajectory
+        import CollisionDetector
         # A list of command names created in the line above
-        self.list = ["ServerCommand", "ControlCommand", "TrajectoryCommand"]
+        self.list = ["ServerCommand", "ControlCommand", "TrajectoryCommand",
+                     "CollisionDetectorCommand"]
         # creates a new toolbar with your commands
         self.appendToolbar("Animate", self.list)
         # creates a new menu

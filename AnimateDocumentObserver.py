@@ -36,12 +36,15 @@ import FreeCAD
 from PySide2.QtWidgets import QMessageBox
 
 ## All the DocumentObjectGroupPython classes in the Animate workbench
-ANIMATE_OBJECT_GROUP_CLASSES = ["TrajectoryProxy", "ControlProxy"]
+ANIMATE_OBJECT_GROUP_CLASSES = ["TrajectoryProxy", "ControlProxy",
+                                "CollisionDetectorProxy"]
 ## All the FeaturePython and DocumentObjectGroupPython  classes in the animate
 # toolbox
-ANIMATE_CLASSES = ["TrajectoryProxy", "ControlProxy", "ServerProxy"]
+ANIMATE_CLASSES = ["TrajectoryProxy", "ControlProxy", "ServerProxy",
+                   "CollisionDetectorProxy", "CollisionProxy"]
 # Classes allowed in the Control group
-ALLOWED_IN_CONTROL = ["TrajectoryProxy", "ServerProxy"]
+ALLOWED_IN_CONTROL = ["TrajectoryProxy", "ServerProxy",
+                      "CollisionDetectorProxy"]
 
 
 class AnimateDocumentObserver(object):
@@ -93,6 +96,10 @@ class AnimateDocumentObserver(object):
                 else:
                     FreeCAD.ActiveDocument.commitTransaction()
 
+        # Allow any removal of objects from groups
+        elif prop == "Group" and len(obj.Group) < len(self.group_before):
+            FreeCAD.ActiveDocument.commitTransaction()
+
     def isAnimateGroup(self, obj):
         if not hasattr(obj, "Proxy"):
             return False
@@ -120,6 +127,10 @@ class AnimateDocumentObserver(object):
         elif group.Proxy.__class__.__name__ == "ControlProxy" and \
                 hasattr(obj, "Proxy") and \
                 obj.Proxy.__class__.__name__ in ALLOWED_IN_CONTROL:
+            return False
+
+        elif group.Proxy.__class__.__name__ == "CollisionDetectorProxy" and \
+                obj.Name.find("Collision") != -1:
             return False
         return True
 
