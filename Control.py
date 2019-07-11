@@ -224,10 +224,7 @@ To create an instance of this class do:
                 + self.control_proxy.StartTime
             self.distributeTime(t)
             self.updateCollisions()
-
-            # Recompute document to show changed objects
-            FreeCAD.ActiveDocument.recompute()
-            FreeCADGui.updateGui()
+            self.showChanges()
 
     def setInvalidButtons(self):
         # Disable invalid buttons with respect to the last clicked button
@@ -291,10 +288,7 @@ Control panel was is closing.
         # positions of all animated objects
         self.distributeTime(t)
         self.updateCollisions()
-
-        # Recompute document to show changed objects
-        FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.updateGui()
+        self.showChanges()
 
         # Display current progres on the seek slider
         self.form.sld_seek.setValue(
@@ -336,10 +330,7 @@ Control panel was is closing.
         # positions of all animated objects
         self.distributeTime(t)
         self.updateCollisions()
-
-        # Recompute document to show changed objects
-        FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.updateGui()
+        self.showChanges()
 
         # Display current progres on the seek slider
         self.form.sld_seek.setValue(
@@ -379,9 +370,8 @@ Control panel was is closing.
         self.distributeTime(t)
         self.updateCollisions()
 
-        # Recompute document to show changed objects
-        FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.updateGui()
+        # Show changes and save view
+        self.showChanges()
         self.saveImage()
 
         # Display current progres on the seek slider
@@ -435,6 +425,10 @@ Control panel was is closing.
             obj = objects.pop(0)
             if obj.Proxy.__class__.__name__ == "CollisionDetectorProxy":
                 obj.Proxy.reset()
+
+    def showChanges(self):
+            FreeCAD.ActiveDocument.recompute()
+            FreeCADGui.updateGui()
 
     def saveImage(self):
 
