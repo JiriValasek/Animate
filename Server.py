@@ -26,9 +26,9 @@
 # ***************************************************************************/
 
 """@package Server
- Classes related to Server component of Animate Workbench.
+Classes related to the Server component of the Animate Workbench.
 
-The classes in this module provides funcionality for a `FeaturePython` Server
+The classes in this module provide funcionality for a `FeaturePython` Server
 instance (except an interprocess communication which is in the `communication`
 module) and creates a command to be used in a workbench.
 """
@@ -44,17 +44,18 @@ from os import path
 PATH_TO_ICONS = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
                           "Icons")
 
+
 class ServerProxy(object):
     """
 Proxy class for a `FeaturePython` Server instance.
 
 A ServerProxy instance adds properties to a `FeaturePython` Server
-instance and responds to theirs changes. It creates a
-communication. CommandServer `cmd_server` when `Running` is set to True by
-double-clicking on it in Tree View or right clicking and selecting
-*Connect Server* option from context menu. It closes the `cmd_server` when
-`Running` is set to False or an `AnimateDocumentObserver` detects that
-a document with Server instance is closing
+instance and responds to theirs changes. It provides a communication.
+CommandServer `cmd_server` when `Running` is set to True by double-clicking on
+it in the Tree View or right clicking and selecting *Connect Server* option
+from context menu. It closes the `cmd_server` when `Running` is set to False or
+an `AnimateDocumentObserver` detects that a document with Server instance is
+closing
 
 Because communication.CommandServer `cmd_server` occupies a `Port` at selected
 `Address`, you cannot have duplicit Servers running simultaneously in a file,
@@ -65,7 +66,7 @@ Attributes:
 
 To connect this `Proxy` object to a `FeaturePython` Server do:
 
-        a=FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Server")
+        a = FreeCAD.ActiveDocument.addObject("App::FeaturePython", "Server")
         ServerProxy(a)
     """
 
@@ -90,12 +91,12 @@ Args:
 Method called when document is restored to make sure everything is as it was.
 
 Reinitialization method - it creates properties and sets them to
-default, if they were not restored automatically. It restarts a
+default values, if they were not restored automatically. It restarts a
 cmd_server if it was running when document was closed. Properties of
 connected `ViewObject` are also recreated and reset if necessary.
 
 Args:
-    fp : A restored `FeaturePython` Server object.
+    fp: A restored `FeaturePython` Server object.
         """
         self.setProperties(fp)
         fp.ViewObject.Proxy.setProperties(fp.ViewObject)
@@ -216,13 +217,13 @@ class ViewProviderServerProxy(object):
 Proxy class for a `Gui.ViewProviderDocumentObject` Server.ViewObject.
 
 A ViewProviderServerProxy instance changes a `FeaturePython` Server's icon in
-Tree view to show if Server is `Running` or not. It also closes/starts
+the Tree view to show if Server is `Running` or not. It also closes/starts
 ServerProxy's `cmd_server` if the `FeaturePython` is double-clicked, deleted or
 chosen to be connected/disconnected through its context view. The context view
 is also provided by this class.
 
 Attributes:
-    _icon: A path to icon image to be displayed in the Tree View.
+    _icon: A path to the icon image to be displayed in the Tree View.
 
 To connect this `Proxy` object to a `Gui.ViewProviderDocumentObject`
 Server.ViewObject do:
@@ -238,7 +239,7 @@ Server.ViewObject do:
 Initialization method for ViewProviderServerProxy.
 
 A class instance is created and made a `Proxy` for a generic
-`Gui.ViewProviderDocumentObject`Server.ViewObject.This method selects
+`Gui.ViewProviderDocumentObject` Server.ViewObject. This method selects
  appropriate icon for `FeaturePython` Server and hides unnecessary unused
  View properties.
 
@@ -252,11 +253,11 @@ Args:
         """
 Method called when `FeaturePython` Server is about to be deleted.
 
-This method is used to close ServerProxy's `cmd_server` as not to leave a `Port`
-occupied.
+This method is used to close ServerProxy's `cmd_server` as not to leave
+a `Port` occupied.
 
 Args:
-    vp: A `Gui.ViewProviderDocumentObject` Server.ViewObject being closed
+    vp: A `Gui.ViewProviderDocumentObject` Server.ViewObject being closed.
     subelements: An unused argument from C++ binding.
 
 Returns:
@@ -285,13 +286,15 @@ Returns:
         """
         if not vp.Object.Running:
             vp.Object.Proxy.cmd_server = com.startServer(vp.Object.Address,
-                                                     vp.Object.Port)
+                                                         vp.Object.Port)
             if isinstance(vp.Object.Proxy.cmd_server, int):
-                if vp.Object.Proxy.cmd_server == com.SERVER_ERROR_INVALID_ADDRESS:
+                if vp.Object.Proxy.cmd_server == \
+                        com.SERVER_ERROR_INVALID_ADDRESS:
                     QMessageBox.warning(None, 'Error while starting server',
                                         "The address was not in supported "
                                         + "format.")
-                elif vp.Object.Proxy.cmd_server == com.SERVER_ERROR_PORT_OCCUPIED:
+                elif vp.Object.Proxy.cmd_server == \
+                        com.SERVER_ERROR_PORT_OCCUPIED:
                     QMessageBox.warning(None, 'Error while starting server',
                                         "The port requested is already "
                                         + "occupied.")
@@ -310,7 +313,7 @@ Returns:
 
     def setupContextMenu(self, vp, menu):
         """
-Method editing a context menu for right click on `FeaturePython` Server.
+Method called by the FreeCAD to customize a context menu for a Server.
 
 The *Transform* and *Set colors...* items are removed from the context menu
 shown upon right click on `FeaturePython` Server in the Tree View.
@@ -348,7 +351,7 @@ unnecessary view properties are hidden and icon is chosen in accordance with
 ServerProxy's `Running` state.
 
 Args:
-    vp : A `Gui.ViewProviderDocumentObject` Server.ViewObject.
+    vp: A `Gui.ViewProviderDocumentObject` Server.ViewObject.
         """
         vp.setEditorMode("AngularDeflection", 2)
         vp.setEditorMode("BoundingBox", 2)
@@ -376,9 +379,9 @@ class ServerCommand(object):
     """
 ServerCommand class specifing Animate workbench's Server button/command.
 
-This class provides toolbar button with an icon, tooltip and also menu button
-for Animate Workbench. It includes callbacks to be called after these buttons
-are clicked(Activated).
+This class provides resources for a toolbar button and a menu button.
+It controls their behaivor(Active/Inactive) and responds to callbacks after
+either of them was clicked(Activated).
     """
 
     def GetResources(self):
@@ -386,20 +389,21 @@ are clicked(Activated).
 Method used by FreeCAD to retrieve resources to use for this command.
 
 Returns:
-    A dict with items `'PixMap'`, `'MenuText'` and `'ToolTip'` which contain
-    path to command icon, text to be shown in menu and tooltip message.
-        """
+    A dict with items `PixMap`, `MenuText` and `ToolTip` which contain
+    a path to a command icon, a text to be shown in a menu and
+    a tooltip message.
+    """
         return {'Pixmap': path.join(PATH_TO_ICONS, "ServerCmd.xpm"),
                 'MenuText': "Server",
                 'ToolTip': "Create Server instance."}
 
     def Activated(self):
         """
-Method used as callback after toolbar button or menu item is clicked.
+Method used as a callback when the toolbar button or the menu item is clicked.
 
-This method creates a `FeaturePython` Server instance in currently active
-document. Afterwards it adds a ServerProxy as a `Proxy` to this instance as
-well as ViewProviderServerProxy to its `ViewObject.Proxy` if FreeCAD runs in
+This method creates a Server instance in currently active document.
+Afterwards it adds a ServerProxy as a `Proxy` to this instance as well as
+ViewProviderServerProxy to its `ViewObject.Proxy`, if FreeCAD runs in the
 Graphic mode.
         """
         doc = FreeCAD.ActiveDocument
@@ -411,7 +415,7 @@ Graphic mode.
 
     def IsActive(self):
         """
-Method to specify when toolbar button and menu item are enabled.
+Method to specify when the toolbar button and the menu item are enabled.
 
 The toolbar button `Server` and menu item `Server` are set to be active only
 when there is an active document in which a `FeaturePython` Server instance
@@ -426,6 +430,6 @@ Returns:
             return True
 
 
-# Add command to FreeCAD Gui when importing this module in InitGui
 if FreeCAD.GuiUp:
+    # Add command to FreeCAD Gui when importing this module in InitGui
     FreeCADGui.addCommand('ServerCommand', ServerCommand())

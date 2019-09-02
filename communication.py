@@ -44,32 +44,42 @@ from PySide2.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket, \
 ## Size of uint16 in bytes used to leave space at the beggining of each message
 # to specify tcp message lenght (maximal length is 65535 bytes).
 SIZEOF_UINT16 = 2
+
 ## Error code used in startServer() when trying to connect CommandServer to an
 # invalid address.
 SERVER_ERROR_INVALID_ADDRESS = 1
+
 ## Error code used in startServer() when trying to connect CommandServer to an
 # occupied port.
 SERVER_ERROR_PORT_OCCUPIED = 2
+
 ## Time to wait in miliseconds - used to wait for incomming message etc.
 WAIT_TIME_MS = 30000
+
 ## Message send from a `CommandServer` to a `CommandClient.sendCommand()` or
 # `sendClientCommand()` after successfull execution of a command.
 COMMAND_EXECUTED_CONFIRMATION_MESSAGE = "Command executed successfully"
+
 ## `CommandClient.sendCommand()` or `sendClientCommand()` return value after
 # confirmation of successfull command execution.
 CLIENT_COMMAND_EXECUTED = 0
+
 ## `CommandClient.sendCommand()` or `sendClientCommand()` return value if
 # command execution failed (invalid command string).
 CLIENT_COMMAND_FAILED = 1
+
 ## `CommandClient.sendCommand()` or `sendClientCommand()` error code to signal
 # that response was no received complete.
 CLIENT_ERROR_RESPONSE_NOT_COMPLETE = 2
+
 ## `CommandClient.sendCommand()` or `sendClientCommand()` error code to signal
 # that no response from `CommandServer` was received.
 CLIENT_ERROR_NO_RESPONSE = 3
+
 ## `CommandClient.sendCommand()` or `sendClientCommand()` error code to signal
 # that message block was not written to a TCP socket.
 CLIENT_ERROR_BLOCK_NOT_WRITTEN = 4
+
 ## `CommandClient.sendCommand()` or `sendClientCommand()` error code to signal
 # that connection a host `CommandServer` was not established.
 CLIENT_ERROR_NO_CONNECTION = 5
