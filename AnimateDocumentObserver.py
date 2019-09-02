@@ -25,10 +25,10 @@
 # *                                                                         *
 # ***************************************************************************/
 
-"""
-Created on Tue Jun 25 19:53:58 2019
+"""@package AnimateDocumentObserver
+AnimateDocumentObserver and a method how to safely add it to FreeCAD.
 
-@author: jirka
+
 """
 
 import FreeCAD
@@ -38,21 +38,40 @@ from PySide2.QtWidgets import QMessageBox
 ## All the DocumentObjectGroupPython classes in the Animate workbench
 ANIMATE_OBJECT_GROUP_CLASSES = ["TrajectoryProxy", "ControlProxy",
                                 "CollisionDetectorProxy"]
+
 ## All the FeaturePython and DocumentObjectGroupPython  classes in the animate
 # toolbox
 ANIMATE_CLASSES = ["TrajectoryProxy", "ControlProxy", "ServerProxy",
                    "CollisionDetectorProxy", "CollisionProxy"]
-# Classes allowed in the Control group
+
+## Classes allowed in the Control group
 ALLOWED_IN_CONTROL = ["TrajectoryProxy", "ServerProxy",
                       "CollisionDetectorProxy"]
 
 
 class AnimateDocumentObserver(object):
+    """
+Class that keeps `Animate` workbench objects in recommended structures.
+
+
+
+Attributes:
+    __instance: A reference to a singleton.
+    server_proxies: A dict of document names and `ServerProxies` in them.
+    group_before: A list of objects inside a group object about to change.
+
+    """
 
     __instance = None
     server_proxies = {}
 
     def __new__(cls, *args, **kwargs):
+        """
+Method creating an `AnimateDocumentObserver` singleton instance.
+
+Returns:
+    An `AnimateDocumentObserver` singleton instance.
+        """
         # Make AnimateDocumentObserver a singleton
         if cls.__instance is None:
             cls.__instance = super(AnimateDocumentObserver,
@@ -60,12 +79,35 @@ class AnimateDocumentObserver(object):
         return cls.__instance
 
     def slotBeforeChangeObject(self, obj, prop):
+        """
+Qt slot method called when an object in a surveyed document is about to change.
+
+If the object which is going to change has a `Group` property, then
+a transaction is begun and a current state of the `Group` property is recorded.
+
+Args:
+    obj: An object in the observed document about to change.
+    prop: A str of a property about to change.
+        """
         # If any group is about to be changed, start a transaction
         if prop == "Group":
             FreeCAD.ActiveDocument.openTransaction()
             self.group_before = obj.Group
 
     def slotChangedObject(self, obj, prop):
+        """
+Qt slot method called when an object in an observed document was changed.
+
+This method is used to enforce a recommended structure of `Animate` objects in
+Tree View. It checks that only allowed objects are inside `Animate` group
+objects. It also checks that no `Animate` object is inside a group object that
+does not belong to the `Animate` workbench. Lastly, it obstructs user from
+deleting Collision objects from a CollisionDetector group object.
+
+Args:
+    obj: An object in the observed document about to change.
+    prop: A str of a property about to change.
+        """
         # If objects are added to a group
         if prop == "Group" and len(obj.Group) > len(self.group_before):
             # If a new object is added to a group object from Animate workbench
@@ -96,11 +138,32 @@ class AnimateDocumentObserver(object):
                 else:
                     FreeCAD.ActiveDocument.commitTransaction()
 
-        # Allow any removal of objects from groups
+        # If objects are removed from a group
         elif prop == "Group" and len(obj.Group) < len(self.group_before):
-            FreeCAD.ActiveDocument.commitTransaction()
+            # If a Collision is removed from
+            removed = set(self.group_before).difference(set(obj.Group)).pop()
+            if removed.Proxy.__class__.__name__ == "CollisionProxy" and \
+                    hasattr(obj, "Proxy") and not obj.Proxy.reseting and \
+                    not obj.Proxy.checking:
+                QMessageBox.warning(
+                        None, 'Forbidden action detected',
+                        "Collision objects cannot be removed from\n"
+                        + "a CollisionDetector group.")
+                FreeCAD.ActiveDocument.undo()
+            else:
+                FreeCAD.ActiveDocument.commitTransaction()
 
     def isAnimateGroup(self, obj):
+        """
+Method to check whether a group object comes from the `Animate` workbench.
+
+As all `Animate` objects have a `Proxy` attached, its reasonable to firstly
+check for it and then decide according to the `Proxy` object's name if it is
+an `Animate` group.
+
+Returns:
+    True if the group object is from `Animate` workbench and false otherwise.
+        """
         if not hasattr(obj, "Proxy"):
             return False
         elif obj.Proxy.__class__.__name__ not in ANIMATE_OBJECT_GROUP_CLASSES:
@@ -109,6 +172,16 @@ class AnimateDocumentObserver(object):
             return True
 
     def isAnimateObject(self, obj):
+        """
+Method to check whether an object comes from the `Animate` workbench.
+
+As all `Animate` objects have a `Proxy` attached, its reasonable to firstly
+check for it and then decide according to the `Proxy` object's name if it is
+from the `Animate` workbench.
+
+Returns:
+    True if the object is from `Animate` workbench and false otherwise.
+        """
         if not hasattr(obj, "Proxy"):
             return False
         elif obj.Proxy.__class__.__name__ not in ANIMATE_CLASSES:
@@ -117,6 +190,20 @@ class AnimateDocumentObserver(object):
             return True
 
     def foreignObjectInAnimateGroup(self, obj, group):
+        """
+Method testing whether a forbidden object is in an `Animate` group object.
+
+Trajectory group objects are allowed to be stacked. Control objects can contain
+any other `Animate` object. CollisionDetector objects can accomodate only
+Collision objects.
+
+Args:
+    obj: A suspected foreign object in an `Animate` group object.
+    group: The `Animate` group object possibly harboring an illegal object.
+
+Returns:
+    True if a forbidden object is in a Animate group obj. and false otherwise.
+        """
         # Only a Trajectory can be in a Trajectory group
         if group.Proxy.__class__.__name__ == "TrajectoryProxy" and \
                 hasattr(obj, "Proxy") and \
@@ -135,13 +222,24 @@ class AnimateDocumentObserver(object):
         return True
 
     def animateObjectInForeignGroup(self, obj, group):
+        """
+Method testing whether an `Animate` object is in a foreign group object.
+
+Args:
+    obj: A suspected `Animate` object.
+    group: A group object which is possibly not from the `Animate` workbench.
+
+Returns:
+    True if an Animate object is not in a Animate group and false otherwise.
+        """
         return not self.isAnimateGroup(group) and self.isAnimateObject(obj)
 
     def slotDeletedDocument(self, doc):
         """
 Qt slot method called if a document is about to be closed.
 
-This method is used to notify ServerProxy `sp` that document will be closed.
+This method is used to notify all `ServerProxies` that the document they are in
+is going to be closed.
 
 Args:
     doc: A FreeCAD's `App.Document` document about to be closed.
@@ -153,6 +251,16 @@ Args:
                 server_proxy.onDocumentClosed()
 
     def addServerToNotify(self, server_proxy, document_name):
+        """
+Method to add a server which needs to be notified when its document is closing.
+
+An active server must close a socket, it is using, when a document it's on is
+closing, so that a socket won't be blocked when it is needed again.
+
+Args:
+    server_proxy: A `ServerProxy` which takes care of a `Server` instance.
+    document_name: Name of a document with the `Server` instance.
+        """
         # Add a server proxy to the dictionary under a document name it's on
         if document_name in self.server_proxies:
             if server_proxy not in self.server_proxies[document_name]:
@@ -165,6 +273,14 @@ Args:
 
 
 def addObserver():
+    """
+Adds an `AnimateDocumentObserver` between FreeCAD's document observers safely.
+
+It's prefered to add an `AnimateDocumentObserver` using this method, because
+other ways could result in having multiple document observers added to FreeCAD.
+Having a lot of document observers slows down FreeCAD due to necessity to
+inform them all about imminent changes and so on.
+    """
     # Check FreeCAD doesn't have an AnimateDocumentObserver already assigned
     # and assign one
     if not hasattr(FreeCAD, "animate_observer"):
