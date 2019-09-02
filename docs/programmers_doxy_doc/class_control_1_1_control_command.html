@@ -97,7 +97,7 @@ $(document).ready(function(){initNavTree('class_control_1_1_control_command.html
 </div><!--header-->
 <div class="contents">
 
-<p>Create Object command.  
+<p><a class="el" href="class_control_1_1_control_command.html" title="ControlCommand class specifing Animate workbench&#39;s Control button/command.">ControlCommand</a> class specifing Animate workbench's <a class="el" href="namespace_control.html" title="Classes related to the Control component of the Animate Workbench.">Control</a> button/command.  
  <a href="class_control_1_1_control_command.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for Control.ControlCommand:</div>
@@ -108,23 +108,97 @@ Inheritance diagram for Control.ControlCommand:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a15a8fbac3f7a434222a11abd9dc471e8"><td class="memItemLeft" align="right" valign="top"><a id="a15a8fbac3f7a434222a11abd9dc471e8"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>GetResources</b> (self)</td></tr>
+<tr class="memitem:a15a8fbac3f7a434222a11abd9dc471e8"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_control_1_1_control_command.html#a15a8fbac3f7a434222a11abd9dc471e8">GetResources</a> (self)</td></tr>
+<tr class="memdesc:a15a8fbac3f7a434222a11abd9dc471e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method used by FreeCAD to retrieve resources to use for this command.  <a href="#a15a8fbac3f7a434222a11abd9dc471e8">More...</a><br /></td></tr>
 <tr class="separator:a15a8fbac3f7a434222a11abd9dc471e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af3caee0c0453b17e16e325fedfc4bb8d"><td class="memItemLeft" align="right" valign="top"><a id="af3caee0c0453b17e16e325fedfc4bb8d"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>Activated</b> (self)</td></tr>
+<tr class="memitem:af3caee0c0453b17e16e325fedfc4bb8d"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_control_1_1_control_command.html#af3caee0c0453b17e16e325fedfc4bb8d">Activated</a> (self)</td></tr>
+<tr class="memdesc:af3caee0c0453b17e16e325fedfc4bb8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method used as a callback when the toolbar button or the menu item is clicked.  <a href="#af3caee0c0453b17e16e325fedfc4bb8d">More...</a><br /></td></tr>
 <tr class="separator:af3caee0c0453b17e16e325fedfc4bb8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5f28217506bb8727814a738fd5e1d7f"><td class="memItemLeft" align="right" valign="top"><a id="ad5f28217506bb8727814a738fd5e1d7f"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>IsActive</b> (self)</td></tr>
+<tr class="memitem:ad5f28217506bb8727814a738fd5e1d7f"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_control_1_1_control_command.html#ad5f28217506bb8727814a738fd5e1d7f">IsActive</a> (self)</td></tr>
+<tr class="memdesc:ad5f28217506bb8727814a738fd5e1d7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method to specify when the toolbar button and the menu item are enabled.  <a href="#ad5f28217506bb8727814a738fd5e1d7f">More...</a><br /></td></tr>
 <tr class="separator:ad5f28217506bb8727814a738fd5e1d7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97c58a95c1b7b47727b8f9af9d8e922b"><td class="memItemLeft" align="right" valign="top"><a id="a97c58a95c1b7b47727b8f9af9d8e922b"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>getHelp</b> (self)</td></tr>
-<tr class="separator:a97c58a95c1b7b47727b8f9af9d8e922b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Create Object command. </p>
-</div><hr/>The documentation for this class was generated from the following file:<ul>
-<li>C:/Program Files/FreeCAD 0.18/Mod/Animate/Control.py</li>
+<div class="textblock"><p><a class="el" href="class_control_1_1_control_command.html" title="ControlCommand class specifing Animate workbench&#39;s Control button/command.">ControlCommand</a> class specifing Animate workbench's <a class="el" href="namespace_control.html" title="Classes related to the Control component of the Animate Workbench.">Control</a> button/command. </p>
+<p>This class provides resources for a toolbar button and a menu button. It controls their behaivor(Active/Inactive) and responds to callbacks after either of them was clicked(Activated). </p>
+
+<p class="definition">Definition at line <a class="el" href="_control_8py_source.html#l01259">1259</a> of file <a class="el" href="_control_8py_source.html">Control.py</a>.</p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="af3caee0c0453b17e16e325fedfc4bb8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af3caee0c0453b17e16e325fedfc4bb8d">&#9670;&nbsp;</a></span>Activated()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def Control.ControlCommand.Activated </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Method used as a callback when the toolbar button or the menu item is clicked. </p>
+<p>This method creates a <a class="el" href="namespace_control.html" title="Classes related to the Control component of the Animate Workbench.">Control</a> instance in currently active document. Afterwards it adds a <a class="el" href="class_control_1_1_control_proxy.html" title="Proxy class for a DocumentObjectGroupPython Control instance.">ControlProxy</a> as a <code>Proxy</code> to this instance as well as <a class="el" href="class_control_1_1_view_provider_control_proxy.html" title="Proxy class for Gui.ViewProviderDocumentObject Control.ViewObject.">ViewProviderControlProxy</a> to its <code>ViewObject.Proxy</code>, if FreeCAD runs in the Graphic mode. </p>
+
+<p class="definition">Definition at line <a class="el" href="_control_8py_source.html#l01282">1282</a> of file <a class="el" href="_control_8py_source.html">Control.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l01282"></a><span class="lineno"> 1282</span>&#160;    <span class="keyword">def </span><a class="code" href="class_trajectory_1_1_trajectory_command.html#ab36bdf6eeb65c8b7ca27cd2185210e9e">Activated</a>(self):</div><div class="line"><a name="l01283"></a><span class="lineno"> 1283</span>&#160;        doc = FreeCAD.ActiveDocument</div><div class="line"><a name="l01284"></a><span class="lineno"> 1284</span>&#160;        a = doc.addObject(<span class="stringliteral">&quot;App::DocumentObjectGroupPython&quot;</span>, <span class="stringliteral">&quot;Control&quot;</span>)</div><div class="line"><a name="l01285"></a><span class="lineno"> 1285</span>&#160;        ControlProxy(a)</div><div class="line"><a name="l01286"></a><span class="lineno"> 1286</span>&#160;        <span class="keywordflow">if</span> FreeCAD.GuiUp:</div><div class="line"><a name="l01287"></a><span class="lineno"> 1287</span>&#160;            ViewProviderControlProxy(a.ViewObject)</div><div class="line"><a name="l01288"></a><span class="lineno"> 1288</span>&#160;        doc.recompute()</div><div class="line"><a name="l01289"></a><span class="lineno"> 1289</span>&#160;        <span class="keywordflow">return</span></div><div class="line"><a name="l01290"></a><span class="lineno"> 1290</span>&#160;</div><div class="ttc" id="class_trajectory_1_1_trajectory_command_html_ab36bdf6eeb65c8b7ca27cd2185210e9e"><div class="ttname"><a href="class_trajectory_1_1_trajectory_command.html#ab36bdf6eeb65c8b7ca27cd2185210e9e">Trajectory.TrajectoryCommand.Activated</a></div><div class="ttdeci">def Activated(self)</div><div class="ttdoc">Method used as a callback when the toolbar button or the menu item is clicked.</div><div class="ttdef"><b>Definition:</b> <a href="_trajectory_8py_source.html#l01563">Trajectory.py:1563</a></div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a15a8fbac3f7a434222a11abd9dc471e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15a8fbac3f7a434222a11abd9dc471e8">&#9670;&nbsp;</a></span>GetResources()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def Control.ControlCommand.GetResources </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Method used by FreeCAD to retrieve resources to use for this command. </p>
+<dl class="section return"><dt>Returns</dt><dd>A dict with items <code>PixMap</code>, <code>MenuText</code> and <code>ToolTip</code> which contain a path to a command icon, a text to be shown in a menu and a tooltip message. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_control_8py_source.html#l01269">1269</a> of file <a class="el" href="_control_8py_source.html">Control.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l01269"></a><span class="lineno"> 1269</span>&#160;    <span class="keyword">def </span><a class="code" href="class_trajectory_1_1_trajectory_command.html#a4bb0be8a0849ceeb3a8e183c92c48619">GetResources</a>(self):</div><div class="line"><a name="l01270"></a><span class="lineno"> 1270</span>&#160;        <span class="keywordflow">return</span> {<span class="stringliteral">&#39;Pixmap&#39;</span>: path.join(PATH_TO_ICONS, <span class="stringliteral">&quot;ControlCmd.xpm&quot;</span>),</div><div class="line"><a name="l01271"></a><span class="lineno"> 1271</span>&#160;                <span class="stringliteral">&#39;MenuText&#39;</span>: <span class="stringliteral">&quot;Control&quot;</span>,</div><div class="line"><a name="l01272"></a><span class="lineno"> 1272</span>&#160;                <span class="stringliteral">&#39;ToolTip&#39;</span>: <span class="stringliteral">&quot;Create Control instance.&quot;</span>}</div><div class="line"><a name="l01273"></a><span class="lineno"> 1273</span>&#160;</div><div class="ttc" id="class_trajectory_1_1_trajectory_command_html_a4bb0be8a0849ceeb3a8e183c92c48619"><div class="ttname"><a href="class_trajectory_1_1_trajectory_command.html#a4bb0be8a0849ceeb3a8e183c92c48619">Trajectory.TrajectoryCommand.GetResources</a></div><div class="ttdeci">def GetResources(self)</div><div class="ttdoc">Method used by FreeCAD to retrieve resources to use for this command.</div><div class="ttdef"><b>Definition:</b> <a href="_trajectory_8py_source.html#l01550">Trajectory.py:1550</a></div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ad5f28217506bb8727814a738fd5e1d7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5f28217506bb8727814a738fd5e1d7f">&#9670;&nbsp;</a></span>IsActive()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def Control.ControlCommand.IsActive </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Method to specify when the toolbar button and the menu item are enabled. </p>
+<p>The toolbar button <code><a class="el" href="namespace_control.html" title="Classes related to the Control component of the Animate Workbench.">Control</a></code> and menu item <code><a class="el" href="namespace_control.html" title="Classes related to the Control component of the Animate Workbench.">Control</a></code> are set to be active only when there is an active document in which a <a class="el" href="namespace_control.html" title="Classes related to the Control component of the Animate Workbench.">Control</a> instance can be created.</p>
+<dl class="section return"><dt>Returns</dt><dd>True if buttons shall be enabled and False otherwise. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="_control_8py_source.html#l01300">1300</a> of file <a class="el" href="_control_8py_source.html">Control.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l01300"></a><span class="lineno"> 1300</span>&#160;    <span class="keyword">def </span><a class="code" href="class_trajectory_1_1_trajectory_command.html#a71e1fc6f049e439cdd61f400cc0c8357">IsActive</a>(self):</div><div class="line"><a name="l01301"></a><span class="lineno"> 1301</span>&#160;        <span class="keywordflow">if</span> FreeCAD.ActiveDocument <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div><div class="line"><a name="l01302"></a><span class="lineno"> 1302</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">False</span></div><div class="line"><a name="l01303"></a><span class="lineno"> 1303</span>&#160;        <span class="keywordflow">else</span>:</div><div class="line"><a name="l01304"></a><span class="lineno"> 1304</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">True</span></div><div class="line"><a name="l01305"></a><span class="lineno"> 1305</span>&#160;</div><div class="line"><a name="l01306"></a><span class="lineno"> 1306</span>&#160;</div><div class="ttc" id="class_trajectory_1_1_trajectory_command_html_a71e1fc6f049e439cdd61f400cc0c8357"><div class="ttname"><a href="class_trajectory_1_1_trajectory_command.html#a71e1fc6f049e439cdd61f400cc0c8357">Trajectory.TrajectoryCommand.IsActive</a></div><div class="ttdeci">def IsActive(self)</div><div class="ttdoc">Method to specify when the toolbar button and the menu item are enabled.</div><div class="ttdef"><b>Definition:</b> <a href="_trajectory_8py_source.html#l01582">Trajectory.py:1582</a></div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following file:<ul>
+<li>Doxypypy outputs/<a class="el" href="_control_8py_source.html">Control.py</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -134,6 +208,6 @@ def&#160;</td><td class="memItemRight" valign="bottom"><b>getHelp</b> (self)</td
     <li class="footer">
     Animate maintained by
     <a href="https://github.com/JiriValasek">Jiří VALÁŠEK</a>
-     | Last update Thu Jun 13 2019 22:32:00</li>
+     | Last update Sun Sep 1 2019 22:35:14</li>
   </ul>
 </div>

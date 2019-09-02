@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['server',['Server',['../namespace_server.html',1,'']]]
+  ['initgui',['InitGui',['../namespace_init_gui.html',1,'']]]
 ];
