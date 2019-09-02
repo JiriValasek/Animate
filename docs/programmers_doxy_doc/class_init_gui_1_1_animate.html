@@ -137,6 +137,8 @@ Public Attributes</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_init_gui_1_1_animate.html" title="Animate workbench class according to the PythonWorkbench template.">Animate</a> workbench class according to the PythonWorkbench template. </p>
 <p>This class represents the workbench in the FreeCAD Gui i.e. it imports commands, shows them on a toolbar and in a menu when workbench is activated. It contains information to make and item in the workbench toolbar listbox. </p>
+
+<p class="definition">Definition at line <a class="el" href="_init_gui_8py_source.html#l00049">49</a> of file <a class="el" href="_init_gui_8py_source.html">InitGui.py</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a3810d2bcafde9c9119c130a7a725f47f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3810d2bcafde9c9119c130a7a725f47f">&#9670;&nbsp;</a></span>__init__()</h2>
@@ -157,6 +159,8 @@ Public Attributes</h2></td></tr>
 <p>Initialization method for <code><a class="el" href="class_init_gui_1_1_animate.html" title="Animate workbench class according to the PythonWorkbench template.">Animate</a></code> workbench. </p>
 <p>A class instance is created, an static attributes <code>Icon</code>, <code>MenuText</code> and <code>ToolTip</code> are added to the class. The <code>Icon</code> is a path to an image to be shown on the workbench toolbar. The <code>MenuText</code> is a str text to be shown in the listbox on the workbench toolbar. The <code>ToolTip</code> is a str tooltip for the <code><a class="el" href="class_init_gui_1_1_animate.html" title="Animate workbench class according to the PythonWorkbench template.">Animate</a></code> workbench. </p>
 
+<p class="definition">Definition at line <a class="el" href="_init_gui_8py_source.html#l00072">72</a> of file <a class="el" href="_init_gui_8py_source.html">InitGui.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">def </span>__init__(self):</div><div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keyword">import</span> os</div><div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        self.__class__.Icon = os.path.join(FreeCAD.getHomePath(), <span class="stringliteral">&quot;Mod&quot;</span>,</div><div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                                           <span class="stringliteral">&quot;Animate&quot;</span>, <span class="stringliteral">&quot;Resources&quot;</span>, <span class="stringliteral">&quot;Icons&quot;</span>,</div><div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                                           <span class="stringliteral">&quot;Animate.xpm&quot;</span>)</div><div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        self.__class__.MenuText = <span class="stringliteral">&quot;Animate&quot;</span></div><div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        self.__class__.ToolTip = <span class="stringliteral">&quot;Animation workbench&quot;</span></div><div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div></div><!-- fragment -->
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -179,6 +183,9 @@ Public Attributes</h2></td></tr>
 <p>This function is executed when the workbench is activated. </p>
 <p>For now it's used just to inform a user about the fact via console message. </p>
 
+<p class="definition">Definition at line <a class="el" href="_init_gui_8py_source.html#l00110">110</a> of file <a class="el" href="_init_gui_8py_source.html">InitGui.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keyword">def </span><a class="code" href="class_trajectory_1_1_trajectory_command.html#ab36bdf6eeb65c8b7ca27cd2185210e9e">Activated</a>(self):</div><div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        FreeCAD.Console.PrintMessage(<span class="stringliteral">&quot;Animate workbench activated\n&quot;</span>)</div><div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;</div><div class="ttc" id="class_trajectory_1_1_trajectory_command_html_ab36bdf6eeb65c8b7ca27cd2185210e9e"><div class="ttname"><a href="class_trajectory_1_1_trajectory_command.html#ab36bdf6eeb65c8b7ca27cd2185210e9e">Trajectory.TrajectoryCommand.Activated</a></div><div class="ttdeci">def Activated(self)</div><div class="ttdoc">Method used as a callback when the toolbar button or the menu item is clicked.</div><div class="ttdef"><b>Definition:</b> <a href="_trajectory_8py_source.html#l01563">Trajectory.py:1563</a></div></div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a395cccd09e2e81ec50c1af5c0b0d34ad"></a>
@@ -216,6 +223,8 @@ Public Attributes</h2></td></tr>
   </dd>
 </dl>
 
+<p class="definition">Definition at line <a class="el" href="_init_gui_8py_source.html#l00130">130</a> of file <a class="el" href="_init_gui_8py_source.html">InitGui.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    <span class="keyword">def </span>ContextMenu(self, recipient):</div><div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        <span class="comment"># Log who is the recipient</span></div><div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;        <span class="comment"># FreeCAD.Console.PrintLog(&quot;Preparing context menu for &quot; + recipient</span></div><div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        <span class="comment">#                          + &quot;\n&quot;)</span></div><div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        <span class="comment"># Add commands to the context menu if necessary</span></div><div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;        <span class="comment"># self.appendContextMenu(&quot;My commands&quot;, self.list)</span></div><div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;        <span class="keywordflow">pass</span></div><div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;</div></div><!-- fragment -->
 </div>
 </div>
 <a id="ab3926369cbfc952390a4591247ead51d"></a>
@@ -237,6 +246,8 @@ Public Attributes</h2></td></tr>
 <p>This function is executed when the workbench is deactivated. </p>
 <p>For now it's used just to inform a user about the fact via console message. </p>
 
+<p class="definition">Definition at line <a class="el" href="_init_gui_8py_source.html#l00118">118</a> of file <a class="el" href="_init_gui_8py_source.html">InitGui.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keyword">def </span>Deactivated(self):</div><div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        FreeCAD.Console.PrintMessage(<span class="stringliteral">&quot;Animate workbench deactivated\n&quot;</span>)</div><div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;</div></div><!-- fragment -->
 </div>
 </div>
 <a id="a16cdada221eb507df19535b672fba21b"></a>
@@ -258,6 +269,8 @@ Public Attributes</h2></td></tr>
 <p>Mandatory method for full python workbenches. </p>
 <dl class="section return"><dt>Returns</dt><dd>A str with C++ binding class for this workbench. </dd></dl>
 
+<p class="definition">Definition at line <a class="el" href="_init_gui_8py_source.html#l00144">144</a> of file <a class="el" href="_init_gui_8py_source.html">InitGui.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    <span class="keyword">def </span>GetClassName(self):</div><div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;        <span class="keywordflow">return</span> <span class="stringliteral">&quot;Gui::PythonWorkbench&quot;</span></div><div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;</div><div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;</div><div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;FreeCADGui.addWorkbench(Animate())</div></div><!-- fragment -->
 </div>
 </div>
 <a id="ac786932215d2884a42cb7e87244c70bf"></a>
@@ -279,6 +292,8 @@ Public Attributes</h2></td></tr>
 <p>Method used to setup workbench upon being selected on the workbench toolbar. </p>
 <p>This function is executed when user clicks on <code><a class="el" href="class_init_gui_1_1_animate.html" title="Animate workbench class according to the PythonWorkbench template.">Animate</a></code> workbench in the workbench listbox situated on the workbench toolbar. After that commands are added to the FreeCAD Gui by importing their modules. The names of imported commands are then saved in the <code>list</code> attribute. Afterwards a toolbar and a menu with some of those commands are created. </p>
 
+<p class="definition">Definition at line <a class="el" href="_init_gui_8py_source.html#l00089">89</a> of file <a class="el" href="_init_gui_8py_source.html">InitGui.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keyword">def </span>Initialize(self):</div><div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        <span class="comment"># import here all the needed files that create your FreeCAD commands</span></div><div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        <span class="keyword">import</span> Server</div><div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keyword">import</span> Control</div><div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keyword">import</span> Trajectory</div><div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="keyword">import</span> CollisionDetector</div><div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="comment"># A list of command names created in the line above</span></div><div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        self.list = [<span class="stringliteral">&quot;ServerCommand&quot;</span>, <span class="stringliteral">&quot;ControlCommand&quot;</span>, <span class="stringliteral">&quot;TrajectoryCommand&quot;</span>,</div><div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                     <span class="stringliteral">&quot;CollisionDetectorCommand&quot;</span>]</div><div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="comment"># creates a new toolbar with your commands</span></div><div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        self.appendToolbar(<span class="stringliteral">&quot;Animate&quot;</span>, self.list)</div><div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        <span class="comment"># creates a new menu</span></div><div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        self.appendMenu(<span class="stringliteral">&quot;Animate&quot;</span>, self.list)</div><div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <span class="comment"># appends a submenu to an existing menu</span></div><div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        <span class="comment"># self.appendMenu([&quot;An existing Menu&quot;,&quot;My submenu&quot;], self.sublist)</span></div><div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;</div></div><!-- fragment -->
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
@@ -296,10 +311,12 @@ Public Attributes</h2></td></tr>
 
 <p>A list of str which are the names of imported commands. </p>
 
+<p class="definition">Definition at line <a class="el" href="_init_gui_8py_source.html#l00096">96</a> of file <a class="el" href="_init_gui_8py_source.html">InitGui.py</a>.</p>
+
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>C:/Program Files/FreeCAD 0.18/Mod/Animate/InitGui.py</li>
+<li>Doxypypy outputs/<a class="el" href="_init_gui_8py_source.html">InitGui.py</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -309,6 +326,6 @@ Public Attributes</h2></td></tr>
     <li class="footer">
     Animate maintained by
     <a href="https://github.com/JiriValasek">Jiří VALÁŠEK</a>
-     | Last update Thu Jun 13 2019 22:32:00</li>
+     | Last update Sun Sep 1 2019 22:35:14</li>
   </ul>
 </div>

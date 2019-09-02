@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['wait_5ftime_5fms',['WAIT_TIME_MS',['../namespacecommunication.html#af10c9d6f536228a72bb929834ec519ce',1,'communication']]]
+  ['name_5fnumber_5fformat',['NAME_NUMBER_FORMAT',['../namespace_control.html#a938db78cd213a9ff0f318cdddf8104c6',1,'Control']]]
 ];

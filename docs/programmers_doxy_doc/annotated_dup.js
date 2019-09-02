@@ -1,16 +1,11 @@
 var annotated_dup =
 [
+    [ "AnimateDocumentObserver", "namespace_animate_document_observer.html", "namespace_animate_document_observer" ],
+    [ "CollisionDetector", "namespace_collision_detector.html", "namespace_collision_detector" ],
+    [ "CollisionObject", "namespace_collision_object.html", "namespace_collision_object" ],
     [ "communication", "namespacecommunication.html", "namespacecommunication" ],
-    [ "Control", null, [
-      [ "Control", "class_control_1_1_control.html", "class_control_1_1_control" ],
-      [ "ControlCommand", "class_control_1_1_control_command.html", "class_control_1_1_control_command" ],
-      [ "ViewProviderControl", "class_control_1_1_view_provider_control.html", "class_control_1_1_view_provider_control" ]
-    ] ],
+    [ "Control", "namespace_control.html", "namespace_control" ],
     [ "InitGui", "namespace_init_gui.html", "namespace_init_gui" ],
     [ "Server", "namespace_server.html", "namespace_server" ],
-    [ "Trajectory", null, [
-      [ "Trajectory", "class_trajectory_1_1_trajectory.html", "class_trajectory_1_1_trajectory" ],
-      [ "TrajectoryCommand", "class_trajectory_1_1_trajectory_command.html", "class_trajectory_1_1_trajectory_command" ],
-      [ "ViewProviderTrajectory", "class_trajectory_1_1_view_provider_trajectory.html", "class_trajectory_1_1_view_provider_trajectory" ]
-    ] ]
+    [ "Trajectory", "namespace_trajectory.html", "namespace_trajectory" ]
 ];

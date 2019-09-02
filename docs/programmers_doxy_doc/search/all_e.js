@@ -1,18 +1,12 @@
 var searchData=
 [
-  ['sendclientcommand',['sendClientCommand',['../namespacecommunication.html#ab749695d98f3ef48d496f2560996eaff',1,'communication']]],
-  ['sendcommand',['sendCommand',['../classcommunication_1_1_command_client.html#a26b83ee6fc6d0b9eda8baa91a4d425fa',1,'communication::CommandClient']]],
-  ['server',['Server',['../namespace_server.html',1,'Server'],['../class_server_1_1_server_proxy.html#ae329061f8e9239cffa7c3ecda3db8a35',1,'Server.ServerProxy.server()']]],
-  ['server_5ferror_5finvalid_5faddress',['SERVER_ERROR_INVALID_ADDRESS',['../namespacecommunication.html#a424ad972e3da416f79b5aad5f5843d00',1,'communication']]],
-  ['server_5ferror_5fport_5foccupied',['SERVER_ERROR_PORT_OCCUPIED',['../namespacecommunication.html#acfa4b512dbbf8768943c8dc09295df57',1,'communication']]],
-  ['servercommand',['ServerCommand',['../class_server_1_1_server_command.html',1,'Server']]],
-  ['serverproxy',['ServerProxy',['../class_server_1_1_server_proxy.html',1,'Server']]],
-  ['serversdocumentobserver',['ServersDocumentObserver',['../class_server_1_1_servers_document_observer.html',1,'Server']]],
-  ['setproperties',['setProperties',['../class_server_1_1_server_proxy.html#a6be92b75aff6fec46cf9f0b6d56b1034',1,'Server.ServerProxy.setProperties()'],['../class_server_1_1_view_provider_server_proxy.html#acf0a6748dbdec0893d30f15dfa2b301a',1,'Server.ViewProviderServerProxy.setProperties()']]],
-  ['setupcontextmenu',['setupContextMenu',['../class_server_1_1_view_provider_server_proxy.html#a18cd0db2ccbfbc93bfe0349da78980a2',1,'Server::ViewProviderServerProxy']]],
-  ['sizeof_5fuint16',['SIZEOF_UINT16',['../namespacecommunication.html#ad14297fab95b37783ace5b740fec7bb0',1,'communication']]],
-  ['slotdeleteddocument',['slotDeletedDocument',['../class_server_1_1_servers_document_observer.html#a97b0b60fe300502aebc834111627ec5a',1,'Server::ServersDocumentObserver']]],
-  ['socketdescriptor',['socketDescriptor',['../classcommunication_1_1_command_thread.html#a6a7e2b9c8f01d6db56e9943d3a71f9a2',1,'communication::CommandThread']]],
-  ['sp',['sp',['../class_server_1_1_servers_document_observer.html#acbc38493083bd978f6e7374874619338',1,'Server::ServersDocumentObserver']]],
-  ['startserver',['startServer',['../namespacecommunication.html#acfc55c6aca63bbbb73e9bc4ba1fb67a6',1,'communication']]]
+  ['panel',['panel',['../class_control_1_1_view_provider_control_proxy.html#a63ddd010bc86f8e907392a46cc279dfb',1,'Control.ViewProviderControlProxy.panel()'],['../class_trajectory_1_1_view_provider_trajectory_proxy.html#a3b196a06e0ffb284ade42ef50d00d951',1,'Trajectory.ViewProviderTrajectoryProxy.panel()']]],
+  ['path_5fto_5ficons',['PATH_TO_ICONS',['../namespace_collision_detector.html#ac0330ae5d939889cd371bdeffbb91302',1,'CollisionDetector.PATH_TO_ICONS()'],['../namespace_collision_object.html#a797930d31954c742966c608b235bcc15',1,'CollisionObject.PATH_TO_ICONS()'],['../namespace_control.html#af83a67a56198c7b74b461c4c241e9088',1,'Control.PATH_TO_ICONS()'],['../namespace_server.html#a04b112f4813be6896990569a06e0c52c',1,'Server.PATH_TO_ICONS()'],['../namespace_trajectory.html#a739c19474bebd625ffdc4ce913decb76',1,'Trajectory.PATH_TO_ICONS()']]],
+  ['path_5fto_5fui',['PATH_TO_UI',['../namespace_control.html#a915d0ed14610165ac8f7272553a5ac6f',1,'Control.PATH_TO_UI()'],['../namespace_trajectory.html#a35ee5a174372cae8b1be4fdbce151c72',1,'Trajectory.PATH_TO_UI()']]],
+  ['pauseclicked',['pauseClicked',['../class_control_1_1_control_panel.html#aa6eb0ee8a179fade477c526aa9ae0c4b',1,'Control::ControlPanel']]],
+  ['play',['play',['../class_control_1_1_control_panel.html#a4992472ed7aa8176a3f2cea479cee2bc',1,'Control::ControlPanel']]],
+  ['playclicked',['playClicked',['../class_control_1_1_control_panel.html#ad2a1b19519e1733f65213099e29beba5',1,'Control::ControlPanel']]],
+  ['port',['port',['../classcommunication_1_1_command_client.html#a46e003b1d2058657b0e3256980aa3911',1,'communication::CommandClient']]],
+  ['pose',['pose',['../class_trajectory_1_1_trajectory_proxy.html#a5540bd26252bfd151e23e290c1681ff1',1,'Trajectory::TrajectoryProxy']]],
+  ['previous_5ftimes',['previous_times',['../class_trajectory_1_1_trajectory_panel.html#ac786046bfd6cad22a7bfd130fcee339d',1,'Trajectory::TrajectoryPanel']]]
 ];
