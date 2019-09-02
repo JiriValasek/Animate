@@ -25,9 +25,8 @@
 # *                                                                         *
 # ***************************************************************************/
 
-
 """@package Control
- Classes related to Control component of Animate Workbench.
+ Classes related to the Control component of the Animate Workbench.
 
 The classes in this module provides funcionality for
 a `DocumentObjectGroupPython` Control instance.
@@ -38,8 +37,10 @@ import FreeCADGui
 import numpy
 import time
 import os
+import sys
 import re
 import subprocess
+import struct
 
 from PySide2.QtWidgets import QDialogButtonBox, QMessageBox, QTreeView, \
     QHBoxLayout, QPushButton
@@ -50,43 +51,59 @@ from os import path
 
 
 ## Path to a folder with the necessary icons.
-_PATH_ICONS = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
+PATH_TO_ICONS = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
                         "Icons")
 
 ## Path to a folder with the necessary user interface files.
-_PATH_UI = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
+PATH_TO_UI = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
                      "UIs")
 
-## format string to format image number inside image name while recording
+## Format string to format image number inside image name while recording
 NAME_NUMBER_FORMAT = "%05d"
+
+## Ancillary private safe-to-copy PNG chunk type code.
+FPS_CHUNK_CODE = b'xfPs'
 
 
 class ControlPanel(QObject):
     """
-Class providing funcionality to a Control panel inside TaskView.
+Class providing funcionality to a Control panel inside the TaskView.
 
 This class enables user to play, pause, rewind, record, export and seek through
 an animation.
 
 Attributes:
-    form: A QDialog instance show in the TaskView.
-    timer: A QTimer for timing animations.
-    last_clicked: A str showing which button was pressed last.
-    image_number: An int number of a next recorded image.
-    record_prefix: A str prefix for an image file name.
-    trv_sequences: A QTreeView showing list of recorded sequences.
-    lyt_export: A QHBoxLayout with a `confirm` and `abort` buttons.
-    btn_confirm: A QPushButton to confirm sequence to export.
     btn_abort: A QPushButton to abort exporting a sequence.
+    btn_confirm: A QPushButton to confirm sequence to export.
+    control_proxy: A proxy to an associated `Control` class.
+    form: A QDialog instance show in the TaskView.
+    image_number: An int number of a next recorded image.
+    last_clicked: A str showing which button was pressed last.
+    lyt_export: A QHBoxLayout with a `confirm` and `abort` buttons.
+    record_prefix: A str prefix for an image file name.
+    timer: A QTimer for timing animations.
+    trv_sequences: A QTreeView showing list of recorded sequences.
 
 To create an instance of this class do:
         form = FreeCADGui.PySideUic.loadUi(
-            path.join(_PATH_UI, "AnimationControl.ui"))
+            path.join(PATH_TO_UI, "AnimationControl.ui"))
         form.setWindowTitle(title)
-        panel = ControlPanel(feature_python, form)
+        panel = ControlPanel(fp, form)
     """
 
     def __init__(self, control_proxy, form):
+        """
+Initialization method for ControlPanel.
+
+A class instance is created. A proxy for an associated `Control` is added and
+the control properties are set to read-only as not to change when control panel
+is opened. A form and timer are assigned. `Pause` button is disabled as no
+animation is playing.
+
+Args:
+    control_proxy: A proxy to a `Control` so properties can be set read-only.
+    form: A Qt dialog loaded from a file.
+        """
         super(ControlPanel, self).__init__()
         self.control_proxy = control_proxy
 
@@ -114,6 +131,14 @@ To create an instance of this class do:
         self.setInvalidButtons()
 
     def playClicked(self):
+        """
+Feedback method called when play button was clicked.
+
+Invalid buttons are disabled. Active View's animation is disabled (Necessary).
+Slider position is checked for invalid position (at the end) and if position
+is plausible, all collisions are reset, current time is extrapolated from
+the slider and an animation is played.
+        """
         # Disable everything except for the pause button
         self.last_clicked = "play"
         self.setInvalidButtons()
@@ -136,11 +161,24 @@ To create an instance of this class do:
             self.play(t)
 
     def pauseClicked(self):
+        """
+Feedback method called when pause button was clicked.
+
+Invalid buttons are disabled in this method and that's it.
+        """
         # Enable everything except for the pause button
         self.last_clicked = "pause"
         self.setInvalidButtons()
 
     def rewindClicked(self):
+        """
+Feedback method called when rewind button was clicked.
+
+Invalid buttons are disabled. Active View's animation is disabled (Necessary).
+Slider position is checked for invalid position (at the end) and if position
+is plausible, all collisions are reset, current time is extrapolated from
+the slider and an animation is played.
+        """
         # Disable everything except for the pause button
         self.last_clicked = "rewind"
         self.setInvalidButtons()
@@ -163,6 +201,15 @@ To create an instance of this class do:
             self.rewind(t)
 
     def recordClicked(self):
+        """
+Feedback method called when record button was clicked.
+
+Invalid buttons are disabled. A record prefix is generated. An Image number is
+set to 0. Active View's animation is disabled (Necessary). Slider position is
+checked for invalid position (at the end) and if position is plausible, all
+collisions are reset, current time is extrapolated from the slider and an
+animation is played/recorded.
+        """
         # Disable everything except for the pause button
         self.last_clicked = "record"
         self.setInvalidButtons()
@@ -190,6 +237,13 @@ To create an instance of this class do:
             self.record(t)
 
     def exportClicked(self):
+        """
+Feedback method called when export button was clicked.
+
+Invalid buttons are disabled. An `Export Path` is checked for files. The files
+are checked for sequences. Sequences are shown with buttons to confirm or
+cancel the selection.
+        """
         # Disable everything
         self.last_clicked = "export"
         self.setInvalidButtons()
@@ -214,6 +268,13 @@ To create an instance of this class do:
             self.setInvalidButtons()
 
     def sliderChanged(self):
+        """
+Feedback method called when slider position is changed.
+
+If slider is enabled (not used to show animation time) and slider position is
+changed, time is extrapolated from slider position and animation in that time
+is shown.
+        """
         # Check if the slider is enabled i.e. the change is an user input,
         # not a visualization of animation progress
         if self.form.sld_seek.isEnabled():
@@ -227,6 +288,12 @@ To create an instance of this class do:
             self.showChanges()
 
     def setInvalidButtons(self):
+        """
+Method to enable/disable buttons according to a `last clicked` button.
+
+If `pause` button was pressed, all others buttons are disabled. If any other
+button was pressed, only `pause` button is left enabled.
+        """
         # Disable invalid buttons with respect to the last clicked button
         self.form.btn_play.setEnabled(self.last_clicked == "pause" and
                                       self.last_clicked != "export")
@@ -245,7 +312,10 @@ To create an instance of this class do:
 
     def reject(self):
         """
-Control panel was is closing.
+Feedback method called when Control panel is closing.
+
+Animation is stopped. Controls properties are set to be editable. Dialog is
+closed.
         """
         # Stop animaiton, if it's running by clicking pause button
         self.pauseClicked()
@@ -262,29 +332,64 @@ Control panel was is closing.
         FreeCADGui.Control.closeDialog()
 
     def getStandardButtons(self, *args):
-        """ To have just one button - close """
+        """
+Method to set just one button (close) to close the dialog.
+
+Args:
+    *args: A tuple of unused arguments from Qt.
+        """
         return QDialogButtonBox.Close
 
     def isAllowedAlterSelection(self):
-        return True
+        """
+Method to tell FreeCAD if dialog is allowed to alter a selection.
+
+Returns:
+    False - this dialog does not change a selection.
+        """
+        return False
 
     def isAllowedAlterView(self):
+        """
+Method to tell FreeCAD if dialog is allowed to alter a view.
+
+Returns:
+    True - this dialog does change a view.
+        """
         return True
 
     def isAllowedAlterDocument(self):
+        """
+Method to tell FreeCAD if dialog is allowed to alter a document.
+
+Returns:
+    True - this dialog does change a document.
+        """
         return True
 
     @Slot(float, float)
     def play(self, t):
+        """
+Method to show an animation frame at an animation time `t` during playing.
 
+Current clock time is loaded. If the pause button was clicked, an animation is
+stopped. Otherwise the animation time `t` is distributed to appropriate
+children. If the animation time `t` exceeded `Stop Time`, the animation is
+stopped. Lastly next frame time is computed as well as pause time (to stick
+with real time if computation did not exceeded `Step Time`). Finally the
+timer is set to show the next animation frame after precomputed pause.
+
+Args:
+    t: An animation time to generate an animation frame at.
+        """
         # Load current time
         time_ = time.clock()
 
-        # Chech pause button was not pressed
+        # Check pause button was not pressed
         if self.last_clicked == "pause":
             return
 
-        # Disribute the animaiton time to trajectories so that they change
+        # Disribute the animation time to trajectories so that they change
         # positions of all animated objects
         self.distributeTime(t)
         self.updateCollisions()
@@ -318,15 +423,27 @@ Control panel was is closing.
 
     @Slot(float, float)
     def rewind(self, t):
+        """
+Method to show an animation frame at an animation time `t` during rewind.
 
+Current clock time is loaded. If the pause button was clicked, an animation is
+stopped. Otherwise the animation time `t` is distributed to appropriate
+children. If the animation time `t` exceeded `Stop Time`, the animation is
+stopped. Lastly next frame time is computed as well as pause time (to stick
+with real time if computation did not exceeded `Step Time`). Finally the
+timer is set to show the next animation frame after precomputed pause.
+
+Args:
+    t: An animation time to generate an animation frame at.
+        """
         # Load current time
         time_ = time.clock()
 
-        # Chech pause button was not pressed
+        # Check pause button was not pressed
         if self.last_clicked == "pause":
             return
 
-        # Disribute the animaiton time to trajectories so that they change
+        # Disribute the animation time to trajectories so that they change
         # positions of all animated objects
         self.distributeTime(t)
         self.updateCollisions()
@@ -360,12 +477,23 @@ Control panel was is closing.
 
     @Slot(float, float)
     def record(self, t):
+        """
+Method to show and save an animation frame at an animation time `t`.
 
-        # Chech pause button was not pressed
+Current clock time is loaded. If the pause button was clicked, an animation is
+stopped. Otherwise the animation time `t` is distributed to appropriate
+children. If the animation time `t` exceeded `Stop Time`, the animation is
+stopped. Lastly next frame time is computed. Finally the timer is set to show
+the next animation frame after precomputed pause.
+
+Args:
+    t: An animation time to generate an animation frame at.
+        """
+        # Check pause button was not pressed
         if self.last_clicked == "pause":
             return
 
-        # Disribute the animaiton time to trajectories so that they change
+        # Disribute the animation time to trajectories so that they change
         # positions of all animated objects, save the image
         self.distributeTime(t)
         self.updateCollisions()
@@ -395,6 +523,15 @@ Control panel was is closing.
             self.timer.singleShot(0, lambda: self.record(next_t))
 
     def distributeTime(self, t):
+        """
+Method to distribute a time `t` to children Trajectories.
+
+List of children is loaded. If a child is `Trajectory`, the time is set to it
+and its children are added to the list.
+
+Args:
+    t: A time to distribute to all child `Trajectories`.
+        """
         # Load list of objects inside Control group
         objects = self.control_proxy.Group
 
@@ -407,6 +544,12 @@ Control panel was is closing.
                 objects += obj.Group
 
     def updateCollisions(self):
+        """
+Method to update collisions from CollisionDetector children.
+
+List of children is loaded. If a child is `CollisionDetector`, it's touched so
+that it's recomputed.
+        """
         # Load list of objects inside Control group
         objects = self.control_proxy.Group
 
@@ -417,6 +560,11 @@ Control panel was is closing.
                 obj.touch()
 
     def resetCollisions(self):
+        """
+Method to reset collisions from CollisionDetector children.
+
+List of children is loaded. If a child is `CollisionDetector`, it's reset.
+        """
         # Load list of objects inside Control group
         objects = self.control_proxy.Group
 
@@ -427,26 +575,61 @@ Control panel was is closing.
                 obj.Proxy.reset()
 
     def showChanges(self):
-            FreeCAD.ActiveDocument.recompute()
-            FreeCADGui.updateGui()
+        """
+Method to show changes made to objects, collisions.
+
+This method is necessary to call after `distributeTime`, `updateCollisions` and
+`resetCollisions`.
+        """
+        FreeCAD.ActiveDocument.recompute()
+        FreeCADGui.updateGui()
 
     def saveImage(self):
+        """
+Method to save current view as a PNG image.
 
+An image name is pieced together from `record prefix` and `image number`.
+Then an image path is constructed. Animation is disabled(obligatory) and
+current view is saved as an image. Afterwards, if saving the first image(image
+number 0), a chunk with a framerate corresponding to a step size is added.
+Finally the image number is incremented.
+        """
         # Prepare complete path to an image
         name = self.record_prefix + (NAME_NUMBER_FORMAT % self.image_number) \
             + ".png"
-        path_ = path.join(self.control_proxy.ExportPath, name)
+        image_path = path.join(self.control_proxy.ExportPath, name)
 
         # Export image and increase image number
         FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
         FreeCADGui.ActiveDocument.ActiveView.saveImage(
-                path_,
-                self.control_proxy.VideoWidth,
-                self.control_proxy.VideoHeight)
+                image_path,
+                self.control_proxy.VideoWidth, self.control_proxy.VideoHeight)
+
+        # Write a framerate chunk into the first image
+        # TODO
+        if self.image_number == 0:
+            if not self.writeFramerateChunk(1 / self.control_proxy.StepTime,
+                                            image_path):
+                QMessageBox.warning(
+                            None, 'Saving framerate failed',
+                            "Framerate was not saved, this recorded image\n"
+                            + "sequence will not be able to be exported.\n"
+                            + "Check Report View for more info.")
         self.image_number += 1
 
     def findSequences(self, files):
+        """
+Method to find sequences between files.
 
+Files are scanned for sequences, the valid sequences are recognized and number
+of frames is counted.
+
+Args:
+    files: A list of string file names.
+
+Returns:
+    A dict with sequence names and numbers of frames.
+        """
         # Check there are any files
         if len(files) == 0:
             return {}
@@ -481,7 +664,16 @@ Control panel was is closing.
         return sequences
 
     def showSequences(self, sequences):
+        """
+Method to show sequences to export on a dialog panel.
 
+Sequences and frame numbers are shown in a QTreeView, and buttons `'Confirm'`
+and `'Abort'` are attached under it. All of this is put under the Export button
+on the dialog panel.
+
+Args:
+    sequences: A dict with sequence names and numbers of frames.
+        """
         # Add names to columns
         NAME, N_FRAMES = range(2)
 
@@ -593,15 +785,35 @@ Control panel was is closing.
                 mySelectionChanged)
 
     def exportConfirmed(self):
+        """
+Feedback method called when confirm button was clicked.
 
+Buttons are disabled, framerate is loaded from the first image chunks,
+selected sequence name is used to create an `image name` template and
+a `video name` which can be used in a FFMPEG command. Such a commnad
+is executed to convert the video, if FFMPEG is installed.
+Otherwise warnings are shown.
+        """
         # Disable export and confirm buttons
         self.btn_confirm.setEnabled(False)
         self.btn_abort.setEnabled(False)
 
         # Prepare arguments for ffmpeg conversion
-        fps = str(1 / self.control_proxy.StepTime)
         selected_seq = \
             self.trv_sequences.selectionModel().selectedRows()[0].data()
+        # Load framerate
+        image_name = selected_seq + "-" + (NAME_NUMBER_FORMAT % 0) + ".png"
+        image_path = path.join(self.control_proxy.ExportPath, image_name)
+        #TODO load fps from the first image
+        fps = self.readFramerateChunk(image_path)
+        if fps == -1.0:
+            QMessageBox.warning(
+                            None, 'Loading framerate failed',
+                            "Framerate was not loaded, this recorded image\n"
+                            + "sequence cannot to be exported.\n"
+                            + "Check Report View for more info.")
+            return
+
         image_name = '"' + path.normpath(
                 path.join(self.control_proxy.ExportPath, selected_seq + "-"
                           + NAME_NUMBER_FORMAT + ".png")) + '"'
@@ -610,7 +822,7 @@ Control panel was is closing.
                           selected_seq + ".mp4")) + '"'
 
         # Prepare an ffmpeg command
-        export_command = 'ffmpeg -r ' + fps + ' -i ' + image_name \
+        export_command = 'ffmpeg -r ' + str(fps) + ' -i ' + image_name \
             + ' -c:v libx264 -pix_fmt yuv420p ' + video_name
 
         # Try to run the command
@@ -636,10 +848,22 @@ Control panel was is closing.
         self.closeExportSubform()
 
     def exportAborted(self):
+        """
+Feedback method called when abort button was clicked.
+
+The part of the dialog panel used for video exporting is closed.
+        """
         # Close the export subform
         self.closeExportSubform()
 
     def closeExportSubform(self):
+        """
+Method used to close the part of the dialog panel used for video exporting.
+
+The QTreeView with sequence names and their numbers of frames are closed.
+Then `'Confirm'` and `'Abort'` buttons are removed and the rest of buttons
+is returned to the default state (the same as if pause button was pressed).
+        """
         # Close all parts of export subform and remove them from the panel
         self.trv_sequences.close()
         self.form.lyt_main.removeWidget(self.trv_sequences)
@@ -651,58 +875,190 @@ Control panel was is closing.
         self.last_clicked = "pause"
         self.setInvalidButtons()
 
+    def installPyPNG(self):
+        """
+Method to install necessary pyPNG library into FreeCAD.
+
+The pyPNG library is not part of FreeCAD and so we need to add it using pip.
+This method tries to do so. It may prove crutial to run FreeCAD as
+administrator to receive permissions required by pip.
+
+Returns:
+    True if pyPNG was installed successfully and False otherwise.
+        """
+        import pip
+        if hasattr(pip, "main"):
+            FreeCAD.Console.PrintLog("Installing pyPNG.\n")
+            if pip.main(["install", "pyPNG"]) != 0:
+                FreeCAD.Console.PrintError("pyPNG installation failed.\n")
+                return False
+            FreeCAD.Console.PrintLog("Installation successful.\n")
+            return True
+        else:
+            import pip._internal
+            if hasattr(pip._internal, "main"):
+                if pip._internal.main(["install", "pyPNG"]) != 0:
+                    FreeCAD.Console.PrintError("pyPNG installation failed.\n")
+                    return False
+                FreeCAD.Console.PrintLog("Installation successful.\n")
+                return True
+            else:
+                FreeCAD.Console.PrintLog(
+                        "Unable to import and instal pyPNG.\n")
+                return False
+
+    def writeFramerateChunk(self, framerate, image_path):
+        """
+Method to write a framerate into a PNG image as one of its chunks.
+
+This method tries to import pyPNG first. Then it tries to install it and import
+again. If either import is successful, all chunks currently in the PNG image at
+an `image_path` are extracted. The framerate chunk is added as the second
+chunk, right behind IHDR. Finally the image is rewritten with new
+list of chunks.
+
+Args:
+    framerate: A float specifying the framerate to be written into the image.
+    image_path: A str containing a path to an image about to be augmented.
+        """
+        # import or install pyPNG
+        try:
+            import png
+        except ModuleNotFoundError:
+            if self.installPyPNG():
+                import png
+            else:
+                return False
+        except Exception as e:
+            FreeCAD.Consol.PrintError(
+                "Unexpected error occured while importing pyPNG - " + str(e))
+
+        # Read chunks already present in a PNG image
+        reader = png.Reader(filename=image_path)
+        chunks = list(reader.chunks())
+        # Insert custom framerate chunk
+        chunks.insert(1, (FPS_CHUNK_CODE, struct.pack("f", framerate)))
+
+        # Write it into the image
+        with open(image_path, 'wb') as image_file:
+            png.write_chunks(image_file, chunks)
+
+        return True
+
+    def readFramerateChunk(self, image_path):
+        """
+Method to read a framerate inserted as one of a PNG image's chunks.
+
+This method tries to import pyPNG first. Then it tries to install it and import
+again. If either import is successful, all chunks currently in the PNG image at
+an `image_path` are extracted. The framerate chunk ought to be stored as
+the second chunk, right behind IHDR. If the chunk's code type matches,
+its value is returned.
+
+Args:
+    image_path: A str containing a path to an image with the framerate chunk.
+
+Returns:
+    A float signifying framerate, or -1.0 if something failed.
+        """
+        # import or install pyPNG
+        try:
+            import png
+        except ModuleNotFoundError:
+            if self.installPyPNG():
+                import png
+            else:
+                return -1.0
+        # Read chunks already present in a PNG image
+        reader = png.Reader(filename=image_path)
+        chunks = list(reader.chunks())
+        if chunks[1][0] == FPS_CHUNK_CODE:
+            return struct.unpack("f", chunks[1][1])[0]
+        else:
+            FreeCAD.Console.PrintError("Unable to unpack a framerate.\n")
+            return -1.0
+
 
 class ControlProxy:
     """
+Proxy class for a `DocumentObjectGroupPython` Control instance.
+
+A ControlProxy instance adds properties to a `DocumentObjectGroupPython`
+Control instance and responds to their changes. It provides a control panel
+to control animations.
+
+To access such a dialog double-click Control in Tree View or right click and
+select *Show control panel* option from a context menu.
+
 Attributes:
-    updated
-    temporary_export_path
+    updated: A bool - True if a property was changed by a class and not user.
+    temporary_export_path: A str path to an export folder.
+
+
+To connect this `Proxy` object to a `DocumentObjectGroupPython` Control do:
+
+        a = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",
+                                             "Control")
+        ControlProxy(a)
     """
 
     updated = False
 
-    def __init__(self, feature_python):
-        '''"App two point properties" '''
-        self.setProperties(feature_python)
-        feature_python.Proxy = self
+    def __init__(self, fp):
+        """
+Initialization method for ControlProxy.
 
-    def onDocumentRestored(self, feature_python):
+A class instance is created and made a `Proxy` for a generic
+`DocumentObjectGroupPython` Control object. During initialization number of
+properties are specified and preset.
+
+Args:
+    fp: A barebone `DocumentObjectGroupPython` Control object to be extended.
+        """
+        self.setProperties(fp)
+        fp.Proxy = self
+
+    def onDocumentRestored(self, fp):
         """
 Method called when document is restored to make sure everything is as it was.
 
-Reinitialization method - it creates properties and sets them to
-default, if they were not restored automatically. It restarts a
-server if it was running when document was closed. Properties of
-connected `ViewObject` are also recreated and reset if necessary.
+Reinitialization method - it creates properties and sets them to default, if
+they were not restored automatically. Properties of connected `ViewObject` are
+also recreated and reset if necessary.
 
 Args:
-    feature_python : A restored `FeaturePython` Server object.
+    fp : A restored `DocumentObjectGroupPython` Control object.
         """
-        feature_python.ViewObject.Proxy.setProperties(
-                feature_python.ViewObject)
-        self.setProperties(feature_python)
+        fp.ViewObject.Proxy.setProperties(fp.ViewObject)
+        self.setProperties(fp)
 
-    def onBeforeChange(self, feature_python, prop):
+    def onBeforeChange(self, fp, prop):
         """
-adsfa.
+Method called before `DocumentObjectGroupPython` Control is changed.
+
+An old export path is stored for a case in which a new export path is not
+a valid path.
+
+Args:
+    fp : A `DocumentObjectGroupPython` Control object.
+    prop: A str name of a property about to change.
         """
         # Save an export path before it's changed to restore it if new
         # path is invalid
-        if prop == "ExportPath" and hasattr(feature_python, "ExportPath") and \
+        if prop == "ExportPath" and hasattr(fp, "ExportPath") and \
            not self.updated:
-            self.temporary_export_path = feature_python.ExportPath
+            self.temporary_export_path = fp.ExportPath
 
-    def onChanged(self, feature_python, prop):
+    def onChanged(self, fp, prop):
         """
-        Event handler for a property change in Data table. The property
-        value validity is checked here.
+Method called after `DocumentObjectGroupPython` Control was changed.
 
-        Parameters
-        ----------
-        feature_python : Part::FeaturePython Control object
-            `feature_python` is an object which property has changed.
-        prop : String
-            `prop` is a name of a changed property.
+Values of changed properties (start time, step time, stop time, export path)
+are checked for validity and edited if they are not.
+
+Args:
+    fp : A `DocumentObjectGroupPython` Control object.
+    prop: A str name of a changed property.
         """
         # Don't do anything if a value was updated because another property
         # had changed
@@ -711,112 +1067,98 @@ adsfa.
             return
 
         # Control animation range so that step size is less than range size
-        elif prop == "StartTime" and hasattr(feature_python, "StopTime") and \
-                hasattr(feature_python, "StepTime"):
+        elif prop == "StartTime" and hasattr(fp, "StopTime") and \
+                hasattr(fp, "StepTime"):
             self.updated = True
-            feature_python.StopTime = (feature_python.StopTime,
-                                       feature_python.StartTime
-                                       + feature_python.StepTime,
-                                       float("inf"), 0.5)
+            fp.StopTime = (fp.StopTime, fp.StartTime + fp.StepTime,
+                           float("inf"), 0.5)
             self.updated = True
-            feature_python.StepTime = (feature_python.StepTime, 0.01,
-                                       feature_python.StopTime
-                                       - feature_python.StartTime, 0.1)
-        elif prop == "StepTime" and hasattr(feature_python, "StartTime") and \
-                hasattr(feature_python, "StopTime"):
+            fp.StepTime = (fp.StepTime, 0.01, fp.StopTime - fp.StartTime, 0.1)
+        elif prop == "StepTime" and hasattr(fp, "StartTime") and \
+                hasattr(fp, "StopTime"):
             self.updated = True
-            feature_python.StopTime = (feature_python.StopTime,
-                                       feature_python.StartTime
-                                       + feature_python.StepTime,
-                                       float("inf"), 0.5)
+            fp.StopTime = (fp.StopTime, fp.StartTime + fp.StepTime,
+                           float("inf"), 0.5)
             self.updated = True
-            feature_python.StartTime = (feature_python.StartTime,
-                                        -float("inf"),
-                                        feature_python.StopTime
-                                        - feature_python.StepTime, 0.5)
-        elif prop == "StopTime" and hasattr(feature_python, "StartTime") and \
-                hasattr(feature_python, "StepTime"):
+            fp.StartTime = (fp.StartTime, -float("inf"),
+                            fp.StopTime - fp.StepTime, 0.5)
+        elif prop == "StopTime" and hasattr(fp, "StartTime") and \
+                hasattr(fp, "StepTime"):
             self.updated = True
-            feature_python.StartTime = (feature_python.StartTime,
-                                        -float("inf"),
-                                        feature_python.StopTime
-                                        - feature_python.StepTime, 0.5)
+            fp.StartTime = (fp.StartTime, -float("inf"),
+                            fp.StopTime - fp.StepTime, 0.5)
             self.updated = True
-            feature_python.StepTime = (feature_python.StepTime, 0.01,
-                                       feature_python.StopTime
-                                       - feature_python.StartTime, 0.1)
+            fp.StepTime = (fp.StepTime, 0.01, fp.StopTime - fp.StartTime, 0.1)
 
         # Return to previous export path if the new one is invalid
         elif prop == "ExportPath":
             # Test access right in the folder an show warning if they are not
             # sufficient
-            if not os.access(feature_python.ExportPath, os.W_OK | os.R_OK):
+            if not os.access(fp.ExportPath, os.W_OK | os.R_OK):
                 QMessageBox.warning(None, 'Error while setting Export Path',
                                     "You don't have access to read and write "
                                     + "in this folder.")
                 self.updated = True
-                feature_python.ExportPath = self.temporary_export_path
+                fp.ExportPath = self.temporary_export_path
                 del self.temporary_export_path
 
-    def setProperties(self, feature_python):
+    def setProperties(self, fp):
+        """
+Method to set properties during initialization or document restoration.
+
+The properties are set if they are not already present and an
+`AnimateDocumentObserver` is recreated.
+
+Args:
+    fp : A restored or barebone `DocumentObjectGroupPython` Control object.
+        """
         # Add (and preset) properties
-        if not hasattr(feature_python, "StartTime"):
-            feature_python.addProperty(
+        if not hasattr(fp, "StartTime"):
+            fp.addProperty(
                 "App::PropertyFloatConstraint", "StartTime", "Timing",
                 "Animation start time. \nRange is "
                 "< - inf | Stop Time - Step Time >."
                 ).StartTime = (0, -float("inf"), 9.5, 0.5)
-        elif hasattr(feature_python, "StepTime") and \
-                hasattr(feature_python, "StopTime"):
-            feature_python.StartTime = (feature_python.StartTime,
-                                        -float("inf"),
-                                        feature_python.StopTime
-                                        - feature_python.StepTime, 0.5)
-        if not hasattr(feature_python, "StepTime"):
-            feature_python.addProperty(
+        elif hasattr(fp, "StepTime") and hasattr(fp, "StopTime"):
+            fp.StartTime = (fp.StartTime, -float("inf"),
+                            fp.StopTime - fp.StepTime, 0.5)
+        if not hasattr(fp, "StepTime"):
+            fp.addProperty(
                 "App::PropertyFloatConstraint", "StepTime", "Timing",
                 "Animation step time. \nRange is "
                 "< 0.01 | Stop Time - Start Time >."
                 ).StepTime = (0.5, 0.01, 10, 0.1)
-        elif hasattr(feature_python, "StartTime") and \
-                hasattr(feature_python, "StopTime"):
-            feature_python.StepTime = (feature_python.StepTime, 0.01,
-                                       feature_python.StopTime
-                                       - feature_python.StartTime, 0.1)
-        if not hasattr(feature_python, "StopTime"):
-            feature_python.addProperty(
+        elif hasattr(fp, "StartTime") and hasattr(fp, "StopTime"):
+            fp.StepTime = (fp.StepTime, 0.01, fp.StopTime - fp.StartTime, 0.1)
+        if not hasattr(fp, "StopTime"):
+            fp.addProperty(
                 "App::PropertyFloatConstraint", "StopTime", "Timing",
                 "Animation stop time. \nRange is "
                 + "< Start Time + Step Time | inf >."
                 ).StopTime = (10, 0.5, float("inf"), 0.5)
-        elif hasattr(feature_python, "StartTime") and \
-                hasattr(feature_python, "StepTime"):
-            feature_python.StopTime = (feature_python.StopTime,
-                                       feature_python.StartTime
-                                       + feature_python.StepTime,
-                                       float("inf"), 0.5)
+        elif hasattr(fp, "StartTime") and hasattr(fp, "StepTime"):
+            fp.StopTime = (fp.StopTime, fp.StartTime + fp.StepTime,
+                           float("inf"), 0.5)
 
-        if not hasattr(feature_python, "ExportPath"):
-            feature_python.addProperty(
+        if not hasattr(fp, "ExportPath"):
+            fp.addProperty(
                 "App::PropertyPath", "ExportPath", "Record & Export",
                 "Path to a folder, where recorded rendered images will be "
                 "saved to be converted into a video.")
-        if not hasattr(feature_python, "VideoWidth"):
-            feature_python.addProperty(
+        if not hasattr(fp, "VideoWidth"):
+            fp.addProperty(
                 "App::PropertyIntegerConstraint", "VideoWidth",
                 "Record & Export", "Width of the exported video."
                 ).VideoWidth = (1280, 32, 7680, 10)
         else:
-            feature_python.VideoWidth = (
-                    feature_python.VideoWidth, 32, 7680, 10)
-        if not hasattr(feature_python, "VideoHeight"):
-            feature_python.addProperty(
+            fp.VideoWidth = (fp.VideoWidth, 32, 7680, 10)
+        if not hasattr(fp, "VideoHeight"):
+            fp.addProperty(
                 "App::PropertyIntegerConstraint", "VideoHeight",
                 "Record & Export", "Height of the exported video."
                 ).VideoHeight = (720, 32, 4320, 10)
         else:
-            feature_python.VideoHeight = (
-                    feature_python.VideoHeight, 32, 4320, 10)
+            fp.VideoHeight = (fp.VideoHeight, 32, 4320, 10)
 
         # Add an document observer to control the structure
         import AnimateDocumentObserver
@@ -824,28 +1166,77 @@ adsfa.
 
 
 class ViewProviderControlProxy:
+    """
+Proxy class for `Gui.ViewProviderDocumentObject` Control.ViewObject.
 
+A ViewProviderControlProxy instance provides a Control's icon, double-click
+response and context menu with "Show control panel".
+
+Attributes:
+    fp: A Control object.
+    panel: A ControlPanel if one is active or None.
+
+To connect this `Proxy` object to a `Gui.ViewProviderDocumentObject`
+Control.ViewObject do:
+
+        a = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",
+                                             "Control")
+        ViewProviderControlProxy(a.ViewObject)
+    """
     panel = None
-    feature_python = None
+    fp = None
 
-    def __init__(self, view_provider):
+    def __init__(self, vp):
         """
-Set this object to the proxy object of the actual view provider.
-        """
-        self.setProperties(view_provider)
-        view_provider.Proxy = self
+Initialization method for ViewProviderControlProxy.
 
-    def attach(self, view_provider):
+A class instance is created and made a `Proxy` for a generic
+`Gui.ViewProviderDocumentObject` Control.ViewObject. During initialization
+number of properties are specified and preset.
+
+Args:
+    vp: A barebone `Gui.ViewProviderDocumentObject` Control.ViewObject.
+        """
+        self.setProperties(vp)
+        vp.Proxy = self
+
+    def attach(self, vp):
+        """
+Method called by FreeCAD after initialization.
+
+This method adds Control as the `fp` attribute.
+
+Args:
+    vp: A Control.ViewObject after initialization.
+        """
         # Add feature python as it's necessary to claimChildren
-        self.feature_python = view_provider.Object
+        self.fp = vp.Object
 
     def claimChildren(self):
-        if hasattr(self, "feature_python"):
-            if self.feature_python:
-                return self.feature_python.Group
+        """
+Method called by FreeCAD to retrieve assigned children.
+
+When a property of a Control is touched the Control and the FreeCAD
+ActiveDocument are notified. The FreeCAD ActiveDocument then emits a signal
+to inform all its observers e.g. the FreeCADGui ActiveDocument. The FreeCADGui
+document then emits a new signal to inform e.g. the tree view. The tree view
+then invokes `claimChildren()`.
+        """
+        if hasattr(self, "fp"):
+            if self.fp:
+                return self.fp.Group
         return []
 
     def canDropObject(self, obj):
+        """
+Method called by FreeCAD to ask if an object `obj` can be droped into a Group.
+
+FreeCAD objects of a Server, Trajectory and CollisionDetector type are allowed
+to drop inside a Control group.
+
+Args:
+    obj: A FreeCAD object hovering above a Control item in the Tree View.
+        """
         # Allow only some objects to be dropped into the Control group
         if hasattr(obj, "Proxy") and \
            (obj.Proxy.__class__.__name__ == "ServerProxy" or
@@ -856,18 +1247,39 @@ Set this object to the proxy object of the actual view provider.
 
     def getIcon(self):
         """
-        Get the icon in XMP format which will appear in the trv_sequences view.
-        """
-        return path.join(_PATH_ICONS, "Control.xpm")
+Method called by FreeCAD to supply an icon for the Tree View.
 
-    def setProperties(self, view_provider):
+A full path to an icon is supplied for the FreeCADGui.
+
+Returns:
+    A str path to an icon.
+        """
+        return path.join(PATH_TO_ICONS, "Control.xpm")
+
+    def setProperties(self, vp):
+        """
+Method to hide unused properties.
+
+Properties Display Mode, Visibility are set to be invisible as they are unused.
+
+Args:
+    vp: A `Gui.ViewProviderDocumentObject` Control.ViewObject.
+        """
         # Hide unnecessary view properties
-        view_provider.setEditorMode("DisplayMode", 2)
-        view_provider.setEditorMode("Visibility", 2)
+        vp.setEditorMode("DisplayMode", 2)
+        vp.setEditorMode("Visibility", 2)
 
-    def doubleClicked(self, view_provider):
+    def doubleClicked(self, vp):
         """
-Double clicked.
+Method called by FreeCAD when Control is double-clicked in the Tree View.
+
+If no dialog is opened in the Task View, a new `ControlPanel` is opened.
+If a `ControlPanel` is already opened, the Model tab on the Combo View
+is swaped for the Tasks tab so that the panel becomes visible.
+If another dialog is opened a warning is shown.
+
+Args:
+    vp: A `Gui.ViewProviderDocumentObject` Control.ViewObject.
         """
         # Switch to the Task View if a Control panel is already opened
         if self.panel:
@@ -877,11 +1289,11 @@ Double clicked.
         else:
             # Load the QDialog from a file and name it after this object
             form = FreeCADGui.PySideUic.loadUi(
-                    path.join(_PATH_UI, "AnimationControl.ui"))
-            form.setWindowTitle(view_provider.Object.Label)
+                    path.join(PATH_TO_UI, "AnimationControl.ui"))
+            form.setWindowTitle(vp.Object.Label)
 
             # Create a control panel and try to show it
-            self.panel = ControlPanel(view_provider.Object, form)
+            self.panel = ControlPanel(vp.Object, form)
             try:
                 FreeCADGui.Control.showDialog(self.panel)
             except RuntimeError as e:
@@ -894,27 +1306,24 @@ Double clicked.
                     FreeCADGui.Control.showTaskView()
         return True
 
-    def setupContextMenu(self, view_provider, menu):
+    def setupContextMenu(self, vp, menu):
         """
-Method editing a context menu for right click on `FeaturePython` Server.
+Method called by the FreeCAD to customize a context menu for a Control.
 
 The *Transform* and *Set colors...* items are removed from the context menu
-shown upon right click on `FeaturePython` Server in the trv_sequences View.
-The option to *Disconnect Server*, or *Connect Server* is added instead.
+shown upon right click on `DocumentObjectGroupPython` Control in the
+Tree View. The option to *Show control panel* is added instead.
 
 Args:
-    view_provider: A right-clicked `Gui.ViewProviderDocumentObject`
-    Server.ViewObject.
+    vp: A right-clicked `Gui.ViewProviderDocumentObject` Control.ViewObject.
     menu: A Qt's QMenu to be edited.
         """
         # Add an option to open the Control panel
         menu.clear()
         action = menu.addAction("Show control panel")
-        action.triggered.connect(lambda f=self.doubleClicked,
-                                 arg=view_provider: f(arg))
+        action.triggered.connect(lambda f=self.doubleClicked, arg=vp: f(arg))
 
     def __getstate__(self):
-        #TODO rewrite docstring
         """
 Necessary method to avoid errors when trying to save unserializable objects.
 
@@ -922,9 +1331,8 @@ This method is used by JSON to serialize unserializable objects during
 autosave. Without this an Error would rise when JSON would try to do
 that itself.
 
-We need this for unserializable `server` and `observer` attributes,
-but we don't serialize them, because it's enough to reset them
-when object is restored.
+We need this for unserializable `fp` attribute, but we don't
+serialize it, because it's enough to reset it when object is restored.
 
 Returns:
     None, because we don't serialize anything.
@@ -932,29 +1340,47 @@ Returns:
         return None
 
     def __setstate__(self, state):
-        #TODO rewrite docstring
         """
 Necessary method to avoid errors when trying to restore unserializable objects.
 
 This method is used during a document restoration. We need this for
-unserializable `server` and `observer` attributes, but we do not restore them,
-because it's enough to reset them from saved parameters.
-
-Returns:
-    None, because we don't restore anything.
+unserializable `fp` attribute, but we do not restore it, because it's enough
+to reset it.
         """
-        return None
+        pass
 
 
 class ControlCommand(object):
-    """Create Object command"""
+    """
+ControlCommand class specifing Animate workbench's Control button/command.
+
+This class provides resources for a toolbar button and a menu button.
+It controls their behaivor(Active/Inactive) and responds to callbacks after
+either of them was clicked(Activated).
+    """
 
     def GetResources(self):
-        return {'Pixmap': path.join(_PATH_ICONS, "ControlCmd.xpm"),
+        """
+Method used by FreeCAD to retrieve resources to use for this command.
+
+Returns:
+    A dict with items `PixMap`, `MenuText` and `ToolTip` which contain
+    a path to a command icon, a text to be shown in a menu and
+    a tooltip message.
+        """
+        return {'Pixmap': path.join(PATH_TO_ICONS, "ControlCmd.xpm"),
                 'MenuText': "Control",
                 'ToolTip': "Create Control instance."}
 
     def Activated(self):
+        """
+Method used as a callback when the toolbar button or the menu item is clicked.
+
+This method creates a Control instance in currently active document.
+Afterwards it adds a ControlProxy as a `Proxy` to this instance as well as
+ViewProviderControlProxy to its `ViewObject.Proxy`, if FreeCAD runs in the
+Graphic mode.
+        """
         doc = FreeCAD.ActiveDocument
         a = doc.addObject("App::DocumentObjectGroupPython", "Control")
         ControlProxy(a)
@@ -964,15 +1390,21 @@ class ControlCommand(object):
         return
 
     def IsActive(self):
+        """
+Method to specify when the toolbar button and the menu item are enabled.
+
+The toolbar button `Control` and menu item `Control` are set to be active only
+when there is an active document in which a Control instance can be created.
+
+Returns:
+    True if buttons shall be enabled and False otherwise.
+        """
         if FreeCAD.ActiveDocument is None:
             return False
         else:
             return True
 
-    def getHelp(self):
-        return ["This is help for  Control\n",
-                "and it needs to be written."]
-
 
 if FreeCAD.GuiUp:
+    # Add command to FreeCAD Gui when importing this module in InitGui
     FreeCADGui.addCommand('ControlCommand', ControlCommand())
