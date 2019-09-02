@@ -25,11 +25,14 @@
 # *                                                                         *
 # ***************************************************************************/
 
-"""
-Created on Fri May 17 22:25:12 2019
+"""@package Trajectory
+Classes related to the Trajectory component of the Animate Workbench.
 
-@author: jirka
+The classes in this module provide funcionality for
+a `DocumentObjectGroupPython` Trajectory instance and creates a command to be
+used in a workbench.
 """
+
 import FreeCAD
 import FreeCADGui
 
@@ -41,24 +44,42 @@ from pivy import coin
 from os import path
 
 ## Path to a folder with the necessary icons.
-_PATH_ICONS = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
+PATH_TO_ICONS = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
                         "Icons")
 
 ## Path to a folder with the necessary user interface files.
-_PATH_UI = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
+PATH_TO_UI = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
                      "UIs")
 
-
-class ControlPanel(QObject):
+class TrajectoryPanel(QObject):
     """
+Class providing funcionality to a Trajectory panel inside the TaskView.
+
+This class enables user to see a manipulator in different configurations.
+It provides a dialogs to be shown in the TaskView. These dialogs have sliders
+which allow user to go through a trajectory.
+
 Attributes:
-    trajectories
-    previous_times
-    form
+    trajectories: A list of `DocumentObjectGroupPython` Trajectory instances.
+    previous_times: A list of trajectory times before opening a panel.
+    form: A list of QDialog instances to show in the TaskView.
     """
 
     def __init__(self, trajectories, forms):
-        super(ControlPanel, self).__init__()
+        """
+Initialization method for TrajectoryPanel.
+
+A class instance is created. A list of proxies for associated `Trajectory`
+instances are loaded as well as corresponding QDialog forms.
+Previously visible properties are set to be read-only as not to change when a
+`TrajectoryPanel` is open. Finally all sliders on dialogs are moved to
+a position corresponding to a `Trajectory` time.
+
+Args:
+    trajectories: A list of `DocumentObjectGroupPython` Trajectory instances.
+    forms: A list of QDialog instances to show in the TaskView.
+        """
+        super(TrajectoryPanel, self).__init__()
         self.trajectories = trajectories
 
         # Disable editing of Trajectory properties and store previous
@@ -89,6 +110,18 @@ Attributes:
             forms[i].sld_time.setValue(val)
 
     def sliderChanged(self, value, form, trajectory):
+        """
+Feedback method called when any slider position is changed.
+
+A trajectory time is extrapolated from the slider position. The time is shown
+on the dialog and set to a trajectory. Finally, the FreeCAD document and
+the FreeCADGui document are updated.
+
+Args:
+    value: A slider position.
+    form: A Dialog panel on which slider was moved.
+    trajectory: A Trajectory associated with the `form`.
+        """
         # Compute a time from the slider position and timestamp range
         t = value * (trajectory.Timestamps[-1]
                      - trajectory.Timestamps[0]) / 100 \
@@ -102,6 +135,12 @@ Attributes:
         FreeCADGui.updateGui()
 
     def close(self):
+        """
+Method used to close `TrajectoryPanel`.
+
+Trajectory properties are return to be editable/read-only/invisible as they
+were before. After that `TrajectoryPanel` is closed.
+        """
         # Allow editing of Trajecotry properties again
         for trajectory in self.trajectories:
             for prop in trajectory.PropertiesList:
@@ -118,6 +157,12 @@ Attributes:
         FreeCADGui.Control.closeDialog()
 
     def reject(self):
+        """
+Feedback method called when 'Cancel' button was pressed to close the panel.
+
+Trajectory Times are set to the original values. `TrajectoryPanel` is closed.
+FreeCAD and FreeCADGui documents are updated.
+        """
         # Return Trajectory times to previous values
         for i in range(len(self.trajectories)):
             self.trajectories[i].Time = self.previous_times[i]
@@ -128,51 +173,80 @@ Attributes:
         FreeCADGui.updateGui()
 
     def accept(self):
+        """
+Feedback method called when 'OK' button was pressed to close the panel.
+
+Trajectory Times are saved. `TrajectoryPanel` is closed. FreeCAD and FreeCADGui
+documents are updated.
+        """
         # Close the panel
         self.close()
 
     def getStandardButtons(self, *args):
-        """ To have just one button - close """
+        """
+Method to set just one button (close) to close the dialog.
+
+Args:
+    *args: A tuple of unused arguments from Qt.
+        """
         return QDialogButtonBox.Ok | QDialogButtonBox.Cancel
 
     def isAllowedAlterSelection(self):
-        return True
+        """
+Method to tell FreeCAD if dialog is allowed to alter a selection.
+
+Returns:
+    False - this dialog does not change a selection.
+        """
+        return False
 
     def isAllowedAlterView(self):
+        """
+Method to tell FreeCAD if dialog is allowed to alter a view.
+
+Returns:
+    True - this dialog does change a view.
+        """
         return True
 
     def isAllowedAlterDocument(self):
+        """
+Method to tell FreeCAD if dialog is allowed to alter a document.
+
+Returns:
+    True - this dialog does change a document.
+        """
         return True
 
 
 class TrajectoryProxy:
     """
-    TrajectoryProxy is a Proxy object made to be connected to
-    `Part::FeaturePython` Trajectory object.
+Proxy class for a `DocumentObjectGroupPython` Trajectory instance.
+
+A TrajectoryProxy instance adds properties to a `DocumentObjectGroupPython`
+Trajectory instance and responds to their changes. It provides
+a `TrajectoryPanel` to be able to see an object progress through a trajectory.
 
 Attributes:
-    pose
+    pose: A dict describing a pose - position, rotation axis, point and angle.
 
-    To connect them use:
+To connect this `Proxy` object to a `DocumentObjectGroupPython` Trajectory do:
 
-    >>> a=FreeCAD.ActiveDocument.addObject("App::FeaturePython",
-                                           "Trajectory")
-    >>> TrajectoryProxy(a)
+        a = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",
+                                             "Trajectory")
+        TrajectoryProxy(a)
     """
 
     def __init__(self, fp):
         """
-        __init__(self, fp)
+Initialization method for TrajectoryProxy.
 
-        Initialization method for Trajectory. A class instance is
-        created and made a `Proxy` for a generic `Part::FeaturePython` object.
-        During initialization number of properties are specified and preset
-        if necessary.
+A class instance is created and made a `Proxy` for a generic
+`DocumentObjectGroupPython` Trajectory object. During initialization number of
+properties are specified and preset.
 
-        Parameters
-        ----------
-        fp : Part::FeaturePython Trajectory object
-            `fp` is a generic barebone instance made to extended.
+Args:
+    fp: A `DocumentObjectGroupPython` Trajectory object to be extended.
         """
         # Add (and preset) properties
         self.setProperties(fp)
@@ -180,35 +254,19 @@ Attributes:
 
     def onChanged(self, fp, prop):
         """
-        onChanged(self, fp, prop)
+Method called after `DocumentObjectGroupPython` Trajectory was changed.
 
-        Event handler for a property change in Data table. The property
-        value validity is checked here.
+A trajectory is checked for its validity. If the `Placement` property is
+changed, then `ParentFramePlacement` property of a `Trajectory` children is set
+to equal the new `Placement`. If the `ParentFramePlacement` is changed, then
+the `Placement` property is changed.
 
-        We check if trajectory is valid and if it is, then we recompute
-        current placement with accordance to time.
-
-        Parameters
-        ----------
-        fp : Part::FeaturePython Trajectory object
-            `fp` is an object which property has changed.
-        prop : String
-            `prop` is a name of a changed property.
+Args:
+    fp: A `DocumentObjectGroupPython` Trajectory object.
+    prop: A str name of a changed property.
         """
         # Check that a trajectory has valid format
         if self.is_trajectory_property(prop):
-#            traj = {}
-#            traj["RotationAngle"] = fp.RotationAngle
-#            traj["RotationAxisX"] = fp.RotationAxisX
-#            traj["RotationAxisY"] = fp.RotationAxisY
-#            traj["RotationAxisZ"] = fp.RotationAxisZ
-#            traj["RotationPointX"] = fp.RotationPointX
-#            traj["RotationPointY"] = fp.RotationPointY
-#            traj["RotationPointZ"] = fp.RotationPointZ
-#            traj["TranslationX"] = fp.TranslationX
-#            traj["TranslationY"] = fp.TranslationY
-#            traj["TranslationZ"] = fp.TranslationZ
-#            traj["Timestamps"] = fp.Timestamps
             traj_valid = self.is_ValidTrajectory(
                     fp.Timestamps, fp.TranslationX, fp.TranslationY,
                     fp.TranslationZ, fp.RotationPointX, fp.RotationPointY,
@@ -239,18 +297,13 @@ Attributes:
 
     def execute(self, fp):
         """
-        execute(self, fp)
+Method called when recomputing a `DocumentObjectGroupPython`.
 
-        Event handler called to recompute the object after a property
-        was changed to new valid value (processed by onChange()).
+If a trajectory is valid, then current `pose` in a parent coordinate frame is
+computed, `ObjectPlacement` and `Placement` are updated accordingly.
 
-        We change the placement of connected parts/assemblies to agree with
-        computed current placement.
-
-        Parameters
-        ----------
-        fp : Part::FeaturePython Trajectory object
-            `fp` is an object which property has changed.
+Args:
+    fp: A `DocumentObjectGroupPython` Trajectory object.
         """
         # Check that current trajectory has valid format
         if not fp.ValidTrajectory:
@@ -297,12 +350,30 @@ Attributes:
                        fp.ObjectPlacement)
 
     def onDocumentRestored(self, fp):
+        """
+Method called when document is restored to make sure everything is as it was.
+
+Reinitialization method - it creates properties and sets them to
+default, if they were not restored automatically. Properties of
+connected `ViewObject` are also recreated and reset if necessary.
+
+Args:
+    fp: A restored `DocumentObjectGroupPython` Trajectory object.
+        """
         fp.ViewObject.Proxy.setProperties(fp.ViewObject)
         self.setProperties(fp)
 
     # supporting methods-------------------------------------------------------
     def setProperties(self, fp):
+        """
+Method to set properties during initialization or document restoration.
 
+The properties are set if they are not already present and an
+`AnimateDocumentObserver` is recreated.
+
+Args:
+    fp: A restored or barebone `DocumentObjectGroupPython` Trajectory object.
+        """
         self.pose = {"position":  (0, 0, 0),
                      "rot_axis":  (0, 0, 0),
                      "rot_point": (0, 0, 0),
@@ -315,7 +386,7 @@ Attributes:
                            "This property records if trajectory was changed."
                            ).ValidTrajectory = False
         if not hasattr(fp, "AnimatedObjects"):
-            fp.addProperty("App::PropertyLinkList", "AnimatedObjects",
+            fp.addProperty("App::PropertyLinkListGlobal", "AnimatedObjects",
                            "General", "Objects that will be animated.")
         if not hasattr(fp, "Interpolate"):
             fp.addProperty("App::PropertyBool", "Interpolate", "General",
@@ -530,20 +601,14 @@ Attributes:
 
     def change_trajectory(self, fp, traj):
         """
-        change_trajectory(self, fp, traj)
+Metod used to change a `Trajectory`'s trajectory.
 
-        Changes trajectory for animated object.
+A `traj` dictionary containing a trajectory is tested for validity and then
+assigned to a `Trajectory` `DocumentObjectGroupPython`.
 
-        Parameters
-        ----------
-        fp : Part::FeaturePython Trajectory object
-            `fp` is an object to which trajectory should be changed.
-        traj : dict
-            `traj` must be a dictionary with keys "RotationAngle",
-            "RotationAxisX", "RotationAxisY", "RotationAxisZ",
-            "RotationPointX", "RotationPointY", "RotationPointZ",
-            "TranslationX", "TranslationY", "TranslationZ" and "Timestamps".
-            All these keys must be paired with lists of a same length.
+Args:
+    fp: A `DocumentObjectGroupPython` Trajectory object.
+    traj: A dictionary describing a trajectory.
         """
         # Check that trajectory has a correct format and load it
         if self.is_ValidTrajectory(trajectory=traj):
@@ -563,21 +628,17 @@ Attributes:
 
     def is_trajectory_property(self, prop):
         """
-        is_trajectory_property(self, prop)
+Method to check that a property describes a trajectory.
 
-        Checks if a `prop` property is a `Trajectory` group property.
+It's checked whether `prop` is `Timestamps`, `TranslationX`, `TranslationY`,
+`TranslationZ`, `RotationPointX`, `RotationPointY`, `RotationPointZ`,
+`RotationAxisX`, `RotationAxisY`, `RotationAxisZ` or `RotationAngle`.
 
-        Parameters
-        ----------
-        prop : String
-            Property string such as `Placement`(not a `Trajectory` group
-            property) or `RotationPointX`(is a `Trajectory` proup property).
+Args:
+    prop: A str name of a changed property.
 
-        Returns
-        -------
-        bool
-            `True` if `prop` belong between `Trajectory` properties and `False`
-            otherwise.
+Returns:
+    True if prop describes a trajectory and False otherwise.
         """
         return prop in ["Timestamps", "TranslationX", "TranslationY",
                         "TranslationZ", "RotationPointX", "RotationPointY",
@@ -591,24 +652,30 @@ Attributes:
                            rotation_axis_y=[], rotation_axis_z=[],
                            rotation_angle=[], trajectory=None):
         """
-        is_ValidTrajectory(self, x)
+Method to check if a trajectory is valid.
 
-        Checks if a `x` dictionary is a valid trajectory.
+This method needs either a `trajectory` dictionary argument or all the other
+lists of floats. A valid trajectory needs to have all the necessary lists.
+All the lists must have same length. A `timestamps` list must consist of
+a sequence of strictly increasing floats. A rotation axis must have always
+length equal to 1.
 
-        Parameters
-        ----------
-        x : Dictionary
-            Valid dictionary must be a dictionary with keys "RotationAngle",
-            "RotationAxisX", "RotationAxisY", "RotationAxisZ",
-            "RotationPointX", "RotationPointY", "RotationPointZ",
-            "TranslationX", "TranslationY", "TranslationZ" and "Timestamps".
-            All these keys must be paired with lists of a same length.
+Args:
+    timestamps: A list of floats marking timestamps.
+    translation_x: A list of floats signifying translations in X direction.
+    translation_y: A list of floats signifying translations in Y direction.
+    translation_z: A list of floats signifying translations in Z direction.
+    rotation_point_x: A list of floats signifying rotation point X coordinates.
+    rotation_point_y: A list of floats signifying rotation point Y coordinates.
+    rotation_point_z: A list of floats signifying rotation point Z coordinates.
+    rotation_axis_x: A list of floats signifying rotation axis X elements.
+    rotation_axis_y: A list of floats signifying rotation axis Y elements.
+    rotation_axis_z: A list of floats signifying rotation axis Z elements.
+    rotation_angle: A list of floats signifying rotation angles.
+    trajectory: A dict containing all lists above.
 
-        Returns
-        -------
-        bool
-            `True` if `x` has everything valid trajectory should and `False`
-            otherwise.
+Returns:
+    True if trajectory is valid and False otherwise.
         """
         # Check all keys are included and record lengths of their lists
         if trajectory is not None and isinstance(trajectory, dict):
@@ -670,28 +737,24 @@ Attributes:
 
     def find_timestamp_indices_and_weights(self, fp):
         """
-        find_timestamp_indices_and_weights(self, fp)
+Method to find weighted `timestamps` indices corresponding to a given `time`.
 
-        Finds indices and weights for current `Time` in `Timestamp` list
-        so that current pose can be computed. Both `Time` and `Timestamp` are
-        properties in `fp`.
+If a `time` is smaller than the first timestamp, the returned indices are [0,0]
+with weights [1,0] as that's the closest value. Simlarly, if the `time` is
+greater than the last timestamp, the returned indices are [-1,-1] pointing to
+the last element of a `timestamps` list with weights [1,0]. If the `time` value
+is between the first and last timestamp, the indices belong to the closest
+higher and lower time. At the same time, if interpolation is off, the weights
+are 0 and 1, where one is given to the index closest to the `time`. Otherwise,
+the weights, whose sum equals to 1, are computed to show inverse relative
+distance i.e. an index with a greater weight is the closer.
 
-        Parameters
-        ----------
-        fp : Part::FeaturePython Trajectory object
-            `fp` is an object in which we need to find `Timestamp` list
-            indices corresponding (just before and after) to current `Time`.
+Args:
+    fp: A `DocumentObjectGroupPython` Trajectory object.
 
-        Returns
-        -------
-        indices : Integer List
-            Indices which are necessary to compute a pose from the trajectory.
-            Example: If time is 1.2s and timestamps are equidistantly spaced
-            after 0.5s, then the first and second index will correspond to 1s
-            and 1.5s respectively.
-        weights : Float List
-            Weights to be used while computing pose from two successive poses
-            whether it's by interpolation or not.
+Returns:
+    indices: A list of two integers between -1 and and length of `Timestamps`.
+    weights: A list of two floats between 0 and 1 showing relative closeness.
         """
         # Retrieve indices corresponding to current time
         # If the time is before the first Timestamp use the first Timestamp
@@ -725,52 +788,76 @@ Attributes:
 
 class ViewProviderTrajectoryProxy:
     """
-    ViewProviderTrajectoryProxy is a Proxy object made to be connected to
-    `Part::FeaturePython` Trajectory object's ViewObject.
+Proxy class for `Gui.ViewProviderDocumentObject` Trajectory.ViewObject.
 
-    To connect them use:
+A ViewProviderTrajectoryProxy instance provides a Trajectory's icon,
+double-click response and context menu with a *Select Time* option.
 
-    >>> a=FreeCAD.ActiveDocument.addObject("App::FeaturePython",
-                                           "Trajectory")
-    >>> ViewProviderTrajectoryProxy(a.ViewObject)
+Attributes:
+    fp: A Trajectory object.
+    panel: A TrajectoryPanel if one is active or None.
+    tf_object2world: A SoTransform transformation from object to world frame.
+    font: A SoFontStyle font for axes labels.
+    rot_axis: A SoSwitch with a rotation axis in form of an arrow.
+    frame: A SoSeparator with a coordinate frame made from 3 RGB arrows.
+    visualisations: A SoSwitch with all visualisations (frame & rotation axis).
+    label_texts: A list of `SoText2`s labels denoting all axes and an origin.
+    label_translations: A list of `SoTranslation`s moving labels.
+    labels: A list of `SoSwitch`es containing colored translated labels.
+    axis_label_color: A SoPackedColor coloring a rotational axis(RA) label.
+    frame_shaft: A SoLineSet shaft for frame axes.
+    frame_arrowhead_translation: A SoTranslation moving frame arrowheads.
+    frame_arrowhead_cone: A SoCone arrowhead cone for frame axes.
+    frame_arrowhead: A SoSwitch translated cone for frame axes.
+    frame_color_x: A SoPackedColor red color for an X axis.
+    frame_color_y: A SoPackedColor green color for an Y axis.
+    frame_color_z: A SoPackedColor blue color for an Z axis.
+    frame_drawstyle: A SoDrawStyle controlling frame axes shaft line width.
+    rot_axis_shaft: A SoLineSet shaft for a rotation axis.
+    rot_axis_arrowhead_translation: A SoTranslation moving a RA arrowhead.
+    rot_axis_arrowhead_cone: A SoCone arrowhead cone for a rotation axis.
+    rot_axis_arrowhead: A SoSwitch translated cone for a rotation axis.
+    tf_y2axis: A SoTransform transformation from Y axis to a rotation axis.
+    rot_axis_color: A SoPackedColor coloring a rotational axis.
+    rot_axis_drawstyle: A SoDrawStyle controlling RA shaft line width.
+
+To connect this `Proxy` object to a `Gui.ViewProviderDocumentObject`
+Trajectory.ViewObject do:
+
+        a = FreeCAD.ActiveDocument.addObject("App::DocumentObjectGroupPython",
+                                             "Trajectory")
+        ViewProviderTrajectoryProxy(a.ViewObject)
     """
 
     panel = None
-    feature_python = None
+    fp = None
 
     # standard methods---------------------------------------------------------
     def __init__(self, vp):
         """
-        __init__(self, vp)
+Initialization method for ViewProviderTrajectoryProxy.
 
-        Initialization method for Trajectory view provider.
-        A class instance is created and made a `Proxy` for a generic
-        `Gui::ViewProviderDocumentObject` object. During initialization
-        number of properties are specified and preset if necessary.
+A class instance is created and made a `Proxy` for a generic
+`Gui.ViewProviderDocumentObject` Trajectory.ViewObject. During initialization
+number of properties are specified and preset.
 
-        Parameters
-        ----------
-        vp : ViewProviderDocumentObject
-            View provider object `vp` should be a `ViewObject` belonging
-            to `Part::FeaturePython` Trajectory object.
+Args:
+    vp: A barebone `Gui.ViewProviderDocumentObject` Trajectory.ViewObject.
         """
         self.setProperties(vp)
         vp.Proxy = self
 
     def attach(self, vp):
         """
-        attach(self, vp)
+Method called by FreeCAD after initialization to attach Coin3D constructs.
 
-        Sets up the Inventor scene sub-graph of the view provider and then
-        calls onChanged for parameters from view table which are necessary
-        for proper graphics (i.e. colors, lengths etc.)
+A coordinate frame made of RGB arrows corresponding to X, Y and Z axes. This
+frame shows current pose in a trajectory. This method adds Trajectory as
+the `fp` attribute.
 
-        Parameters
-        ----------
-        vp : ViewProviderDocumentObject
-            View provider object to which this is a `Proxy`.
+Args:
+    vp: A Trajectory.ViewObject after initialization.
         """
-
         # prepare transformation to keep pose corresponding to placement
         self.tf_object2world = coin.SoTransform()
 
@@ -796,21 +883,19 @@ class ViewProviderTrajectoryProxy:
 
         vp.Object.Proxy.setProperties(vp.Object)
         self.setProperties(vp)
-        self.feature_python = vp.Object
+        self.fp = vp.Object
 
     def updateData(self, fp, prop):
         """
-        updateData(self, fp, prop)
+Method called after `DocumentObjectGroupPython` Trajectory was changed.
 
-        Event handler for a property change in Data table. The change is
-        relayed to be reflected in Inventor scene sub-graph.
+This method is used to update Coin3D constructs, if associated properties
+changed e.g. if the `FrameArrowheadRadius` changes, all Coin3D cones
+representing frame arrowheads will change their radius accordingly.
 
-        Parameters
-        ----------
-        fp : Part::FeaturePython Trajectory object
-            `fp` is an object which property has changed.
-        prop : String
-            `prop` is a name of a changed property.
+Args:
+    fp: A `DocumentObjectGroupPython` Trajectory object.
+    prop: A str name of a changed property.
         """
         # Placement changes
         if prop == "Placement" and hasattr(fp, "Placement"):
@@ -1021,15 +1106,14 @@ class ViewProviderTrajectoryProxy:
 
     def onChanged(self, vp, prop):
         """
-        onChanged(self, vp, prop)
-        Event handler for a property change in View table. The change is
-        relayed to be reflected in Inventor scene sub-graph.
-        Parameters
-        ----------
-        vp : ViewProviderDocumentObject
-            View provider object to which this is a `Proxy`.
-        prop : String
-            `prop` is a name of a changed property.
+Method called after Trajectory.ViewObject was changed.
+
+If visibility changed, an appropriate Coin3D construct hides the frame showing
+current pose.
+
+Args:
+    vp: A Trajectory.ViewObject.
+    prop: A str name of a changed property.
         """
         if prop == "Visibility":
             if vp.Visibility:
@@ -1038,52 +1122,95 @@ class ViewProviderTrajectoryProxy:
                 self.visualisations.whichChild.setValue(coin.SO_SWITCH_NONE)
 
     def claimChildren(self):
-        if hasattr(self, "feature_python") and self.feature_python:
-            return self.feature_python.Group
+        """
+Method called by FreeCAD to retrieve assigned children.
+
+When a property of a Trajectory is touched the Trajectory and the FreeCAD
+ActiveDocument are notified. The FreeCAD ActiveDocument then emits a signal
+to inform all its observers e.g. the FreeCADGui ActiveDocument. The FreeCADGui
+document then emits a new signal to inform e.g. the tree view. The tree view
+then invokes `claimChildren()`.
+        """
+        if hasattr(self, "fp") and self.fp:
+            return self.fp.Group
         return []
 
     def canDropObject(self, obj):
+        """
+Method called by FreeCAD to ask if an object `obj` can be droped into a Group.
+
+Only FreeCAD objects of a Trajectory type are allowed to drop inside
+a Trajectory group.
+
+Args:
+    obj: A FreeCAD object hovering above a Trajectory item in the Tree View.
+        """
         if hasattr(obj, "Proxy") and \
-           isinstance(obj.Proxy, self.feature_python.Proxy.__class__):
+           isinstance(obj.Proxy, self.fp.Proxy.__class__):
             return True
         return False
 
     def getIcon(self):
         """
-        getIcon(self)
+Method called by FreeCAD to supply an icon for the Tree View.
 
-        Get the icon in XMP format which will appear in the tree view.
+A full path to an icon is supplied for the FreeCADGui.
+
+Returns:
+    A str path to an icon.
         """
-        return path.join(_PATH_ICONS, "Trajectory.xpm")
+        return path.join(PATH_TO_ICONS, "Trajectory.xpm")
 
     def __getstate__(self):
         """
-        __getstate__(self)
+Necessary method to avoid errors when trying to save unserializable objects.
 
-        When saving the document this object gets stored using Python's
-        cPickle module. Since we have some un-pickable here -- the Coin
-        stuff -- we must define this method to return a tuple of all pickable
-        objects or None.
+This method is used by JSON to serialize unserializable objects during
+autosave. Without this an Error would rise when JSON would try to do
+that itself.
+
+We need this for unserializable `fp` attribute, but we don't
+serialize it, because it's enough to reset it when object is restored.
+
+Returns:
+    None, because we don't serialize anything.
         """
         return None
 
     def __setstate__(self, state):
         """
-        __setstate__(self,state)
+Necessary method to avoid errors when trying to restore unserializable objects.
 
-        When restoring the pickled object from document we have the chance
-        to set some internals here. Since no data were pickled nothing needs
-        to be done here.
+This method is used during a document restoration. We need this for
+unserializable `fp` attribute, but we do not restore it, because it's enough
+to reset it.
         """
         pass
 
     def setProperties(self, vp):
+        """
+Method to hide unused properties.
+
+Property Display Mode is set to be invisible as they are unused.
+
+Args:
+    vp: A `Gui.ViewProviderDocumentObject` Trajectory.ViewObject.
+        """
         # hide unnecessary view properties
         vp.setEditorMode("DisplayMode", 2)
 
     def doubleClicked(self, vp):
         """
-Double clicked.
+Method called by FreeCAD when Trajectory is double-clicked in the Tree View.
+
+If no dialog is opened in the Task View, a new `TrajectoryPanel` is opened.
+If another `TrajectoryPanel` is opened, it is closed and all its QDialogs
+are added to a new `TrajectoryPanel`. If a `TrajectoryPanel` is already opened,
+the Model tab on the Combo View is swaped for the Tasks tab so that the panel
+becomes visible. If another dialog is opened a warning is shown.
+
+Args:
+    vp: A `Gui.ViewProviderDocumentObject` Trajectory.ViewObject.
         """
         # Switch to the Task View if a Trajectory panel is already opened
         if self.panel:
@@ -1100,12 +1227,12 @@ Double clicked.
                     + "a trajectory panel.")
 
             # Load the QDialog from a file and name it after this object
-            new_form = [FreeCADGui.PySideUic.loadUi(path.join(_PATH_UI,
+            new_form = [FreeCADGui.PySideUic.loadUi(path.join(PATH_TO_UI,
                                                     "AnimationTrajectory.ui"))]
             new_form[0].setWindowTitle(vp.Object.Label)
 
             # Create a control panel and try to show it
-            self.panel = ControlPanel([vp.Object], new_form)
+            self.panel = TrajectoryPanel([vp.Object], new_form)
             try:
                 FreeCADGui.Control.showDialog(self.panel)
             except RuntimeError as e:
@@ -1130,7 +1257,8 @@ Double clicked.
                     forms = []
                     for trajectory in trajectories:
                         form = FreeCADGui.PySideUic.loadUi(
-                                path.join(_PATH_UI, "AnimationTrajectory.ui"))
+                                path.join(PATH_TO_UI,
+                                          "AnimationTrajectory.ui"))
                         form.setWindowTitle(trajectory.Label)
                         forms.append(form)
 
@@ -1142,7 +1270,7 @@ Double clicked.
 
                     # Add a reference to the new panel to view providers
                     # of all trajectories
-                    self.panel = ControlPanel(trajectories, forms)
+                    self.panel = TrajectoryPanel(trajectories, forms)
                     for trajectory in trajectories:
                         trajectory.ViewObject.Proxy.panel = self.panel
                     FreeCADGui.Control.showDialog(self.panel)
@@ -1160,14 +1288,14 @@ Double clicked.
 
     def setupContextMenu(self, vp, menu):
         """
-Method editing a context menu for right click on `FeaturePython` Server.
+Method called by the FreeCAD to customize a context menu for a Trajectory.
 
 The *Transform* and *Set colors...* items are removed from the context menu
-shown upon right click on `FeaturePython` Server in the Tree View.
-The option to *Disconnect Server*, or *Connect Server* is added instead.
+shown upon right click on `DocumentObjectGroupPython` Trajectory in the Tree
+View. The option to *Select Time* is added instead.
 
 Args:
-    vp: A right-clicked `Gui.ViewProviderDocumentObject` Server.ViewObject.
+    vp: A right-clicked `Gui.ViewProviderDocumentObject` Trajectory.ViewObject.
     menu: A Qt's QMenu to be edited.
         """
         menu.clear()
@@ -1176,6 +1304,15 @@ Args:
                                  arg=vp: f(arg))
 
     def makeLabels(self):
+        """
+Method which makes Coin3D labels to be displayed in the FreeCAD View.
+
+Frame labels for axes X, Y and Z and a label for rotation axis are made.
+The labels have the same color as the axes.
+
+Returns:
+    A SoSwitch with colored text label to be shown in the FreeCAD View.
+        """
         label_strings = ["X", "Y", "Z", "O"]
         colors = [0xFF0000FF, 0x00FF00FF, 0x0000FFFF]
         self.label_texts = []
@@ -1208,6 +1345,17 @@ Args:
         return self.labels
 
     def makeFrame(self, frame_labels):
+        """
+Method which makes a Coin3D frame to show a current pose in a trajectory.
+
+A frame is made from 3 red, green and blue arrows representing X, Y and Z.
+Arrows are each constructed from a shaft and an arrowhead. Their dimensions
+and other attributes are unassigned as they are extracted from appropriate
+`Trajectory` properties.
+
+Returns:
+    A SoSeparator with the frame shown in the FreeCAD View.
+        """
         # make a generic shaft from 0 in Y direction
         shaft_vertices = coin.SoVertexProperty()
         shaft_vertices.vertex.setNum(2)
@@ -1271,6 +1419,16 @@ Args:
         return separated_frame
 
     def makeRotationAxis(self, axis_label):
+        """
+Method which makes a Coin3D rotation axis to show in the FreeCAD View
+
+A rotation axis is made from a shaft and an arrowhead. Its dimensions
+and other attributes are unassigned as they are extracted from appropriate
+`Trajectory` properties.
+
+Returns:
+    A SoSeparator with the rotation axis to be shown in the FreeCAD View.
+        """
         # make a generic shaft from 0 in Y direction
         shaft_vertices = coin.SoVertexProperty()
         shaft_vertices.vertex.setNum(2)
@@ -1311,14 +1469,36 @@ Args:
 
 
 class TrajectoryCommand(object):
-    """Create Object command"""
+    """
+Class specifing Animate workbench's Trajectory button/command.
+
+This class provides resources for a toolbar button and a menu button.
+It controls their behaivor(Active/Inactive) and responds to callbacks after
+either of them was clicked(Activated).
+    """
 
     def GetResources(self):
-        return {'Pixmap': path.join(_PATH_ICONS, "TrajectoryCmd.xpm"),
+        """
+Method used by FreeCAD to retrieve resources to use for this command.
+
+Returns:
+    A dict with items `PixMap`, `MenuText` and `ToolTip` which contain
+    a path to a command icon, a text to be shown in a menu and
+    a tooltip message.
+        """
+        return {'Pixmap': path.join(PATH_TO_ICONS, "TrajectoryCmd.xpm"),
                 'MenuText': "Trajectory",
                 'ToolTip': "Create Trajectory instance."}
 
     def Activated(self):
+        """
+Method used as a callback when the toolbar button or the menu item is clicked.
+
+This method creates a Trajectory instance in currently active document.
+Afterwards it adds a TrajectoryProxy as a `Proxy` to this instance as well as
+ViewProviderTrajectoryProxy to its `ViewObject.Proxy`, if FreeCAD runs in the
+Graphic mode.
+        """
         doc = FreeCAD.ActiveDocument
         a = doc.addObject("App::DocumentObjectGroupPython", "Trajectory")
         TrajectoryProxy(a)
@@ -1328,15 +1508,22 @@ class TrajectoryCommand(object):
         return
 
     def IsActive(self):
+        """
+Method to specify when the toolbar button and the menu item are enabled.
+
+The toolbar button `Trajectory` and menu item `Trajectory` are set to be active
+only when there is an active document in which a Trajectory instance can
+ be created.
+
+Returns:
+    True if buttons shall be enabled and False otherwise.
+        """
         if FreeCAD.ActiveDocument is None:
             return False
         else:
             return True
 
-    def getHelp(self):
-        return ["This is help for Trajectory\n",
-                "and it needs to be written."]
-
 
 if FreeCAD.GuiUp:
+    # Add command to FreeCAD Gui when importing this module in InitGui
     FreeCADGui.addCommand('TrajectoryCommand', TrajectoryCommand())
