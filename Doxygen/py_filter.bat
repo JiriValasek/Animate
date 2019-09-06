@@ -1,1 +1,0 @@
-py -3 -m doxypypy.doxypypy -a -c %1

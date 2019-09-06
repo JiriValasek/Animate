@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['readframeratechunk',['readFramerateChunk',['../class_control_1_1_control_panel.html#a4b49ef0e081728d18f529d3413c7bc1e',1,'Control::ControlPanel']]],
   ['record',['record',['../class_control_1_1_control_panel.html#afe39f4ab7e8fbdb8f29d8c2a960ef4a1',1,'Control::ControlPanel']]],
   ['record_5fprefix',['record_prefix',['../class_control_1_1_control_panel.html#a6f701c7beeef45e6abe3b498638581c4',1,'Control::ControlPanel']]],
   ['recordclicked',['recordClicked',['../class_control_1_1_control_panel.html#a86d9442163ab52ef49551f38649460dc',1,'Control::ControlPanel']]],

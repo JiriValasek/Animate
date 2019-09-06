@@ -37,8 +37,10 @@ import FreeCADGui
 import numpy
 import time
 import os
+import sys
 import re
 import subprocess
+import struct
 
 from PySide2.QtWidgets import QDialogButtonBox, QMessageBox, QTreeView, \
     QHBoxLayout, QPushButton
@@ -58,6 +60,9 @@ PATH_TO_UI = path.join(FreeCAD.getHomePath(), "Mod", "Animate", "Resources",
 
 ## Format string to format image number inside image name while recording
 NAME_NUMBER_FORMAT = "%05d"
+
+## Ancillary private safe-to-copy PNG chunk type code.
+FPS_CHUNK_CODE = b'xfPs'
 
 
 ## @brief Class providing funcionality to a Control panel inside the TaskView.
@@ -604,21 +609,33 @@ class ControlPanel(QObject):
     #
     #An image name is pieced together from `record prefix` and `image number`.
     #Then an image path is constructed. Animation is disabled(obligatory) and
-    #current view is saved as an image. Finally the image number is incremented.
+    #current view is saved as an image. Afterwards, if saving the first image(image
+    #number 0), a chunk with a framerate corresponding to a step size is added.
+    #Finally the image number is incremented.
     #
 
     def saveImage(self):
         # Prepare complete path to an image
-        #TODO save frame rate into an image
         name = self.record_prefix + (NAME_NUMBER_FORMAT % self.image_number) \
             + ".png"
-        path_ = path.join(self.control_proxy.ExportPath, name)
+        image_path = path.join(self.control_proxy.ExportPath, name)
 
         # Export image and increase image number
         FreeCADGui.ActiveDocument.ActiveView.setAnimationEnabled(False)
         FreeCADGui.ActiveDocument.ActiveView.saveImage(
-                path_,
+                image_path,
                 self.control_proxy.VideoWidth, self.control_proxy.VideoHeight)
+
+        # Write a framerate chunk into the first image
+        # TODO
+        if self.image_number == 0:
+            if not self.writeFramerateChunk(1 / self.control_proxy.StepTime,
+                                            image_path):
+                QMessageBox.warning(
+                            None, 'Saving framerate failed',
+                            "Framerate was not saved, this recorded image\n"
+                            + "sequence will not be able to be exported.\n"
+                            + "Check Report View for more info.")
         self.image_number += 1
 
     ## @brief Method to find sequences between files.
@@ -790,10 +807,11 @@ class ControlPanel(QObject):
 
     ## @brief Feedback method called when confirm button was clicked.
     #
-    #Buttons are disabled, frame rate is computed, selected sequence name is used
-    #to create an `image name` template and a `video name` which can be used in a
-    #FFMPEG command. Such a commnad is executed to convert the video, if FFMPEG is
-    #installed. Otherwise warnings are shown.
+    #Buttons are disabled, framerate is loaded from the first image chunks,
+    #selected sequence name is used to create an `image name` template and
+    #a `video name` which can be used in a FFMPEG command. Such a commnad
+    #is executed to convert the video, if FFMPEG is installed.
+    #Otherwise warnings are shown.
     #
 
     def exportConfirmed(self):
@@ -802,10 +820,21 @@ class ControlPanel(QObject):
         self.btn_abort.setEnabled(False)
 
         # Prepare arguments for ffmpeg conversion
-        #TODO load fps from the first image
-        fps = str(1 / self.control_proxy.StepTime)
         selected_seq = \
             self.trv_sequences.selectionModel().selectedRows()[0].data()
+        # Load framerate
+        image_name = selected_seq + "-" + (NAME_NUMBER_FORMAT % 0) + ".png"
+        image_path = path.join(self.control_proxy.ExportPath, image_name)
+        #TODO load fps from the first image
+        fps = self.readFramerateChunk(image_path)
+        if fps == -1.0:
+            QMessageBox.warning(
+                            None, 'Loading framerate failed',
+                            "Framerate was not loaded, this recorded image\n"
+                            + "sequence cannot to be exported.\n"
+                            + "Check Report View for more info.")
+            return
+
         image_name = '"' + path.normpath(
                 path.join(self.control_proxy.ExportPath, selected_seq + "-"
                           + NAME_NUMBER_FORMAT + ".png")) + '"'
@@ -814,7 +843,7 @@ class ControlPanel(QObject):
                           selected_seq + ".mp4")) + '"'
 
         # Prepare an ffmpeg command
-        export_command = 'ffmpeg -r ' + fps + ' -i ' + image_name \
+        export_command = 'ffmpeg -r ' + str(fps) + ' -i ' + image_name \
             + ' -c:v libx264 -pix_fmt yuv420p ' + video_name
 
         # Try to run the command
@@ -866,6 +895,109 @@ class ControlPanel(QObject):
         self.form.lyt_main.removeItem(self.lyt_export)
         self.last_clicked = "pause"
         self.setInvalidButtons()
+
+    ## @brief Method to install necessary pyPNG library into FreeCAD.
+    #
+    #The pyPNG library is not part of FreeCAD and so we need to add it using pip.
+    #This method tries to do so. It may prove crutial to run FreeCAD as
+    #administrator to receive permissions required by pip.
+    #
+    # @return
+    #    True if pyPNG was installed successfully and False otherwise.
+    #
+
+    def installPyPNG(self):
+        import pip
+        if hasattr(pip, "main"):
+            FreeCAD.Console.PrintLog("Installing pyPNG.\n")
+            if pip.main(["install", "pyPNG"]) != 0:
+                FreeCAD.Console.PrintError("pyPNG installation failed.\n")
+                return False
+            FreeCAD.Console.PrintLog("Installation successful.\n")
+            return True
+        else:
+            import pip._internal
+            if hasattr(pip._internal, "main"):
+                if pip._internal.main(["install", "pyPNG"]) != 0:
+                    FreeCAD.Console.PrintError("pyPNG installation failed.\n")
+                    return False
+                FreeCAD.Console.PrintLog("Installation successful.\n")
+                return True
+            else:
+                FreeCAD.Console.PrintLog(
+                        "Unable to import and instal pyPNG.\n")
+                return False
+
+    ## @brief Method to write a framerate into a PNG image as one of its chunks.
+    #
+    #This method tries to import pyPNG first. Then it tries to install it and import
+    #again. If either import is successful, all chunks currently in the PNG image at
+    #an `image_path` are extracted. The framerate chunk is added as the second
+    #chunk, right behind IHDR. Finally the image is rewritten with new
+    #list of chunks.
+    #
+    #
+    # @param		framerate	A float specifying the framerate to be written into the image.
+    # @param		image_path	A str containing a path to an image about to be augmented.
+    #
+
+    def writeFramerateChunk(self, framerate, image_path):
+        # import or install pyPNG
+        try:
+            import png
+        except ModuleNotFoundError:
+            if self.installPyPNG():
+                import png
+            else:
+                return False
+        except Exception as e:
+            FreeCAD.Consol.PrintError(
+                "Unexpected error occured while importing pyPNG - " + str(e))
+
+        # Read chunks already present in a PNG image
+        reader = png.Reader(filename=image_path)
+        chunks = list(reader.chunks())
+        # Insert custom framerate chunk
+        chunks.insert(1, (FPS_CHUNK_CODE, struct.pack("f", framerate)))
+
+        # Write it into the image
+        with open(image_path, 'wb') as image_file:
+            png.write_chunks(image_file, chunks)
+
+        return True
+
+    ## @brief Method to read a framerate inserted as one of a PNG image's chunks.
+    #
+    #This method tries to import pyPNG first. Then it tries to install it and import
+    #again. If either import is successful, all chunks currently in the PNG image at
+    #an `image_path` are extracted. The framerate chunk ought to be stored as
+    #the second chunk, right behind IHDR. If the chunk's code type matches,
+    #its value is returned.
+    #
+    #
+    # @param		image_path	A str containing a path to an image with the framerate chunk.
+    #
+    # @return
+    #    A float signifying framerate, or -1.0 if something failed.
+    #
+
+    def readFramerateChunk(self, image_path):
+        # import or install pyPNG
+        try:
+            import png
+        except ModuleNotFoundError:
+            if self.installPyPNG():
+                import png
+            else:
+                return -1.0
+        # Read chunks already present in a PNG image
+        reader = png.Reader(filename=image_path)
+        chunks = list(reader.chunks())
+        if chunks[1][0] == FPS_CHUNK_CODE:
+            return struct.unpack("f", chunks[1][1])[0]
+        else:
+            FreeCAD.Console.PrintError("Unable to unpack a framerate.\n")
+            return -1.0
 
 
 ## @brief Proxy class for a `DocumentObjectGroupPython` Control instance.
