@@ -2,6 +2,7 @@ var searchData=
 [
   ['incomingconnection',['incomingConnection',['../classcommunication_1_1_command_server.html#a845793c766d31bd041f9d461497b8a55',1,'communication::CommandServer']]],
   ['initialize',['Initialize',['../class_init_gui_1_1_animate.html#ac786932215d2884a42cb7e87244c70bf',1,'InitGui::Animate']]],
+  ['installpypng',['installPyPNG',['../class_control_1_1_control_panel.html#ab35ff845839099ba3e0078deda7d79d2',1,'Control::ControlPanel']]],
   ['intersection',['intersection',['../class_collision_detector_1_1_collision_detector_proxy.html#ad09ac160e7237815b76b1f69d2f65ce0',1,'CollisionDetector::CollisionDetectorProxy']]],
   ['is_5ftrajectory_5fproperty',['is_trajectory_property',['../class_trajectory_1_1_trajectory_proxy.html#abf00b3c12eaf8f0e34e7b04a4b6bb33b',1,'Trajectory::TrajectoryProxy']]],
   ['is_5fvalidtrajectory',['is_ValidTrajectory',['../class_trajectory_1_1_trajectory_proxy.html#ad347f7a09d94867450cf0b1a01709cc2',1,'Trajectory::TrajectoryProxy']]],

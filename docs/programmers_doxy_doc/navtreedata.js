@@ -52,7 +52,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_animate_document_observer_8py_source.html",
-"files.html"
+"classes.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

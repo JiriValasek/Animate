@@ -176,7 +176,7 @@ class CollisionDetectorProxy(object):
         # Check that object to be reset has shape info recorded.
         if object_ in self.shape_info.keys():
             # Go through all 'Part objects' inside
-            for obj in self.shape_info[object_][0]:
+            for obj in self.shape_info.pop(object_)["objects"]:
                 # Reset styles
                 if obj.Name in self.original_styles.keys():
                     style = self.original_styles.pop(obj.Name)
@@ -194,7 +194,7 @@ class CollisionDetectorProxy(object):
     # @param		objects	A list or set of added objects.
     #
 
-    def loadObjects(self, objects):
+    def loadObjects(self, objects, save_style=True):
         # Go through objects
         for obj in objects:
             # Invalid object - No shape nor group
@@ -211,13 +211,15 @@ class CollisionDetectorProxy(object):
                 # Explore it
                 groupobjects, groupshape = self.exploreGroup(obj)
                 if groupshape is not None:
-                    self.shape_info[obj] = [groupobjects, groupshape]
-                    for obj in groupobjects:
-                        self.original_styles[obj.Name] = {
-                            "Transparency": obj.ViewObject.Transparency,
-                            "ShapeColor": obj.ViewObject.ShapeColor,
-                            "LineColor": obj.ViewObject.LineColor,
-                            "LineWidth": obj.ViewObject.LineWidth}
+                    self.shape_info[obj] = {"objects": groupobjects,
+                                            "shape": groupshape}
+                    if save_style:
+                        for obj in groupobjects:
+                            self.original_styles[obj.Name] = {
+                                "Transparency": obj.ViewObject.Transparency,
+                                "ShapeColor": obj.ViewObject.ShapeColor,
+                                "LineColor": obj.ViewObject.LineColor,
+                                "LineWidth": obj.ViewObject.LineWidth}
                 else:
                     QMessageBox.warning(
                         None,
@@ -228,12 +230,14 @@ class CollisionDetectorProxy(object):
                         + "Remove it from the observed objects.")
             # Regular object
             else:
-                self.shape_info[obj] = [[obj], obj.Shape]
-                self.original_styles[obj.Name] = {
-                    "Transparency": obj.ViewObject.Transparency,
-                    "ShapeColor": obj.ViewObject.ShapeColor,
-                    "LineColor": obj.ViewObject.LineColor,
-                    "LineWidth": obj.ViewObject.LineWidth}
+                self.shape_info[obj] = {"objects": [obj],
+                                        "shape": obj.Shape}
+                if save_style:
+                    self.original_styles[obj.Name] = {
+                        "Transparency": obj.ViewObject.Transparency,
+                        "ShapeColor": obj.ViewObject.ShapeColor,
+                        "LineColor": obj.ViewObject.LineColor,
+                        "LineWidth": obj.ViewObject.LineWidth}
 
     ## @brief Method called when recomputing a `DocumentObjectGroupPython` CollisionDetector.
     #
@@ -266,11 +270,23 @@ class CollisionDetectorProxy(object):
             fp.addProperty(
                 "App::PropertyLinkListGlobal", "ObservedObjects", "General",
                 "Objects that will be checked for intersections.")
-        if not hasattr(fp, "RememberCollisons"):
+        if not hasattr(fp, "RememberCollisions"):
             fp.addProperty(
-                "App::PropertyBool", "RememberCollisons", "General",
+                "App::PropertyBool", "RememberCollisions", "General",
                 "Remember which objects collided and show them."
-                ).RememberCollisons = True
+                ).RememberCollisions = True
+        if not hasattr(fp, "ShowCollisions"):
+            fp.addProperty(
+                "App::PropertyBool", "ShowCollisions", "General",
+                "Computes and show intersections \n"
+                + "between colliding objects (slow)."
+                ).ShowCollisions = True
+        if not hasattr(fp, "CheckIntersectionVolume"):
+            fp.addProperty(
+                "App::PropertyBool", "CheckIntersectionVolume", "General",
+                "Checks if intersection volume is greater than 0\n"
+                + "and so objects aren't just touching (slow)."
+                ).CheckIntersectionVolume = True
         # Intersection style
         if not hasattr(fp, "IntersectionColor"):
             fp.addProperty(
@@ -346,6 +362,7 @@ class CollisionDetectorProxy(object):
                 (hasattr(self, "shape_info") and
                  self.shape_info is None):
             self.shape_info = dict()
+            self.loadObjects(fp.ObservedObjects, save_style=False)
 
         self.fp = fp
         self.checking = False
@@ -353,7 +370,6 @@ class CollisionDetectorProxy(object):
 
         fp.setEditorMode("Group", 1)
         fp.setEditorMode("ValidObservedObjects", 2)
-        #TODO Check why ValidObservedObject had changed???
         fp.ValidObservedObjects = (set(self.shape_info.keys())
                                    == set(fp.ObservedObjects))
 
@@ -413,15 +429,23 @@ class CollisionDetectorProxy(object):
 
         # Go through observed objects and update their placement
         for obj in self.fp.ObservedObjects:
-            if len(self.shape_info[obj][0]) >= 2:
-                self.shape_info[obj][1] = \
-                    self.shape_info[obj][0][0].Shape.fuse(
-                            [o.Shape for o in self.shape_info[obj][0][1:]])
+            if len(self.shape_info[obj]["objects"]) >= 2:
+                self.shape_info[obj]["shape"] = \
+                    self.shape_info[obj]["objects"][0].Shape.fuse(
+                        [o.Shape for o in self.shape_info[obj]["objects"][1:]])
+                if hasattr(obj, "Placement"):
+                    print('changing placement')
+                    self.shape_info[obj]["shape"].Placement.Base = \
+                        obj.Placement.Base
+                    print(self.shape_info[obj]["shape"].Placement.Base, "<-",
+                          obj.Placement.Base)
+                    self.shape_info[obj]["shape"].Placement.Rotation = \
+                        obj.Placement.Rotation
+                    print(self.shape_info[obj]["shape"].Placement.Rotation, "<-",
+                          obj.Placement.Rotation)
 
-            if hasattr(obj, "Placement"):
-                self.shape_info[obj][1].Placement.Base = obj.Placement.Base
-                self.shape_info[obj][1].Placement.Rotation = \
-                    obj.Placement.Rotation
+            elif hasattr(obj, "Placement"):
+                self.shape_info[obj]["shape"] = obj.Shape
 
         # Go through observed objects and check for intersections
         for i in range(len(self.fp.ObservedObjects) - 1):
@@ -512,27 +536,30 @@ class CollisionDetectorProxy(object):
 
     def intersection(self, obj1, obj2):
         # Check Bounding box is intersecting (the fastest and crudest)
-        if not self.shape_info[obj1][1].BoundBox.intersect(
-                self.shape_info[obj2][1].BoundBox):
+        if not self.shape_info[obj1]["shape"].BoundBox.intersect(
+                self.shape_info[obj2]["shape"].BoundBox):
             return False
 
         # Check the shortest distance between the shapes is 0
-        if self.shape_info[obj1][1].distToShape(
-                self.shape_info[obj2][1])[0] > 0:
+        if self.shape_info[obj1]["shape"].distToShape(
+                self.shape_info[obj2]["shape"])[0] > 0:
             return False
 
-        # Compute common volume to both objects
-        intersection = self.shape_info[obj1][1].common(
-                self.shape_info[obj2][1])
+        # If requested, check intersection volume, and show intersection
+        if self.fp.CheckIntersectionVolume:
+            # Compute common volume to both objects
+            intersection = self.shape_info[obj1]["shape"].common(
+                    self.shape_info[obj2]["shape"])
 
-        # Test common volume is not 0 i.e. objects are not just touching
-        if intersection.Volume == 0:
-            return False
+            # Test common volume is not 0 i.e. objects are not just touching
+            if intersection.Volume == 0:
+                return False
 
-        # Make an Collision object to show the intersection
-        self.executeLater(None, self.makeCollisionObject,
-                          (intersection, obj1, obj2,
-                           self.fp.IntersectionColor))
+            # Make an Collision object to show the intersection if asked for
+            if self.fp.ShowCollisions:
+                self.executeLater(None, self.makeCollisionObject,
+                                  (intersection, obj1, obj2,
+                                   self.fp.IntersectionColor))
         return True
 
     ## @brief Method to make a collision object and add it to the `CollisionDetector`.
@@ -574,10 +601,10 @@ class CollisionDetectorProxy(object):
         self.in_collision = self.in_collision.union(in_collision)
 
         # If collided objects shall be shown
-        if self.fp.RememberCollisons:
+        if self.fp.RememberCollisions:
             # show them
             for obj in collided:
-                for o in self.shape_info[obj][0]:
+                for o in self.shape_info[obj]["objects"]:
                     o.ViewObject.Transparency = self.fp.CollidedTransparency
                     o.ViewObject.ShapeColor = self.fp.CollidedShapeColor
                     o.ViewObject.LineColor = self.fp.CollidedLineColor
@@ -585,7 +612,7 @@ class CollisionDetectorProxy(object):
         else:
             # otherwise reset them
             for obj in collided:
-                for o in self.shape_info[obj][0]:
+                for o in self.shape_info[obj]["objects"]:
                     style = self.original_styles[obj.Name]
                     o.ViewObject.Transparency = style["Transparency"]
                     o.ViewObject.ShapeColor = style["ShapeColor"]
@@ -594,7 +621,7 @@ class CollisionDetectorProxy(object):
 
         # Show objects in-collision
         for obj in in_collision:
-            for o in self.shape_info[obj][0]:
+            for o in self.shape_info[obj]["objects"]:
                 o.ViewObject.Transparency = self.fp.InCollisionTransparency
                 o.ViewObject.ShapeColor = self.fp.InCollisionShapeColor
                 o.ViewObject.LineColor = self.fp.InCollisionLineColor
