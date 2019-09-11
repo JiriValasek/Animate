@@ -16,20 +16,13 @@ $search
 $mathjax
 <link href="$relpath^$stylesheet" rel="stylesheet" type="text/css" />
 $extrastylesheet
-<!-- Custom Head part -->
-<script type="text/javascript">
-  function resizeIframe(obj){
-     obj.style.height = 0;
-     obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
-  }
-</script>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
 
 <!--BEGIN TITLEAREA-->
 <div id="titlearea">
-  <iframe src="navbar/navbar.html" onload='resizeIframe(this)'></iframe>
+  <iframe id="customnavbar" src="navbar/navbar.html"></iframe>
 </div>
 <!--END TITLEAREA-->
 <!-- end header part -->
