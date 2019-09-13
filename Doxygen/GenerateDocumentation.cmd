@@ -4,6 +4,8 @@ SET "current_directory=%CD%"
 SET "scripts_directory=%CD%"
 SET "output_directory=%CD%\Doxypypy outputs"
 SET "doxygen_file=.\Doxyfile"
+:: remove resize.js from this directory
+SET "doxygen_output_directory=..\docs\programmers_doxy_doc"
 
 :: Sort out input arguments
 SET output_dir_set=0
@@ -104,6 +106,10 @@ SET output_dir_set=0
 	IF EXIST %doxygen_file% (
 		ECHO Generating documentation from %doxygen_file%.
 		doxygen %doxygen_file%
+		:: rewrite resize.js
+		CD %doxygen_output_directory%
+		ECHO: //Deleted by GenerateDocumentation.cmd >resize.js
+		ECHO: function initResizable^(^) {} >>resize.js
 	) ELSE (
 		ECHO Doxygen file is not available in current directory. >&2
 		SET /A RETURN_CODE=2
@@ -127,5 +133,5 @@ SET output_dir_set=0
 
 :end
 	:: exit orderly
-	CD %current_folder%
+	CD %current_directory%
 	EXIT /B %RETURN_CODE% & ECHO ON
