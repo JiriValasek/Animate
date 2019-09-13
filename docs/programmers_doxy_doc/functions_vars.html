@@ -325,7 +325,13 @@ $(document).ready(function(){initNavTree('functions_vars.html','');});
 <!-- HTML footer for doxygen 1.8.15-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-	<iframe id="customfooter"></iframe>
+	<p>Generated on Fri Sep 13 2019 17:33:11 for Animate by</p>
 </div>
+<script type="text/javascript">
+ 	let date_start = $("#nav-path p").text().indexOf("on");
+	let date_end = $("#nav-path p").text().indexOf(" for");
+	let date = $("#nav-path p").text().substring(date_start, date_end);
+	$("#nav-path p").text("~ Last updated " + date + " ~");
+ </script>
 </body>
 </html>
