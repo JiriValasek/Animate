@@ -45,7 +45,7 @@ function setSidebarWidth(width) {
 function updateLayout() {
 	// adjust height, width and position of webpage's content
 	$("#doc-content").css("padding-top", $("#titlearea").outerHeight());
-	$("#doc-content").css("min-height", $(window).height() - $("#nav-path").outerHeight() - $("#titlearea").outerHeight() - 10)
+	$("#doc-content").css("min-height", $(window).height() - $("#nav-path").outerHeight() - $("#titlearea").outerHeight())
 	$("#side-nav").css("top", $("#titlearea").outerHeight());
 	updateSidebarHeight();
 	$("#side-nav").resizable({ maxWidth: $("body").prop("clientWidth") - handle_width , minWidth: 0 });
@@ -88,7 +88,7 @@ function sidebarToggleCollapse() {
 function updateSidebarHeight(){
 	// sidebar
 	if (($("#nav-path").offset().top - $(window).scrollTop() - $("#titlearea").outerHeight()) < ($(window).height() - $("#titlearea").height())){
-		$("#side-nav").css("height", $("#nav-path").offset().top - $(window).scrollTop() - $("#titlearea").height());
+		$("#side-nav").css("height", $("#nav-path").offset().top - $(window).scrollTop() - $("#titlearea").height() - 1);
 	} else {
 		$("#side-nav").css("height", $(window).height() - $("#titlearea").height());
 	}
