@@ -3,7 +3,7 @@
 
 # ***************************************************************************
 # *                                                                         *
-# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
 # *   This file is part of the FreeCAD CAx development system.              *
@@ -571,7 +571,7 @@ class CollisionDetectorProxy(object):
     def makeCollisionObject(self, shape, cause1, cause2, color):
         # Add new object to the CollisionDetector
         collision = self.fp.newObject("Part::FeaturePython", "Collision")
-        # Attach a Proxy ot it and it's ViewObject, then purge its touched flag
+        # Attach a Proxy to it and it's ViewObject, then purge its touched flag
         CollisionProxy(collision, shape, cause1, cause2)
         ViewProviderCollisionProxy(collision.ViewObject, color)
         collision.purgeTouched()
@@ -677,7 +677,7 @@ class CollisionDetectorProxy(object):
     ## @brief Method to postpone execution after coin is finished (and avoid crashing coin).
     #
     #Removing objects is necessary to do using this method, otherwise coin will
-    #crash. When using with variable or arguments, its crutial that they stay
+    #crash. When using with variable or arguments, its crucial that they stay
     #available and unchanged until the command is executed.
     #
     #Usage example:
@@ -932,7 +932,7 @@ class ViewProviderCollisionDetectorProxy(object):
         return False
 
 
-## @brief Class specifing Animate workbench's CollisionDetector button/command.
+## @brief Class specifying Animate workbench's CollisionDetector button/command.
 #
 #This class provides resources for a toolbar button and a menu button.
 #It controls their behaivor(Active/Inactive) and responds to callbacks after

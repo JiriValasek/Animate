@@ -76,7 +76,7 @@ SET output_dir_set=0
 	ECHO(  /O      Specifies an output directory for translated scripts.
 	ECHO(  /D      Specifies a doxygen configuration file to run.
 	ECHO;
-	ECHO This script tranlates python scripts and moves them into an output directory.
+	ECHO This script translates python scripts and moves them into an output directory.
 	ECHO Afterwards it runs a doxygen configuration file. If none of /S, /O and /D command
 	ECHO switches are supplied, then python scripts are looked for in a current directory,
 	ECHO the output directory is "Doxypypy outputs" folder made or existing in 

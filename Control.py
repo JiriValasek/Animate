@@ -2,7 +2,7 @@
 
 # ***************************************************************************
 # *                                                                         *
-# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
 # *   This file is part of the FreeCAD CAx development system.              *
@@ -317,14 +317,14 @@ Feedback method called when Control panel is closing.
 Animation is stopped. Controls properties are set to be editable. Dialog is
 closed.
         """
-        # Stop animaiton, if it's running by clicking pause button
+        # Stop animation, if it's running by clicking pause button
         self.pauseClicked()
 
         # Allow editing of Control properties again
         for prop in self.control_proxy.PropertiesList:
             self.control_proxy.setEditorMode(prop, 0)
 
-        # Delete refrence to this panel from the view provider as the panel
+        # Delete reference to this panel from the view provider as the panel
         # will no longer exist
         self.control_proxy.ViewObject.Proxy.panel = None
 
@@ -395,7 +395,7 @@ Args:
         self.updateCollisions()
         self.showChanges()
 
-        # Display current progres on the seek slider
+        # Display current progress on the seek slider
         self.form.sld_seek.setValue(
             numpy.round(100*(t - self.control_proxy.StartTime)
                         / (self.control_proxy.StopTime
@@ -411,13 +411,13 @@ Args:
         next_t = min(t + self.control_proxy.StepTime,
                      self.control_proxy.StopTime)
 
-        # Compute pause period so that animaiton time roughly corresponds to
+        # Compute pause period so that animation time roughly corresponds to
         # the real time
         pause = round(1000*(self.control_proxy.StepTime + time_
                             - time.clock()))
         pause = pause*(pause > 0)
 
-        # Setup a timer to show next frame if animaiton wasn't paused
+        # Setup a timer to show next frame if animation wasn't paused
         if self.last_clicked != "pause":
             self.timer.singleShot(pause, lambda: self.play(next_t))
 
@@ -449,7 +449,7 @@ Args:
         self.updateCollisions()
         self.showChanges()
 
-        # Display current progres on the seek slider
+        # Display current progress on the seek slider
         self.form.sld_seek.setValue(
                 numpy.round(100*(t - self.control_proxy.StartTime)
                             / (self.control_proxy.StopTime
@@ -465,13 +465,13 @@ Args:
         next_t = max(t - self.control_proxy.StepTime,
                      self.control_proxy.StartTime)
 
-        # Compute pause period so that animaiton time roughly corresponds to
+        # Compute pause period so that animation time roughly corresponds to
         # the real time
         pause = round(1000*(self.control_proxy.StepTime + time_
                             - time.clock()))
         pause = pause*(pause > 0)
 
-        # Setup a timer to show next frame if animaiton wasn't paused
+        # Setup a timer to show next frame if animation wasn't paused
         if self.last_clicked != "pause":
             self.timer.singleShot(pause, lambda: self.rewind(next_t))
 
@@ -502,7 +502,7 @@ Args:
         self.showChanges()
         self.saveImage()
 
-        # Display current progres on the seek slider
+        # Display current progress on the seek slider
         self.form.sld_seek.setValue(
                 numpy.round(100*(t - self.control_proxy.StartTime)
                             / (self.control_proxy.StopTime
@@ -518,7 +518,7 @@ Args:
         next_t = min(t + self.control_proxy.StepTime,
                      self.control_proxy.StopTime)
 
-        # Setup a timer to show next frame if animaiton wasn't paused
+        # Setup a timer to show next frame if animation wasn't paused
         if self.last_clicked != "pause":
             self.timer.singleShot(0, lambda: self.record(next_t))
 
@@ -790,7 +790,7 @@ Feedback method called when confirm button was clicked.
 
 Buttons are disabled, framerate is loaded from the first image chunks,
 selected sequence name is used to create an `image name` template and
-a `video name` which can be used in a FFMPEG command. Such a commnad
+a `video name` which can be used in a FFMPEG command. Such a command
 is executed to convert the video, if FFMPEG is installed.
 Otherwise warnings are shown.
         """
@@ -836,11 +836,11 @@ Otherwise warnings are shown.
             else:
                 QMessageBox.warning(None, 'Something failed', str(e))
         if return_val == 0:
-            QMessageBox.information(None, 'Export successfull!',
+            QMessageBox.information(None, 'Export successful!',
                                     "FFMPEG successfully converted image "
                                     + "sequence into a video.")
         else:
-            QMessageBox.warning(None, 'FFMPEG unsuccessfull',
+            QMessageBox.warning(None, 'FFMPEG unsuccessful',
                                 "FFMPEG failed to convert sequence into "
                                 + "a video")
 
@@ -880,7 +880,7 @@ is returned to the default state (the same as if pause button was pressed).
 Method to install necessary pyPNG library into FreeCAD.
 
 The pyPNG library is not part of FreeCAD and so we need to add it using pip.
-This method tries to do so. It may prove crutial to run FreeCAD as
+This method tries to do so. It may prove crucial to run FreeCAD as
 administrator to receive permissions required by pip.
 
 Returns:
@@ -904,7 +904,7 @@ Returns:
                 return True
             else:
                 FreeCAD.Console.PrintLog(
-                        "Unable to import and instal pyPNG.\n")
+                        "Unable to import and install pyPNG.\n")
                 return False
 
     def writeFramerateChunk(self, framerate, image_path):
@@ -930,8 +930,8 @@ Args:
             else:
                 return False
         except Exception as e:
-            FreeCAD.Consol.PrintError(
-                "Unexpected error occured while importing pyPNG - " + str(e))
+            FreeCAD.Console.PrintError(
+                "Unexpected error occurred while importing pyPNG - " + str(e))
 
         # Read chunks already present in a PNG image
         reader = png.Reader(filename=image_path)
@@ -1229,7 +1229,7 @@ then invokes `claimChildren()`.
 
     def canDropObject(self, obj):
         """
-Method called by FreeCAD to ask if an object `obj` can be droped into a Group.
+Method called by FreeCAD to ask if an object `obj` can be dropped into a Group.
 
 FreeCAD objects of a Server, Trajectory and CollisionDetector type are allowed
 to drop inside a Control group.
@@ -1275,7 +1275,7 @@ Method called by FreeCAD when Control is double-clicked in the Tree View.
 
 If no dialog is opened in the Task View, a new `ControlPanel` is opened.
 If a `ControlPanel` is already opened, the Model tab on the Combo View
-is swaped for the Tasks tab so that the panel becomes visible.
+is swapped for the Tasks tab so that the panel becomes visible.
 If another dialog is opened a warning is shown.
 
 Args:
@@ -1352,7 +1352,7 @@ to reset it.
 
 class ControlCommand(object):
     """
-ControlCommand class specifing Animate workbench's Control button/command.
+ControlCommand class specifying Animate workbench's Control button/command.
 
 This class provides resources for a toolbar button and a menu button.
 It controls their behaivor(Active/Inactive) and responds to callbacks after
