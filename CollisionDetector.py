@@ -256,12 +256,15 @@ Args:
                 "App::PropertyBool", "RememberCollisions", "General",
                 "Remember which objects collided and show them."
                 ).RememberCollisions = True
-        if not hasattr(fp, "ShowCollisions"):
-            fp.addProperty(
-                "App::PropertyBool", "ShowCollisions", "General",
-                "Computes and show intersections \n"
-                + "between colliding objects (slow)."
-                ).ShowCollisions = True
+        if not hasattr(fp, "CheckingLevel"):
+            # TODO finish tool tip
+            fp.addProperty("App::PropertyEnumeration", "CheckingLevel",
+                           "General", "Level of checking\n"
+                           + "")
+            fp.CheckingLevel = ["Bounding box",
+                                "Shape distance",
+                                "Intersection volume",
+                                "Intersection volume visualizations"]
         if not hasattr(fp, "CheckIntersectionVolume"):
             fp.addProperty(
                 "App::PropertyBool", "CheckIntersectionVolume", "General",
@@ -505,6 +508,9 @@ Returns:
         """
 Method to check intersection between `obj1` and `obj2`.
 
+Based on selected checking level this method checks for collisions and makes
+an intersection object if required.
+
 Args:
     obj1: An object to check for a mutual intersection.
     obj2: Another object to check for a mutual intersection.
@@ -519,12 +525,14 @@ Returns:
             return False
 
         # Check the shortest distance between the shapes is 0
-        if self.shape_info[obj1]["shape"].distToShape(
+        if self.fp.CheckingLevel == "Shape distance" and \
+                self.shape_info[obj1]["shape"].distToShape(
                 self.shape_info[obj2]["shape"])[0] > 0:
             return False
 
         # If requested, check intersection volume, and show intersection
-        if self.fp.CheckIntersectionVolume:
+        if self.fp.CheckingLevel == "Intersection volume" or \
+                self.fp.CheckingLevel == "Intersection volume visualizations":
             # Compute common volume to both objects
             intersection = self.shape_info[obj1]["shape"].common(
                     self.shape_info[obj2]["shape"])
@@ -534,7 +542,7 @@ Returns:
                 return False
 
             # Make an Collision object to show the intersection if asked for
-            if self.fp.ShowCollisions:
+            if self.fp.CheckingLevel == "Intersection volume visualizations":
                 self.executeLater(None, self.makeCollisionObject,
                                   (intersection, obj1, obj2,
                                    self.fp.IntersectionColor))
