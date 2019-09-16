@@ -482,30 +482,26 @@ class TrajectoryProxy:
         if not hasattr(fp, "FrameArrowheadLength"):
             fp.addProperty("App::PropertyFloatConstraint",
                            "FrameArrowheadLength", "Frame",
-                           "Frame axis arrow's arrowhead length.\n"
-                           + "Range is < 1.0 | 1e6 >."
+                           "Frame axis arrow's arrowhead length."
                            ).FrameArrowheadLength = (10, 1.0, 1e6, 1)
         else:
             fp.FrameArrowheadLength = (fp.FrameArrowheadLength, 1.0, 1e6, 1)
         if not hasattr(fp, "FrameArrowheadRadius"):
             fp.addProperty("App::PropertyFloatConstraint",
                            "FrameArrowheadRadius", "Frame",
-                           "Frame axis arrow's arrowhead bottom radius.\n"
-                           + "Range is < 0.5 | 1e6 >."
+                           "Frame axis arrow's arrowhead bottom radius."
                            ).FrameArrowheadRadius = (5, 0.5, 1e6, 0.5)
         else:
             fp.FrameArrowheadRadius = (fp.FrameArrowheadRadius, 0.5, 1e6, 0.5)
         if not hasattr(fp, "ShaftLength"):
             fp.addProperty("App::PropertyFloatConstraint", "ShaftLength",
-                           "Frame", "Frame axis arrow's shaft length.\n"
-                           + "Range is < 1.0 | 1e6 >."
+                           "Frame", "Frame axis arrow's shaft length."
                            ).ShaftLength = (20, 1.0, 1e6, 1)
         else:
             fp.ShaftLength = (fp.ShaftLength, 1.0, 1e6, 1)
         if not hasattr(fp, "ShaftWidth"):
             fp.addProperty("App::PropertyFloatConstraint", "ShaftWidth",
-                           "Frame", "Frame axis arrow's shaft width.\n"
-                           + "Range is < 1.0 | 64 >."
+                           "Frame", "Frame axis arrow's shaft width."
                            ).ShaftWidth = (4, 1.0, 64, 1)
         else:
             fp.ShaftWidth = (fp.ShaftWidth, 1.0, 64, 1)
@@ -522,15 +518,13 @@ class TrajectoryProxy:
                            ).ShowRotationAxis = True
         if not hasattr(fp, "AxisLength"):
             fp.addProperty("App::PropertyFloatConstraint", "AxisLength",
-                           "RotationAxis", "The rotation axis length.\n"
-                           + "Range is < 1.0 | 1e6 >."
+                           "RotationAxis", "The rotation axis length."
                            ).AxisLength = (20, 1.0, 1e6, 1)
         else:
             fp.AxisLength = (fp.AxisLength, 1.0, 1e6, 1)
         if not hasattr(fp, "AxisWidth"):
             fp.addProperty("App::PropertyFloatConstraint", "AxisWidth",
-                           "RotationAxis", "The rotation axis width.\n"
-                           + "Range is < 1.0 | 64 >."
+                           "RotationAxis", "The rotation axis width."
                            ).AxisWidth = (4, 1.0, 64, 1)
         else:
             fp.AxisWidth = (fp.AxisWidth, 1.0, 64, 1)
@@ -550,16 +544,14 @@ class TrajectoryProxy:
         if not hasattr(fp, "AxisArrowheadLength"):
             fp.addProperty("App::PropertyFloatConstraint",
                            "AxisArrowheadLength", "RotationAxis",
-                           "Frame axis arrow's arrowhead length.\n"
-                           + "Range is < 1.0 | 1e6 >."
+                           "Frame axis arrow's arrowhead length."
                            ).AxisArrowheadLength = (10, 1.0, 1e6, 1)
         else:
             fp.AxisArrowheadLength = (fp.AxisArrowheadLength, 1.0, 1e6, 1)
         if not hasattr(fp, "AxisArrowheadRadius"):
             fp.addProperty("App::PropertyFloatConstraint",
                            "AxisArrowheadRadius", "RotationAxis",
-                           "Frame axis arrow's arrowhead bottom radius.\n"
-                           + "Range is < 0.5 | 1e6 >."
+                           "Frame axis arrow's arrowhead bottom radius."
                            ).AxisArrowheadRadius = (5, 0.5, 1e6, 0.5)
         else:
             fp.AxisArrowheadRadius = (fp.AxisArrowheadRadius, 0.5, 1e6, 0.5)
@@ -571,15 +563,13 @@ class TrajectoryProxy:
         # Label properties
         if not hasattr(fp, "FontSize"):
             fp.addProperty("App::PropertyIntegerConstraint", "FontSize",
-                           "Labels", "Label font size.\n"
-                           + "Range is < 1 | 100 >."
+                           "Labels", "Label font size."
                            ).FontSize = (10, 1, 100, 1)
         else:
             fp.FontSize = (fp.FontSize, 1, 100, 1)
         if not hasattr(fp, "DistanceToAxis"):
             fp.addProperty("App::PropertyFloatConstraint", "DistanceToAxis",
-                           "Labels", "Distance from label to its axis.\n"
-                           + "Range is < 0.5 | 1e6 >."
+                           "Labels", "Distance from label to its axis."
                            ).DistanceToAxis = (5, 0.5, 1e6, 0.5)
         else:
             fp.DistanceToAxis = (fp.DistanceToAxis, 0.5, 1e6, 0.5)
