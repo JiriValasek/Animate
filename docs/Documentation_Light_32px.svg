@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="Documentation_Light_32px.svg">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="22.4"
+     inkscape:cx="-110.5691"
+     inkscape:cy="230.30128"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1858"
+     inkscape:window-height="1057"
+     inkscape:window-x="54"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="opacity:1;fill:#ffffff;fill-opacity:1;stroke-width:0.05907107;stroke-miterlimit:4;stroke-dasharray:none"
+       d="M -107.14258 875.80469 A 15.999999 15.999999 0 0 0 -123.14258 891.80469 A 15.999999 15.999999 0 0 0 -107.14258 907.80469 A 15.999999 15.999999 0 0 0 -91.142578 891.80469 A 15.999999 15.999999 0 0 0 -107.14258 875.80469 z M -113.3418 884.04883 C -110.98461 884.01305 -108.69597 885.3771 -107.25586 887.73633 C -104.81203 883.48417 -99.343075 882.78476 -95.619141 887.03711 L -95.677734 898.6875 C -98.645246 896.2409 -104.34758 896.30043 -105.45312 899.5625 L -108.94336 899.5625 C -110.33982 895.95093 -115.34354 896.06578 -118.66016 898.62891 L -118.60352 886.86328 C -117.05066 884.95198 -115.17517 884.07666 -113.3418 884.04883 z "
+       transform="scale(0.26458333)"
+       id="path4522"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
+  </g>
+</svg>
