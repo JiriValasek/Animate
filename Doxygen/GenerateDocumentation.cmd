@@ -5,7 +5,7 @@ SET "scripts_directory=%CD%"
 SET "output_directory=%CD%\Doxypypy outputs"
 SET "doxygen_file=.\Doxyfile"
 :: remove resize.js from this directory
-SET "doxygen_output_directory=..\docs\programmers_doxy_doc"
+SET "doxygen_output_directory=..\Help\Documentation"
 
 :: Sort out input arguments
 SET output_dir_set=0
