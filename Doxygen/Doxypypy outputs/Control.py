@@ -1174,15 +1174,15 @@ class ControlProxy:
         if not hasattr(fp, "VideoWidth"):
             fp.addProperty(
                 "App::PropertyIntegerConstraint", "VideoWidth",
-                "Record & Export", "Width of the exported video in pixels.\n"
-                + "Range is < 32 | 7680 >.").VideoWidth = (1280, 32, 7680, 10)
+                "Record & Export", "Width of the exported video."
+                ).VideoWidth = (1280, 32, 7680, 10)
         else:
             fp.VideoWidth = (fp.VideoWidth, 32, 7680, 10)
         if not hasattr(fp, "VideoHeight"):
             fp.addProperty(
                 "App::PropertyIntegerConstraint", "VideoHeight",
-                "Record & Export", "Height of the exported video in pixels.\n"
-                + "Range is < 32 | 4320 >.").VideoHeight = (720, 32, 4320, 10)
+                "Record & Export", "Height of the exported video."
+                ).VideoHeight = (720, 32, 4320, 10)
         else:
             fp.VideoHeight = (fp.VideoHeight, 32, 4320, 10)
 

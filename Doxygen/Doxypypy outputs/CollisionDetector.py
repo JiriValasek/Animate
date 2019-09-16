@@ -317,8 +317,7 @@ class CollisionDetectorProxy(object):
             fp.addProperty(
                 "App::PropertyFloatConstraint", "InCollisionLineWidth",
                 "In-CollisionStyle",
-                "Line width for highlighting objects\n"
-                + "in collision. Range is < 1 | 64 >."
+                "Line width for highlighting objects in collision."
                 ).InCollisionLineWidth = (2, 1, 64, 1)
         else:
             fp.InCollisionLineWidth = (fp.InCollisionLineWidth, 2, 64, 1)
@@ -344,8 +343,7 @@ class CollisionDetectorProxy(object):
             fp.addProperty(
                 "App::PropertyFloatConstraint",
                 "CollidedLineWidth", "CollidedStyle",
-                "Line width for highlighting objects"
-                + "in collision. Range is < 1 | 64 >."
+                "Line width for highlighting objects in collision."
                 ).CollidedLineWidth = (2, 1, 64, 1)
         else:
             fp.CollidedLineWidth = (fp.CollidedLineWidth, 2, 64, 1)
@@ -436,10 +434,15 @@ class CollisionDetectorProxy(object):
                     self.shape_info[obj]["objects"][0].Shape.fuse(
                         [o.Shape for o in self.shape_info[obj]["objects"][1:]])
                 if hasattr(obj, "Placement"):
+                    print('changing placement')
                     self.shape_info[obj]["shape"].Placement.Base = \
                         obj.Placement.Base
+                    print(self.shape_info[obj]["shape"].Placement.Base, "<-",
+                          obj.Placement.Base)
                     self.shape_info[obj]["shape"].Placement.Rotation = \
                         obj.Placement.Rotation
+                    print(self.shape_info[obj]["shape"].Placement.Rotation, "<-",
+                          obj.Placement.Rotation)
 
             elif hasattr(obj, "Placement"):
                 self.shape_info[obj]["shape"] = obj.Shape
