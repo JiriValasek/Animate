@@ -87,10 +87,10 @@ function sidebarToggleCollapse() {
 
 function updateSidebarHeight(){
 	// sidebar
-	if (($("#nav-path").offset().top - $(window).scrollTop() - $("#titlearea").outerHeight()) < ($(window).height() - $("#titlearea").height())){
+	if (($("#nav-path").offset().top - $(window).scrollTop() - $("#titlearea").outerHeight()) < (window.innerHeight - $("#titlearea").height())){
 		$("#side-nav").css("height", $("#nav-path").offset().top - $(window).scrollTop() - $("#titlearea").height() - 1);
 	} else {
-		$("#side-nav").css("height", $(window).height() - $("#titlearea").height());
+		$("#side-nav").css("height", window.innerHeight - $("#titlearea").height());
 	}
 }
 
@@ -106,7 +106,8 @@ $(function(){
 	} else {
 		sidebarResizeHandler();
 	}
-	if ($(window).width() < md_screen_width){
+	if ($("#top").width() < md_screen_width){
+		// $("#top").width() is equal to $(window).width() but it works on mobile devices
 		sidebarToggleMinimize();
 	}
   	$(".ui-resizable-handle").dblclick(sidebarToggleCollapse);
@@ -114,4 +115,6 @@ $(function(){
   	$(window).scroll(updateSidebarHeight);
 	sidebarResizeHandler();
 	updateLayout();
+	// Correct body width on mobile devices
+	$("body").width($("#top").width())
 });
