@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Animate: Trajectory</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css" integrity="sha256-zmfNZmXoNWBMemUOo1XUGFfc0ihGGLYdgtJS3KCr/l0=" crossorigin="anonymous" />
+	<link rel="stylesheet" href="CSS/guide_style.css">
+	<!--<link rel="stylesheet" href="css/fixed.css"> -->
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+</head>
+
+<body data-spy="scroll" data-target="#side-nav" data-offset="0">
+
+<!--- Start Header --->
+<header>
+
+<!--- Navigation --->
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+	<a class="navbar-brand" href="../index.html"><img src="../Homepage_Images/animate_logo.png"></a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#animateNavbar">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	
+	<div class="collapse navbar-collapse" id="animateNavbar">
+		<ul class="navbar-nav ml-auto">
+			<li class="nav-item">
+				<a class="nav-link active" href="../index.html">Home</a>
+			</li>
+			<li class="nav-item active dropdown justify-content-center text-center">
+				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">User guide</a>
+				<div class="dropdown-menu">
+					<a class="dropdown-item" href="getting_started.html">Getting started</a>
+					<div class="dropdown-header">Tools</div>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item active" href="#">Trajectory</a>
+					<a class="dropdown-item" href="server.html">Server</a>
+					<a class="dropdown-item" href="control.html">Control</a>
+					<a class="dropdown-item" href="collision_detector.html">Collision Detector</a>
+				</div>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" href="../Documentation/index.html">Documentation</a>
+			</li>
+		</ul>
+	</div>
+</nav>
+<!--- End Navigation --->
+</header>
+<!--- End Header --->
+
+<content class="container-fluid">
+	<div class="row justify-content-center">
+		<div id="sidebar" class="col-md-3 col-xl-2 d-none d-md-block">
+			<nav id="side-nav" class="navbar navbar-light bg-dark sticky-top">
+				<nav class="nav nav-pills flex-column">
+					<a class="nav-link" href="#"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
+					<a class="nav-link" href="#intro">Introduction</a>
+				</nav>
+			</nav>
+		</div>
+		<div id="doc-content" class="col-12 col-md-9 col-xl-10">
+			<section id="intro">
+				<h3 id="heading">Introduction</h3>
+				<div class="heading-underline"></div>
+				<p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus</p>
+			</section>
+		</div>
+	</div>
+	
+</content>
+
+
+
+<!--- Start Footer Section --->
+<footer class="container-fluid" id="footerInfo">
+	<div class="row justify-content-center">
+		<div class="col-md-7" id="about">
+			<h4>About Animate</h4>
+			<p>Animate was created as a part of my diploma thesis at Czech Technical University in Prague, Faculty of Electrotechnical Engineering. <p>
+			<p>For license information go to Animate repository. <p>
+		</div>
+		<div class="col-md-5" id="contact">
+			<div class="link-list">
+				<a href="https://github.com/JiriValasek/Animate">
+					<div class="icon">
+						<i class="fab fa-github fa-2x"></i>
+					</div>
+					<p>Animate repository</p>
+				</a><br>
+				<a href="https://github.com/JiriValasek/Animate/issues/new">
+					<div class="icon">
+						<i class="fas fa-bug fa-2x"></i>
+					</div>
+					<p>Raise an issue</p>
+				</a><br>
+				<a href="mailto:valasji2@fel.cvut.cz">
+					<div class="icon">
+						<i class="fas fa-envelope fa-2x" ></i>
+					</div>
+					<p>Contact</p>
+				</a>
+			</div>
+		</div>
+	</div>
+</footer>
+<!--- End Footer Section --->
+
+</body>
+</html>

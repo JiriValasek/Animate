@@ -11,29 +11,30 @@ body {
 .navbar {
 	text-transform: uppercase;
 	font-weight: 700;
-	font-size: .9rem;
+	font-size: 1rem;
 	letter-spacing: .1rem;
 	background: rgb(103, 103, 103)!important;
-	padding: .5rem 1rem;
+	padding: .2rem .5rem;
     border-bottom: 1px solid black;
 }
 
 .navbar-brand img{
-	height: 2rem;
+	height: 2.2rem;
+	padding-left: .7rem;
 }
 .navbar-nav li{
-	padding-right: .7rem;
+	padding-right: .6rem;
 }
 .navbar-dark .navbar-nav .nav-link{
 	color: white;
-	padding-top: .8rem;
+	padding-top: .7rem;
 }
 .navbar-dark .navbar-nav .nav-link:visited {
 	color: white;
 }
 .navbar-dark .navbar-nav .active .nav-link,
 .navbar-dark .navbar-nav .active .nav-link:visited {
-	color: #ffe100;
+	color: #f5c527;
 }
 .navbar-dark .navbar-nav .nav-link:active,
 .navbar-dark .navbar-nav .nav-link:hover,

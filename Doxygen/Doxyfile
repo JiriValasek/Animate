@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "FreeCAD Workbench for lightweigh animation"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = ../Resources/Icons/Animate.png
+PROJECT_LOGO           = "C:/Program Files/FreeCAD 0.18/Mod/Animate/Animate/Resources/Icons/Animate.png"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is

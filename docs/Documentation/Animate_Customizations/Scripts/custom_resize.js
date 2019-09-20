@@ -55,6 +55,8 @@ function updateLayout() {
 	} else if ($(window).width() > md_screen_width & sidenav_minimized) {
 		sidebarToggleMinimize();
 	}
+	// Let body width take all available space the same way as #top does
+	$("body").width($("#top").width())
 }
 
 function sidebarToggleMinimize() {
@@ -115,6 +117,4 @@ $(function(){
   	$(window).scroll(updateSidebarHeight);
 	sidebarResizeHandler();
 	updateLayout();
-	// Correct body width on mobile devices
-	$("body").width($("#top").width())
 });
