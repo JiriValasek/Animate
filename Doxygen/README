@@ -1,0 +1,16 @@
+Generation of the Doxygen documentation for Animate workbench
+-------------------------------------------------------------
+
+! Documentation generation is at this moment available for WINDOWS only !
+
+1) Open a windows command line (cmd.exe)
+2) Make this folder the current directory (CD ...\Doxygen)
+3) Run command script "GenerateDocumentation /S ..\Animate"
+
+Working on Windows 10, with Python 3.6.5.
+Necessary programs:
+	1) 	Name: doxypypy
+		Version: 0.8.8.6
+		Summary: A Doxygen filter for Python
+		Home-page: https://github.com/Feneric/doxypypy
+		Author: Eric W. Brown

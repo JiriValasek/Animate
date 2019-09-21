@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu:400,500,700&display=swap');
+
+body {
+	overflow-x: hidden;
+	font-family: 'Ubuntu', sans-serif;
+	color: #f5c527;
+}
+
+/*--- Navigation ---*/
+.navbar-dark {
+	text-transform: uppercase;
+	font-weight: 700;
+	font-size: 1rem;
+	letter-spacing: .1rem;
+	background: rgba(0, 0, 0, 0.8)!important;
+	padding: .2rem .5rem;
+    border-bottom: 1px solid black;
+}
+.navbar-brand img{
+	height: 2.2rem;
+	padding-left: .7rem;
+}
+.navbar-nav li{
+	padding-right: .6rem;
+}
+.navbar-dark .navbar-nav .nav-link{
+	color: white;
+	padding-top: .7rem;
+}
+.navbar-dark .navbar-nav .nav-link:link,
+.navbar-dark .navbar-nav .nav-link:visited {
+	color: white;
+}
+.navbar-dark .navbar-nav .active .nav-link:link,
+.navbar-dark .navbar-nav .active .nav-link:visited {
+	color: #f5c527;
+}
+.navbar-dark .navbar-nav .nav-link:active,
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .active .nav-link:active,
+.navbar-dark .navbar-nav .active .nav-link:hover,
+.navbar-dark .navbar-nav .show .nav-link {
+	color: #fff080;
+}
+.navbar-dark .navbar-nav .dropdown-menu {
+	background: rgba(0, 0, 0, 0.6);
+	border-radius: 0;
+	min-width: 20rem;
+}
+@media (min-width: 768px) {
+	.navbar-dark .navbar-nav .dropdown-menu {
+		left: 50% !important;
+		transform: translateX(-50%) !important;
+		margin-top: .5rem;
+	}
+}
+.navbar-dark .navbar-nav .dropdown-header {
+	font-size: .8rem;
+	font-weight: 700;
+	text-align: center;
+}
+.navbar-dark .navbar-nav .dropdown-item{
+	color: #ccc;
+	font-size: .8rem;
+	font-weight: 700;
+	text-align: center;
+}
+.navbar-dark .navbar-nav .dropdown-item:active,
+.navbar-dark .navbar-nav .dropdown-item:hover{
+	background: rgba(245,197,39,0.4);
+	color: white;
+}
+.navbar-collapse {
+	text-align: center;
+}
+
+
+/*--- Landing Page ---*/
+#landing-zone {
+	height: 100vh;
+	width: 100vw;
+	z-index: -9999;
+}
+
+#landing-frame {
+	position: relative;
+	height: 100vh;
+	min-width: 100%;
+}
+
+#landing-image {
+	background: url("../Homepage_Images/animate_background.png");
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-position: center center;
+	background-size: cover;
+	position: absolute;
+	min-width: 100vw;
+	min-height: 100vh;
+  	clip: rect(0px, 100vw, 100vh, 0px);
+}
+
+.caption {
+	width: 100%;
+	max-width: 100%;
+	position: absolute;
+	top: 38.2%;
+	z-index: 0;
+	color: white;
+	text-transform: uppercase;
+}
+.caption h1 {
+	font-size: 3.2rem;
+	font-weight: 700;
+	letter-spacing: .8rem;
+	text-shadow: 0rem 0rem 1.2rem black;
+	padding-bottom: 1rem;
+}
+.caption h3 {
+	font-size: 1.6rem;
+	letter-spacing: .15rem;
+	text-shadow: 0rem 0rem .8rem black;
+	padding-bottom: 2rem;
+}
+.btn-lg {
+	border-width: medium;
+	border-radius: 0;
+	padding: .7rem 1.6rem;
+	font-size: 1.3rem;
+	box-shadow: 0rem 0rem 1.2rem -0.4rem white;
+}
+
+.btn-lg i{
+	padding-right: 1rem;
+}
+
+
+/* Intro and Intro banner section */
+#introBanner {
+	padding: 5.3rem 2rem 0rem 2.5rem;
+	margin-top: -3.3rem;
+}
+#introBanner .heading {
+	font-weight: 700;
+	font-size: 2rem;
+	margin: 0;
+	padding-bottom: .5rem;
+	padding-left: .5rem;
+}
+#introBanner .heading-underline{
+	height: .3rem;
+	width: 15rem;
+	background-color: #f5c527;
+	margin-bottom: 2.3rem;
+}
+#intro {
+	padding: 2rem 2rem .5rem 2.5rem;
+}
+#intro p {
+	color: black;
+}
+#intro b,
+#intro ul {
+	color: black;
+	font-weight: 500;
+}
+
+
+/* Features section */
+#features {
+	margin: .8rem .5rem .8rem .5rem;
+}
+.jumbotron {
+	padding: 2rem 2rem 4rem 2rem;
+	margin: 0;
+}
+.jumbotron .heading {
+	font-weight: 700;
+	font-size: 2rem;
+	margin: 0;
+	padding-bottom: .5rem;
+	padding-left: .5rem;
+	color: #777;
+}
+.jumbotron .heading-underline {
+	height: .3rem;
+	width: 15rem;
+	background-color: #666;
+	margin-bottom: 2.3rem;
+}
+.jumbotron .feature,
+.jumbotron .feature:visited {
+	color: #f5c527;
+}
+.jumbotron .feature:hover,
+.jumbotron .feature:active {
+	color: #ab8711;
+	text-decoration: none;
+}
+
+.jumbotron .feature i {
+	padding-bottom: .8rem;
+}
+.jumbotron .feature h3 {
+	letter-spacing: 0.1rem;
+	font-weight: 500;
+	font-size: 1.8rem;
+	color: black;
+}
+.jumbotron .feature p {
+	padding: 0;
+	margin: 0;
+	color: #555;
+	font-size: 1.2rem;
+}
+
+/* Examples section */
+#examples {
+	background-color: rgb(233,236,239);
+}
+
+/* Footer section */
+#footerInfo {
+	background-color: black;
+	padding: 2rem 2rem 4rem 2rem;
+}
+footer #about h4 {
+	color: white;
+	padding-bottom: .5rem;
+	padding-left: .5rem;
+}
+footer #about p {
+	color: #aaa;
+}
+footer #contact {
+	width: 100%;
+	line-height: 100%;
+	text-align: center;
+}
+footer #contact .link-list {
+	padding-top: .5rem;
+	text-align: left;
+	display: inline-block;
+}
+@media (min-width: 768px) { 
+footer #contact .link-list {
+	border-left: .1rem solid #666;
+	padding-left: 2rem;
+}
+}
+footer #contact a:link,
+footer #contact a:visited {
+	color: white;
+}
+footer #contact a:hover,
+footer #contact a:active {
+	text-decoration: none;
+	color: #ab8711;
+}
+footer #contact .icon {
+	background-color: #555;
+	width: 2.8rem;
+	height: 2.8rem;
+	line-height: 2.8rem;
+	display: inline-block;
+	border: 0rem solid black;
+	border-radius: .8rem; 
+	text-align: center;
+	margin-bottom: 1rem;
+}
+footer #contact i {
+	vertical-align: middle;
+	color: #f5c527;
+} 
+footer #contact p {
+	font-size: 1.3rem;
+	display: inline;
+	padding-left: .8rem;
+}
+/*============ BOOTSTRAP BREAK POINTS:
+
+Extra small (xs) devices (portrait phones, less than 576px)
+No media query since this is the default in Bootstrap
+
+Small (sm) devices (landscape phones, 576px and up)
+@media (min-width: 576px) { ... }
+
+Medium (md) devices (tablets, 768px and up)
+@media (min-width: 768px) { ... }
+
+Large (lg) devices (desktops, 992px and up)
+@media (min-width: 992px) { ... }
+
+Extra (xl) large devices (large desktops, 1200px and up)
+@media (min-width: 1200px) { ... }
+
+=============*/

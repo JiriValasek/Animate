@@ -1,0 +1,226 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu:400,500,700&display=swap');
+
+body {
+	overflow-x: hidden;
+	font-family: 'Ubuntu', sans-serif;
+	color: #f5c527;
+}
+
+/*--- Navigation ---*/
+.navbar-dark {
+	text-transform: uppercase;
+	font-weight: 700;
+	font-size: 1rem;
+	letter-spacing: .1rem;
+	background: rgba(0, 0, 0, 0.8)!important;
+	padding: .2rem .5rem;
+    border-bottom: 1px solid black;
+}
+.navbar-brand img{
+	height: 2.2rem;
+	padding-left: .7rem;
+}
+.navbar-nav li{
+	padding-right: .6rem;
+}
+.navbar-dark .navbar-nav .nav-link{
+	color: white;
+	padding-top: .7rem;
+}
+.navbar-dark .navbar-nav .nav-link:link,
+.navbar-dark .navbar-nav .nav-link:visited {
+	color: white;
+}
+.navbar-dark .navbar-nav .active .nav-link:link,
+.navbar-dark .navbar-nav .active .nav-link:visited {
+	color: #f5c527;
+}
+.navbar-dark .navbar-nav .nav-link:active,
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .active .nav-link:active,
+.navbar-dark .navbar-nav .active .nav-link:hover,
+.navbar-dark .navbar-nav .show .nav-link {
+	color: #fff080;
+}
+.navbar-dark .navbar-nav .dropdown-menu {
+	background: rgba(0, 0, 0, 0.6);
+	border-radius: 0;
+	min-width: 20rem;
+}
+@media (min-width: 768px) {
+	.navbar-dark .navbar-nav .dropdown-menu {
+		left: 50% !important;
+		transform: translateX(-50%) !important;
+		margin-top: .5rem;
+	}
+}
+.navbar-dark .navbar-nav .dropdown-header {
+	font-size: .8rem;
+	font-weight: 700;
+	text-align: center;
+}
+.navbar-dark .navbar-nav .dropdown-item {
+	font-size: .8rem;
+	font-weight: 700;
+	text-align: center;
+}
+.navbar-dark .navbar-nav .dropdown-item:link,
+.navbar-dark .navbar-nav .dropdown-item:visited {
+	color: #ccc;
+}
+.navbar-dark .navbar-nav .dropdown-item.active:link,
+.navbar-dark .navbar-nav .dropdown-item.active:visited {
+	background: #f5c527;
+	color: white;
+}
+.navbar-dark .navbar-nav .dropdown-item:active,
+.navbar-dark .navbar-nav .dropdown-item:hover,
+.navbar-dark .navbar-nav .dropdown-item.active:active,
+.navbar-dark .navbar-nav .dropdown-item.active:hover{
+	background: rgba(245,197,39,0.4);
+	color: white;
+}
+.navbar-collapse {
+	text-align: center;
+}
+
+
+/* Content section */
+content {
+	position: relative;
+	top: -1.5rem;
+}
+
+
+/* Sidenav section */
+#sidebar {
+}
+#side-nav {
+	padding: 2rem 0rem;
+	border-right: .1rem solid #888;
+	border-bottom: .2rem solid #888;
+	border-bottom-right-radius: 1.2rem;
+}
+#side-nav nav.nav {
+	padding: 0;
+	width: 100%;
+}
+#side-nav .nav-link {
+	color: #aaa;
+	text-transform: uppercase;
+	font-weight: 500;
+	border-radius: 0rem;
+}
+#side-nav .nav-link.active {
+	color: white;
+	background: rgba(245,197,39,0.4);
+}
+
+/* Document content section */
+#doc-content {
+	position: relative;
+	height: 100vh;
+	padding: 1rem 4rem 2rem 2rem;
+}
+#doc-content section {
+	padding-top: 1.1rem;
+	margin-top: -.1rem;
+}
+#doc-content .heading {
+	font-weight: 700;
+	font-size: 2rem;
+	margin: 0;
+	padding-bottom: .5rem;
+	padding-left: .5rem;
+}
+#doc-content .heading-underline{
+	height: .3rem;
+	width: 15rem;
+	background-color: #f5c527;
+	margin-bottom: 2.3rem;
+}
+#doc-content p {
+	color: #555;
+}
+#doc-content a.inline-button {
+	padding: .05rem .1rem;
+	color: #f0b000;
+	font-weight: 500;
+}
+
+/* Footer section */
+#footerInfo {
+	background-color: black;
+	padding: 2rem 2rem 4rem 2rem;
+}
+footer #about h4 {
+	color: white;
+	padding-bottom: .5rem;
+	padding-left: .5rem;
+}
+footer #about p {
+	color: #aaa;
+}
+footer #contact {
+	width: 100%;
+	line-height: 100%;
+	text-align: center;
+}
+footer #contact .link-list {
+	padding-top: .5rem;
+	text-align: left;
+	display: inline-block;
+}
+@media (min-width: 768px) { 
+footer #contact .link-list {
+	border-left: .1rem solid #666;
+	padding-left: 2rem;
+}
+}
+footer #contact a:link,
+footer #contact a:visited {
+	color: white;
+}
+footer #contact a:hover,
+footer #contact a:active {
+	text-decoration: none;
+	color: #ab8711;
+}
+footer #contact .icon {
+	background-color: #555;
+	width: 2.8rem;
+	height: 2.8rem;
+	line-height: 2.8rem;
+	display: inline-block;
+	border: 0rem solid black;
+	border-radius: .8rem; 
+	text-align: center;
+	margin-bottom: 1rem;
+}
+footer #contact i {
+	vertical-align: middle;
+	color: #f5c527;
+} 
+footer #contact p {
+	font-size: 1.3rem;
+	display: inline;
+	padding-left: .8rem;
+}
+/*============ BOOTSTRAP BREAK POINTS:
+
+Extra small (xs) devices (portrait phones, less than 576px)
+No media query since this is the default in Bootstrap
+
+Small (sm) devices (landscape phones, 576px and up)
+@media (min-width: 576px) { ... }
+
+Medium (md) devices (tablets, 768px and up)
+@media (min-width: 768px) { ... }
+
+Large (lg) devices (desktops, 992px and up)
+@media (min-width: 992px) { ... }
+
+Extra (xl) large devices (large desktops, 1200px and up)
+@media (min-width: 1200px) { ... }
+
+=============*/
