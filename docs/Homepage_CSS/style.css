@@ -17,8 +17,14 @@ body {
     border-bottom: 1px solid black;
 }
 .navbar-brand img{
-	height: 2.2rem;
-	padding-left: .7rem;
+	height: 1.6rem;
+	padding-left: .4rem;
+}
+@media (min-width: 768px) {
+	.navbar-brand img{
+		height: 2.2rem;
+		padding-left: .7rem;
+	}
 }
 .navbar-nav li{
 	padding-right: .6rem;
@@ -110,28 +116,47 @@ body {
 	text-transform: uppercase;
 }
 .caption h1 {
-	font-size: 3.2rem;
-	font-weight: 700;
-	letter-spacing: .8rem;
-	text-shadow: 0rem 0rem 1.2rem black;
-	padding-bottom: 1rem;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: .4rem;
+    text-shadow: 0rem 0rem 0.6rem black;
 }
 .caption h3 {
-	font-size: 1.6rem;
-	letter-spacing: .15rem;
-	text-shadow: 0rem 0rem .8rem black;
-	padding-bottom: 2rem;
+    font-size: 1rem;
+    letter-spacing: .05rem;
+    text-shadow: 0rem 0rem 0.4rem black;
+    padding-bottom: .5rem;
 }
 .btn-lg {
-	border-width: medium;
-	border-radius: 0;
-	padding: .7rem 1.6rem;
-	font-size: 1.3rem;
-	box-shadow: 0rem 0rem 1.2rem -0.4rem white;
+    border-width: medium;
+    border-radius: 0;
+    padding: .6rem .8rem;
+    font-size: .8rem;
+    box-shadow: 0rem 0rem 1.2rem -0.4rem white;
 }
-
-.btn-lg i{
-	padding-right: 1rem;
+.btn-lg i {
+    padding-right: .6rem;
+}
+@media (min-width: 768px) {
+	.caption h1 {
+		font-size: 3.2rem;
+		letter-spacing: .8rem;
+		text-shadow: 0rem 0rem 1.2rem black;
+		padding-bottom: 1rem;
+	}
+	.caption h3 {
+		font-size: 1.6rem;
+		letter-spacing: .15rem;
+		text-shadow: 0rem 0rem .8rem black;
+		padding-bottom: 2rem;
+	}
+	.btn-lg {
+		padding: .7rem 1.6rem;
+		font-size: 1.3rem;
+	}
+	.btn-lg i{
+		padding-right: 1rem;
+	}	
 }
 
 
@@ -142,7 +167,7 @@ body {
 }
 #introBanner .heading {
 	font-weight: 700;
-	font-size: 2rem;
+	font-size: 1.6rem;
 	margin: 0;
 	padding-bottom: .5rem;
 	padding-left: .5rem;
@@ -151,32 +176,50 @@ body {
 	height: .3rem;
 	width: 15rem;
 	background-color: #f5c527;
-	margin-bottom: 2.3rem;
+	margin-bottom: 1.2rem;
 }
 #intro {
-	padding: 2rem 2rem .5rem 2.5rem;
+	padding: .5rem;
+}
+#intro #text {
+	font-size: .9rem;
 }
 #intro p {
 	color: black;
+	font-size: .
 }
 #intro b,
 #intro ul {
 	color: black;
 	font-weight: 500;
 }
+@media (min-width: 768px) {
+	#introBanner .heading {
+		font-size: 2rem;
+	}
+	#introBanner .heading-underline{
+		margin-bottom: 2.3rem;
+	}
+	#intro {
+		padding: 2rem 2rem .5rem 2.5rem;
+	}
+	#intro #text {
+		font-size: inherit;
+	}
+}
 
 
 /* Features section */
 #features {
-	margin: .8rem .5rem .8rem .5rem;
+    margin: 0rem 0rem 0.5rem 0rem;
 }
 .jumbotron {
-	padding: 2rem 2rem 4rem 2rem;
+	padding: 1rem;
 	margin: 0;
 }
 .jumbotron .heading {
 	font-weight: 700;
-	font-size: 2rem;
+	font-size: 1.6rem;
 	margin: 0;
 	padding-bottom: .5rem;
 	padding-left: .5rem;
@@ -188,6 +231,9 @@ body {
 	background-color: #666;
 	margin-bottom: 2.3rem;
 }
+.jumbotron .feature-box {
+	margin-top: 1rem;
+}
 .jumbotron .feature,
 .jumbotron .feature:visited {
 	color: #f5c527;
@@ -197,26 +243,72 @@ body {
 	color: #ab8711;
 	text-decoration: none;
 }
-
 .jumbotron .feature i {
 	padding-bottom: .8rem;
 }
 .jumbotron .feature h3 {
-	letter-spacing: 0.1rem;
+	letter-spacing: 0.05rem;
 	font-weight: 500;
-	font-size: 1.8rem;
+	font-size: 1.4rem;
 	color: black;
 }
 .jumbotron .feature p {
 	padding: 0;
 	margin: 0;
 	color: #555;
-	font-size: 1.2rem;
+	font-size: 1rem;
+}
+@media (min-width: 768px) {
+	#features {
+		margin: .8rem .5rem .8rem .5rem;
+	}
+	.jumbotron {
+		padding: 2rem 2rem 4rem 2rem;
+		margin: 0;
+	}
+	.jumbotron .feature-box {
+		margin: 0;
+	}
+	.jumbotron .heading {
+		font-size: 2rem;
+	}
+	.jumbotron .feature h3 {
+		letter-spacing: 0.1rem;
+		font-size: 1.8rem;
+	}
+	.jumbotron .feature p {
+		font-size: 1.2rem;
+	}
+
 }
 
 /* Examples section */
 #examples {
 	background-color: rgb(233,236,239);
+}
+#examples {
+	margin: 0rem;
+	padding: 0rem;
+}
+#examples .row {
+	margin: 0px;
+}
+#slideshow {
+	margin: 0rem;
+	padding: 0rem;
+}
+@media (min-width: 768px) {
+	#examples {
+		margin: inherit;
+		padding: inherit;
+	}
+	#examples .row {
+		margin: inherit;
+	}
+	#slideshow {
+		margin: inherit;
+		padding: inherit;
+	}
 }
 
 /* Footer section */

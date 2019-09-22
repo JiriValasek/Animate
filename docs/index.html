@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no">
 	<title>Animate: Homepage</title>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css" integrity="sha256-zmfNZmXoNWBMemUOo1XUGFfc0ihGGLYdgtJS3KCr/l0=" crossorigin="anonymous" />
@@ -84,7 +84,7 @@
 <!--- Start Examples Section --->
 <div id="examples" class="container-fluid">
 	<div class="row align-items-center justify-content-around">
-		<div class="col-12 col-md-10 col-lg-8">	
+		<div id="slideshow" class="col-12 col-md-10 col-lg-8">	
 		  <div id="carouselWithCaptions" class="carousel slide carousel-fade" data-ride="carousel">
 		    <ol class="carousel-indicators">
 		      <li data-target="#carouselWithCaptions" data-slide-to="0" data-interval="5000" class="active"></li>
@@ -132,7 +132,7 @@
 <!--- Start Intro Section --->
 <div id="intro" class="container-fluid">
 	<div class="row">
-		<div class="col-12">
+		<div id="text" class="col-12">
 			<p>Animate is a free and open-source workbench for FreeCAD. It has four tools - <b>Trajectory</b>, <b>Server</b>, <b>Collision Detenction</b> and <b>Control</b>.<br>
 			Those tools allow you to:</p>
 			<ul>
@@ -159,7 +159,7 @@
 			</div>
 		</div>
 		<div class="row text-center">
-			<div class="col-md-6">
+			<div class="col-md-6 feature-box">
 				<a class="feature" href="Guide/getting_started.html">
 					<i class="fas fa-journal-whills fa-5x"></i>
 					<h3>User Guide</h3>
@@ -167,7 +167,7 @@
 					<p>to start using the Animate workbench</p>
 				</a>
 			</div>
-			<div class="col-md-6">
+			<div class="col-md-6 feature-box">
 				<a class="feature" href="Documentation/index.html">
 					<i class="fas fa-laptop-code fa-5x"></i>
 					<h3>Documentation</h3>
