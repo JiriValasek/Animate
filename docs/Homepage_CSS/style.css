@@ -286,14 +286,24 @@ body {
 #examples {
 	background-color: rgb(233,236,239);
 }
+#examples .row {
+	margin: 0px;
+}
+#slideshow {
+	margin: 0rem;
+	padding: 0rem;
+}
 @media (max-width: 768px) {
 	#examples {
 		margin: 0rem;
 		padding: 0rem;
-	}	
+	}
+	#examples .row {
+		margin: inherit;
+	}
 	#slideshow {
-		margin: 0rem;
-		padding: 0rem;
+		margin: inherit;
+		padding: inherit;
 	}
 }
 
