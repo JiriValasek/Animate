@@ -162,8 +162,8 @@ body {
 
 /* Intro and Intro banner section */
 #introBanner {
-	padding: 5.3rem 2rem 0rem 2.5rem;
-	margin-top: -3.3rem;
+	padding: 4.9rem 2rem 0rem 2.5rem;
+	margin-top: -2.9rem;
 }
 #introBanner .heading {
 	font-weight: 700;
@@ -194,6 +194,10 @@ body {
 	font-weight: 500;
 }
 @media (min-width: 768px) {
+	#introBanner {
+		padding: 5.3rem 2rem 0rem 2.5rem;
+		margin-top: -3.3rem;
+	}
 	#introBanner .heading {
 		font-size: 2rem;
 	}
@@ -285,6 +289,30 @@ body {
 /* Examples section */
 #examples {
 	background-color: rgb(233,236,239);
+	margin: 0rem;
+	padding: 0rem;
+}
+#examples .row {
+	margin: 0px;
+}
+#slideshow {
+	margin: 0rem;
+	padding: 0rem;
+}
+@media (min-width: 768px) {
+	#examples {
+		margin: inherit;
+		padding: inherit;
+	}
+	#examples .row {
+		margin: inherit;
+	}
+	#slideshow {
+		margin: inherit;
+		padding: inherit;
+	}
+}
+#examples {
 	margin: 0rem;
 	padding: 0rem;
 }
