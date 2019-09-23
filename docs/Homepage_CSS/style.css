@@ -211,7 +211,7 @@ body {
 
 /* Features section */
 #features {
-	margin: 0.5rem;
+    margin: 0rem 0rem 0.5rem 0rem;
 }
 .jumbotron {
 	padding: 1rem;
@@ -285,6 +285,8 @@ body {
 /* Examples section */
 #examples {
 	background-color: rgb(233,236,239);
+	margin: 0rem;
+	padding: 0rem;
 }
 #examples .row {
 	margin: 0px;
@@ -293,10 +295,10 @@ body {
 	margin: 0rem;
 	padding: 0rem;
 }
-@media (max-width: 768px) {
+@media (min-width: 768px) {
 	#examples {
-		margin: 0rem;
-		padding: 0rem;
+		margin: inherit;
+		padding: inherit;
 	}
 	#examples .row {
 		margin: inherit;
