@@ -7,6 +7,10 @@ body {
 }
 
 /*--- Navigation ---*/
+header {
+	padding-top: 2rem;
+	margin-top: -2rem;
+}
 .navbar-dark {
 	text-transform: uppercase;
 	font-weight: 700;
@@ -17,8 +21,14 @@ body {
     border-bottom: 1px solid black;
 }
 .navbar-brand img{
-	height: 2.2rem;
-	padding-left: .7rem;
+	height: 1.6rem;
+	padding-left: .4rem;
+}
+@media (min-width: 768px) {
+	.navbar-brand img{
+		height: 2.2rem;
+		padding-left: .7rem;
+	}
 }
 .navbar-nav li{
 	padding-right: .6rem;
@@ -84,17 +94,7 @@ body {
 	text-align: center;
 }
 
-
-/* Content section */
-content {
-	position: relative;
-	top: -1.5rem;
-}
-
-
 /* Sidenav section */
-#sidebar {
-}
 #side-nav {
 	padding: 2rem 0rem;
 	border-right: .1rem solid #888;
@@ -113,22 +113,28 @@ content {
 }
 #side-nav .nav-link.active {
 	color: white;
-	background: rgba(245,197,39,0.4);
+	background: rgba(245,197,39,0.5);
+}
+#side-nav .nav-link.arrow.active {
+	color: rgba(245,197,39,0.8);
+	background-color: inherit;
+}
+#side-nav .nav-link:hover,
+#side-nav .nav-link.arrow:hover,
+#side-nav .nav-link.arrow.active:hover {
+	color: #f5c527;
 }
 
 /* Document content section */
-#doc-content {
-	position: relative;
-	height: 100vh;
-	padding: 1rem 4rem 2rem 2rem;
+#mid-section {
+	padding: 0rem;
 }
-#doc-content section {
-	padding-top: 1.1rem;
-	margin-top: -.1rem;
+#doc-content {
+	padding: 1rem 4rem 2rem 2rem;
 }
 #doc-content .heading {
 	font-weight: 700;
-	font-size: 2rem;
+	font-size: 1.6rem;
 	margin: 0;
 	padding-bottom: .5rem;
 	padding-left: .5rem;
@@ -143,10 +149,52 @@ content {
 	color: #555;
 }
 #doc-content a.inline-button {
-	padding: .05rem .1rem;
-	color: #f0b000;
+    padding: 0rem .1rem;
+    position: relative;
+    top: -0.1rem;
+    color: #f0b000;
+    font-weight: 500;
+    border: none;
+}
+#doc-content li {
+	color: #555;
 	font-weight: 500;
 }
+#doc-content img {
+	border: solid 2px #666;
+	display: inline-block;
+}
+#doc-content figure {
+	border: solid 2px #eee;
+	border-radius: 5%;
+	padding: .5rem;
+	text-align: center;
+	float: right;
+	margin: 1rem;
+}
+#crossroad {
+	text-align: center;
+	clear: both;
+	padding-top: 2rem;
+}
+#crossroad .btn {
+	color: #111;
+	text-align: center;
+}
+#crossroad .btn-icon {
+	height: 1.5rem;
+	width: auto;
+	display: inline-block;
+	margin: 0rem;
+	padding: 0rem .2rem 0rem .2rem;
+	border: none;
+}
+#crossroad .btn-name {
+	white-space: nowrap;
+}
+@btn-primary-color: #f5c527;
+@btn-primary-bg: #f5c527;
+
 
 /* Footer section */
 #footerInfo {
@@ -160,6 +208,13 @@ footer #about h4 {
 }
 footer #about p {
 	color: #aaa;
+	font-size: .9rem;
+}
+@media (min-width: 576px) {
+	footer #about p {
+		color: #aaa;
+		font-size: 1rem;
+	}
 }
 footer #contact {
 	width: 100%;
@@ -172,10 +227,10 @@ footer #contact .link-list {
 	display: inline-block;
 }
 @media (min-width: 768px) { 
-footer #contact .link-list {
-	border-left: .1rem solid #666;
-	padding-left: 2rem;
-}
+	footer #contact .link-list {
+		border-left: .1rem solid #666;
+		padding-left: 2rem;
+	}
 }
 footer #contact a:link,
 footer #contact a:visited {
@@ -187,24 +242,39 @@ footer #contact a:active {
 	color: #ab8711;
 }
 footer #contact .icon {
-	background-color: #555;
-	width: 2.8rem;
-	height: 2.8rem;
-	line-height: 2.8rem;
-	display: inline-block;
-	border: 0rem solid black;
-	border-radius: .8rem; 
-	text-align: center;
-	margin-bottom: 1rem;
+    background-color: #555;
+    width: 2.3rem;
+    height: 2.3rem;
+    line-height: 2.2rem;
+    display: inline-block;
+    border: 0rem solid black;
+    border-radius: .5rem;
+    text-align: center;
+    margin-bottom: .5rem;
+}
+@media (min-width: 768px){
+	footer #contact .icon {
+		width: 2.8rem;
+		height: 2.8rem;
+		line-height: 2.7rem;
+		border-radius: .8rem; 
+		margin-bottom: 1rem;
+	}
 }
 footer #contact i {
 	vertical-align: middle;
 	color: #f5c527;
 } 
 footer #contact p {
-	font-size: 1.3rem;
+	font-size: 1rem;
 	display: inline;
-	padding-left: .8rem;
+	padding-left: .4rem;
+}
+@media (min-width: 768px) {
+	footer #contact p {
+		font-size: 1.3rem;
+		padding-left: .8rem;
+	}
 }
 /*============ BOOTSTRAP BREAK POINTS:
 

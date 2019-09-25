@@ -11,12 +11,16 @@
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script type="text/javascript">
+		$(function() {$('body').scrollspy({offset:0.02*window.innerHeight});})
+	</script>
+	<script type="text/javascript" src="Scripts/crossroad_orientation_toggle.js"></script>
 </head>
 
 <body data-spy="scroll" data-target="#side-nav" data-offset="0">
 
 <!--- Start Header --->
-<header>
+<header id="top">
 
 <!--- Navigation --->
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
@@ -25,7 +29,7 @@
 		<span class="navbar-toggler-icon"></span>
 	</button>
 	
-	<div class="collapse navbar-collapse" id="animateNavbar">
+	<div id="animateNavbar" class="collapse navbar-collapse">
 		<ul class="navbar-nav ml-auto">
 			<li class="nav-item">
 				<a class="nav-link active" href="../index.html">Home</a>
@@ -52,30 +56,89 @@
 </header>
 <!--- End Header --->
 
-<content class="container-fluid">
+<!--- Start Content --->
+<content id="mid-section" class="container-fluid">
 	<div class="row justify-content-center">
+
+		<!--- Sidebar --->
 		<div id="sidebar" class="col-md-3 col-lg-3 col-xl-2 d-none d-md-block">
 			<nav id="side-nav" class="navbar navbar-light bg-dark sticky-top">
 				<nav class="nav nav-pills flex-column">
-					<a class="nav-link" href="#"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
+					<a class="nav-link arrow" href="#top"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
 					<a class="nav-link" href="#download">Download</a>
+					<a class="nav-link" href="#instalation">Instalation</a>
+					<a class="nav-link" href="#usage">Usage</a>
+					<a class="nav-link arrow" href="#footerInfo"><i class="fas fa-arrow-circle-down fa-2x"></i></a>
 				</nav>
 			</nav>
 		</div>
+		<!--- End Sidebar --->
+
 		<div class="col-lg-1 d-none d-lg-block"></div>
+
+		<!--- Document --->
 		<div id="doc-content" class="col-12 col-md-9 col-lg-7 col-xl-6">
+
+			<!--- Sections --->
 			<section id="download">
-				<h3 id="heading">Introduction</h3>
+				<h3 class="heading">Download</h3>
 				<div class="heading-underline"></div>
 				<p>Animate is a FreeCAD workbench and as such requires FreeCAD to work. So if you don't have FreeCAD installed, go to 
-					<a href="https://www.freecadweb.org/" role="button" class="btn btn-outline-dark inline-button">FreeCAD website</a> and download it first. Animate requires FreeCAD version to be 0.18 or higher. If your version doesn't satisfy this, update your FreeCAD.</p>
-				<p> Once you have your FreeCAD ready, you'll need to download the workbench. </p>
+					<a href="https://www.freecadweb.org/" role="button" class="btn btn-outline-dark inline-button">FreeCAD website</a> and download it first. Animate requires a FreeCAD version to be 0.18 or higher. If your version doesn't satisfy this, update your FreeCAD.</p>
+				<p> Once you have your FreeCAD ready, you'll need to download the workbench. You only need the <b>Animate</b> folder from the <a href="https://github.com/JiriValasek/Animate" role="button" class="btn btn-outline-dark inline-button">github repository</a> and you can download it using DownGit by clicking this link: <a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/JiriValasek/Animate/tree/master/Animate" role="button" class="btn btn-outline-dark inline-button">Download Animate</a></p>
 			</section>
+			<section id="instalation">
+				<h3 class="heading">Installation</h3>
+				<div class="heading-underline"></div>
+				<p>To install the workbench, you'll need to extract the Animate folder from downloaded archive and then move to the <code>Mod</code> folder in your <b>FreeCAD</b> installation folder, which is: </p>
+				<ul>
+					<li><code>C:\Program Files\FreeCAD 0.18\</code> in Windows</li>
+					<li><code>Something</code> in Ubuntu</li>
+				</ul>
+			</section>
+			<section id="usage">
+				<h3 class="heading">Usage</h3>
+				<div class="heading-underline"></div>
+				<figure class="figure">
+				  <img src="Images/select_workbench.gif" class="figure-img img-fluid rounded">
+				  <figcaption class="figure-caption">Select workbench on Workbench toolbar.</figcaption>
+				</figure>
+				<p>After installing, you can start using Animate workbench. You'll find it between the rest of workbenches in a listbox on the workbench toolbar. Selecting this workbench, as shown in figure, will show Animate toolbar and Animate menu.<br>
+				Animate toolbar and menu allow you to use Animate tools - <b>Trajectory</b>, <b>Server</b>, <b>Collision detector</b> and <b>Control</b>.
+				You can read up on those in the rest of the user Guide. </p>
+			</section>
+			<!--- End Sections --->
+
+			<!--- Crossroad --->
+			<div id="crossroad">
+				<div id="cr-buttons" class="btn-group" role="group" aria-label="Basic example">
+					<a class="btn btn-secondary bg-light" href="trajectory.html">
+						<img class="btn-icon" src="../../Animate/Resources/Icons/trajectoryCmd.png"/>
+						<span class="btn-name">Trajectory</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="server.html">
+						<img class="btn-icon" src="../../Animate/Resources/Icons/serverCmd.png"/>
+						<span class="btn-name">Server</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="control.html">
+						<img class="btn-icon" src="../../Animate/Resources/Icons/controlCmd.png"/>
+						<span class="btn-name">Control</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="collision_detector.html">
+						<img class="btn-icon" src="../../Animate/Resources/Icons/collisionDetectorCmd.png"/>
+						<span class="btn-name">Collision Detector</span>
+					</a>
+				</div>
+			</div>
+			<!--- End Crossroads --->
+
 		</div>
+		<!--- Endo Document --->
+
 		<div class="col-lg-1 col-xl-3 d-none d-lg-block"></div>
 	</div>
-	
 </content>
+<!--- End Content --->
 
 
 
@@ -93,7 +156,7 @@
 					<div class="icon">
 						<i class="fab fa-github fa-2x"></i>
 					</div>
-					<p>Animate repository</p>
+					<p>Repository</p>
 				</a><br>
 				<a href="https://github.com/JiriValasek/Animate/issues/new">
 					<div class="icon">
