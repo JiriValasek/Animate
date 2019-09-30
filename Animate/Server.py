@@ -129,9 +129,9 @@ Args:
         # Check properties are present and create them if not
         if not hasattr(fp, "Address"):
             fp.addProperty("App::PropertyString", "Address", "Server settings",
-                           "Address where the server will listen for "
-                           + "connection.\nValid values are Addressv4 and "
-                           + "Addressv6 addresses or 'localhost'."
+                           "IP address where the server will listen for "
+                           + "connection.\nValid values are IPv4 and "
+                           + "IPv6 addresses or 'localhost'string."
                            ).Address = "localhost"
         if not hasattr(fp, "Port"):
             fp.addProperty("App::PropertyIntegerConstraint", "Port",
