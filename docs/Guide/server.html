@@ -2,21 +2,24 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no">
 	<title>Animate: Server</title>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css" integrity="sha256-zmfNZmXoNWBMemUOo1XUGFfc0ihGGLYdgtJS3KCr/l0=" crossorigin="anonymous" />
 	<link rel="stylesheet" href="CSS/guide_style.css">
-	<!--<link rel="stylesheet" href="css/fixed.css"> -->
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script type="text/javascript">
+		$(function() {$('body').scrollspy({offset:0.02*window.innerHeight});})
+	</script>
+	<script type="text/javascript" src="Scripts/crossroad_orientation_toggle.js"></script>
 </head>
 
 <body data-spy="scroll" data-target="#side-nav" data-offset="0">
 
 <!--- Start Header --->
-<header>
+<header id="top">
 
 <!--- Navigation --->
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
@@ -25,7 +28,7 @@
 		<span class="navbar-toggler-icon"></span>
 	</button>
 	
-	<div class="collapse navbar-collapse" id="animateNavbar">
+	<div id="animateNavbar" class="collapse navbar-collapse">
 		<ul class="navbar-nav ml-auto">
 			<li class="nav-item">
 				<a class="nav-link active" href="../index.html">Home</a>
@@ -33,11 +36,11 @@
 			<li class="nav-item active dropdown justify-content-center text-center">
 				<a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">User guide</a>
 				<div class="dropdown-menu">
-					<a class="dropdown-item" href="getting_started.html">Getting started</a>
+					<a class="dropdown-item active" href="getting_started.html">Getting started</a>
 					<div class="dropdown-header">Tools</div>
 					<div class="dropdown-divider"></div>
 					<a class="dropdown-item" href="trajectory.html">Trajectory</a>
-					<a class="dropdown-item active" href="#">Server</a>
+					<a class="dropdown-item" href="#">Server</a>
 					<a class="dropdown-item" href="control.html">Control</a>
 					<a class="dropdown-item" href="collision_detector.html">Collision Detector</a>
 				</div>
@@ -52,26 +55,146 @@
 </header>
 <!--- End Header --->
 
-<content class="container-fluid">
+<!--- Start Content --->
+<content id="mid-section" class="container-fluid">
 	<div class="row justify-content-center">
-		<div id="sidebar" class="col-md-3 col-xl-2 d-none d-md-block">
+
+		<!--- Sidebar --->
+		<div id="sidebar" class="col-md-3 col-lg-3 col-xl-2 d-none d-md-block">
 			<nav id="side-nav" class="navbar navbar-light bg-dark sticky-top">
 				<nav class="nav nav-pills flex-column">
-					<a class="nav-link" href="#"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
+					<a class="nav-link arrow" href="#top"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
 					<a class="nav-link" href="#intro">Introduction</a>
+					<a class="nav-link" href="#usage">Usage</a>
+					<a class="nav-link" href="#properties">Properties</a>
+					<a class="nav-link arrow" href="#footerInfo"><i class="fas fa-arrow-circle-down fa-2x"></i></a>
 				</nav>
 			</nav>
 		</div>
-		<div id="doc-content" class="col-12 col-md-9 col-xl-10">
+		<!--- End Sidebar --->
+
+		<div class="col-lg-1 d-none d-lg-block"></div>
+
+		<!--- Document --->
+		<div id="doc-content" class="col-12 col-md-9 col-lg-7 col-xl-6">
+
+			<h1 id="page-title">Server</h1>
+
+			<!--- Sections --->
 			<section id="intro">
-				<h3 id="heading">Introduction</h3>
+				<h3 class="heading">Introduction</h3>
 				<div class="heading-underline"></div>
-				<p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus</p>
+				<p><span class="tool">Server</span> is a tool, that can facilitate interprocess communication (IPC) for you. 
+					IPC consists of a transmission control protocol (TCP} server running in FreeCAD and a cliect outside. 
+					The TCP server can be connected to <i>localhost</i> or any other other IP address. 
+					Server's port can be selected arbitrarily in range from 1 to 65535, but ports that are not:</p>
+				<ul>
+					<li>Well-known or system ports i.e. in range from 0 to 1023</li>
+					<li><a href="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml" role="button" class="btn btn-outline-dark inline-button">Ports registered with Internet Assigned Numbers Authority (IANA)</a> </li>
+				</ul>
+				<p>are recommended. 
+					You can send command strings from external python script, C++ or Matlab using Qt5, PySide or python bindings respectively. 
+					Python command strings must compy with the <a href="https://www.freecadweb.org/api/index.html" role="button" class="btn btn-outline-dark inline-button">FreeCAD/FreeCADGui</a> application programming interface (API).
+				</p>
+				<p><span class="warning">Extended version dedicated for controlling Animate tools and using messages in binary code instead of chars (possible to send longer lists of floats) is planned for the future.</span></p>
+
 			</section>
+			<section id="usage">
+				<h3 class="heading">Usage</h3>
+				<div class="heading-underline"></div>
+				<figure class="figure">
+					<img src="Images/select_workbench.gif" class="figure-img img-fluid rounded">
+					<figcaption class="figure-caption">Select workbench on Workbench toolbar.</figcaption>
+				</figure>
+				<ol>
+					<li><a href="getting_started.html" role="button" class="btn btn-outline-dark inline-button">Install Animate workbench</a> if you haven't done so already.</li>
+					<li>Open a file in FreeCAD.</li>
+					<li>Select Animate workbench on the workbench toolbar.</li>
+					<li>Click on <span class="tool">server</span>'s icon on Animate toolbar or select <span class="tool">server</span> in Animate menu.</li>
+					<li>Open a Combo View ( <span class="instruction">View > Panels > Combo View</span> ).</li>
+					<li>Select <span class="tool">server</span> tool in a tree view on a Model Tab inside the Combo View.</li>
+					<li>Go to General properties on a Data Tab inside the Combo View.</li>
+					<li>Select an IP <span class="property">address</span> and a TCP <span class="property">port</span> you want to connect the <span class="tool">server</span> to.</li>
+					<li>To start/stop the <span class="tool">server</span> tool double-click it in the tree view on a Model Tab inside the Combo View.</li>
+					<li>Send python command strings from other programs to be executed.</li>
+				</ol>
+			</section>
+			<section id="properties">
+				<h3 class="heading">Properties</h3>
+				<div class="heading-underline"></div>
+				<table class="table table-hover table-sm">
+					<thead class="thead-dark">
+						<tr>
+							<th scope="col">Property / <span>Property Group</span></th>
+							<th scope="col">Description</th>
+						</tr>
+					</thead>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">Base</th>
+							<th scope="col">FreeCAD properties necessary for correct display in the tree view.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Label</th>
+							<td>Name of this <span class="tool">server</span> tool shown in the tree view.</td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">Server settings</th>
+							<th scope="col">Properties seting up server's parameters.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Address</th>
+							<td>An IPv4 or IPv6 internet protocol (IP) address or "localhost" string. <span class="warning"> String "localhost" is equal to IPv4 address 124.0.0.1.</span></td>
+						</tr>
+						<tr>
+							<th scope="row">Port</th>
+							<td>A TCP port number from 1 to 65535. Check with <a href="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml role="button" class="btn btn-outline-dark inline-button"">IANA</a> to select an unassigned TCP port number. <span class="warning">Each server tool has to have an unique port number.</span></td>
+						</tr>
+						<tr>
+							<th scope="row">Running</th>
+							<td>A boolean specifying if the server is currently running or not.</td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+			<!--- End Sections --->
+
+			<!--- Crossroad --->
+			<div id="crossroad">
+				<div id="cr-buttons" class="btn-group" role="group" aria-label="Basic example">
+					<a class="btn btn-secondary bg-light" href="trajectory.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/TrajectoryCmd.png"/>
+						<span class="btn-name">Trajectory</span>
+					</a>
+					<a class="btn btn-secondary disabled bg-light" href="server.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/ServerCmd.png"/>
+						<span class="btn-name">Server</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="control.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/ControlCmd.png"/>
+						<span class="btn-name">Control</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="collision_detector.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/CollisionDetectorCmd.png"/>
+						<span class="btn-name">Collision Detector</span>
+					</a>
+				</div>
+			</div>
+			<!--- End Crossroads --->
+
 		</div>
+		<!--- Endo Document --->
+
+		<div class="col-lg-1 col-xl-3 d-none d-lg-block"></div>
 	</div>
-	
 </content>
+<!--- End Content --->
 
 
 
@@ -89,7 +212,7 @@
 					<div class="icon">
 						<i class="fab fa-github fa-2x"></i>
 					</div>
-					<p>Animate repository</p>
+					<p>Repository</p>
 				</a><br>
 				<a href="https://github.com/JiriValasek/Animate/issues/new">
 					<div class="icon">
