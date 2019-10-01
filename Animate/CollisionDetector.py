@@ -257,20 +257,15 @@ Args:
                 "Remember which objects collided and show them."
                 ).RememberCollisions = True
         if not hasattr(fp, "CheckingLevel"):
-            # TODO finish tool tip
             fp.addProperty("App::PropertyEnumeration", "CheckingLevel",
-                           "General", "Level of checking\n"
-                           + "")
+                           "General", "Levels of checking from coarse and\n"
+                           + "fast (Bounding box) to slow but precise\n"
+                           + "(Intersection volume). To see intersected area\n"
+                           + "select 'Intersection volume visualizations'")
             fp.CheckingLevel = ["Bounding box",
                                 "Shape distance",
                                 "Intersection volume",
                                 "Intersection volume visualizations"]
-        if not hasattr(fp, "CheckIntersectionVolume"):
-            fp.addProperty(
-                "App::PropertyBool", "CheckIntersectionVolume", "General",
-                "Checks if intersection volume is greater than 0\n"
-                + "and so objects aren't just touching (slow)."
-                ).CheckIntersectionVolume = True
         # Intersection style
         if not hasattr(fp, "IntersectionColor"):
             fp.addProperty(
