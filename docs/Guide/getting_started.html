@@ -65,6 +65,7 @@
 			<nav id="side-nav" class="navbar navbar-light bg-dark sticky-top">
 				<nav class="nav nav-pills flex-column">
 					<a class="nav-link arrow" href="#top"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
+					<a class="nav-link" href="#requirements">Requirements</a>
 					<a class="nav-link" href="#download">Download</a>
 					<a class="nav-link" href="#instalation">Instalation</a>
 					<a class="nav-link" href="#usage">Usage</a>
@@ -80,20 +81,46 @@
 		<div id="doc-content" class="col-12 col-md-9 col-lg-7 col-xl-6">
 
 			<!--- Sections --->
+			<section id="requirements">
+				<h3 class="heading">Requirements</h3>
+				<div class="heading-underline"></div>
+				<ul class="fa-ul">
+					<li><i class="fa-li fas fa-exclamation-triangle"></i>FreeCAD</li>
+					<li><i class="fa-li fas fa-exclamation-triangle"></i>Python3 available inside FreeCAD</li>
+					<li><i class="fa-li fas fa-exclamation-triangle"></i>PySide2 python module with Qt5 available inside FreeCAD</li>
+					<li><i class="fa-li fas fa-exclamation-triangle"></i>PyPNG python module installed inside FreeCAD </li>
+					<li><i class="fa-li fas fa-exclamation-triangle"></i>FFMPEG accessible under <code class="linux">ffmpeg</code> command</li>
+				</ul>
+			</section>
 			<section id="download">
 				<h3 class="heading">Download</h3>
 				<div class="heading-underline"></div>
 				<p>Animate is a FreeCAD workbench and as such requires FreeCAD to work. So if you don't have FreeCAD installed, go to 
-					<a href="https://www.freecadweb.org/" role="button" class="btn btn-outline-dark inline-button">FreeCAD website</a> and download it first. Animate requires a FreeCAD version to be 0.18 or higher. If your version doesn't satisfy this, update your FreeCAD.</p>
-				<p> Once you have your FreeCAD ready, you'll need to download the workbench. You only need the <b>Animate</b> folder from the <a href="https://github.com/JiriValasek/Animate" role="button" class="btn btn-outline-dark inline-button">github repository</a> and you can download it using DownGit by clicking this link: <a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/JiriValasek/Animate/tree/master/Animate" role="button" class="btn btn-outline-dark inline-button">Download Animate</a></p>
+					<a href="https://www.freecadweb.org/" role="button" class="btn btn-outline-dark inline-button">FreeCAD website</a> and download it first. 
+					Animate has some requirements on FreeCAD so make sure it meets them.</p>
+					<div class="alert alert-secondary" role="alert">
+						  <b>How to check requirements</b><br>
+						  Go to <code>Help > About&nbsp;FreeCAD > Libraries</code> and check that:
+						  <ul>
+						  	<li>Python version > 3</li>
+						  	<li>Qt version > 5</li>
+						  </ul>
+					</div>
+				<p>If your version doesn't satisfy the requirements, update your FreeCAD.</p>
+				<p> Once you have your FreeCAD ready, you'll need to download the workbench. You only need the <i>Animate</i> folder from the <a href="https://github.com/JiriValasek/Animate" role="button" class="btn btn-outline-dark inline-button">github repository</a> and you can download it using DownGit by clicking this link: <a href="https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/JiriValasek/Animate/tree/master/Animate" role="button" class="btn btn-outline-dark inline-button" target="_blank">Download Animate</a></p>
 			</section>
 			<section id="instalation">
 				<h3 class="heading">Installation</h3>
 				<div class="heading-underline"></div>
-				<p>To install the workbench, you'll need to extract the Animate folder from downloaded archive and then move to the <code>Mod</code> folder in your <b>FreeCAD</b> installation folder, which is: </p>
+				<p>To install the workbench, you'll need to extract the Animate folder from downloaded archive and then move it to a folder for modules in your <i>FreeCAD</i> installation folder, which is: </p>
 				<ul>
-					<li><code>C:\Program Files\FreeCAD 0.18\</code> in Windows</li>
-					<li><code>Something</code> in Ubuntu</li>
+					<li><code>C:\Program&nbsp;Files\FreeCAD&nbsp;0.18\Mod\</code> in Windows</li>
+					<li><code>/usr/lib/freecad/Mod/</code> in Ubuntu and FreeCAD installed using <b>Personal Package Archives&nbsp;(PPA)</b></li>
+						<div class="alert alert-warning" role="alert">
+						  <b>May require installation of additional python PySide2 modules</b><br>
+						  Example: PySide2.QtNetwork - can be installed with a command <code class="linux">sudo apt&#8209;get installed python3&#8209;pyside2.qtnetwork</code>
+						</div>
+					<li><code>~/snap/freecad/8/.FreeCAD/Mod</code> in Ubuntu and FreeCAD installed using&nbsp;<b>snap</b></li>
 				</ul>
 			</section>
 			<section id="usage">
