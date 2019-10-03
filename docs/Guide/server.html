@@ -83,35 +83,39 @@
 				<div class="heading-underline"></div>
 				<p><span class="tool">Server</span> is a tool, that can facilitate interprocess communication (IPC) for you. 
 					IPC consists of a transmission control protocol (TCP) server running in FreeCAD and a client outside. 
-					The TCP server can be connected to <i>localhost</i> or any other other IP address. 
-					Server's port can be selected arbitrarily in range from 1 to 65535, but ports that are not</p>
+					The TCP server can be connected to <i>localhost</i> or any other other IP&nbsp;address. 
+					Server's port can be selected arbitrarily in range from 1&nbsp;to&nbsp;65535, but ports that are not</p>
 				<ul>
-					<li>Well-known or system ports i.e. in range from 0 to 1023</li>
+					<li>Well-known or system ports i.e. in range from 0&nbsp;to&nbsp;1023</li>
 					<li><a href="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml" role="button" class="btn btn-outline-dark inline-button">Ports registered with Internet Assigned Numbers Authority (IANA)</a> </li>
 				</ul>
 				<p>are recommended. 
 					You can send command strings from external python script, C++ or Matlab using Qt5, PySide or python bindings respectively. 
 					Python command strings must compy with the <a href="https://www.freecadweb.org/api/index.html" role="button" class="btn btn-outline-dark inline-button">FreeCAD/FreeCADGui</a> application programming interface (API).
 				</p>
-				<p><span class="warning">Extended version dedicated for controlling Animate tools and using messages in binary code instead of chars (possible to send longer lists of floats) is planned for the future.</span></p>
+				<div class="alert alert-secondary" role="alert">
+				  <b>Future plans</b><br>
+				  Extended version dedicated for controlling Animate tools and using messages in binary code instead of chars (possible to send longer lists of floats) is planned for the future.
+				</div>
+				
 
 			</section>
 			<section id="usage">
 				<h3 class="heading">Usage</h3>
 				<div class="heading-underline"></div>
 				<figure class="figure">
-					<img src="Images/select_workbench.gif" class="figure-img img-fluid rounded">
-					<figcaption class="figure-caption">Select workbench on Workbench toolbar.</figcaption>
+					<img src="Images/animate_tool_tree.png" class="figure-img img-fluid rounded">
+					<figcaption class="figure-caption">Server tool position inside an example<br> Animate tool tree.</figcaption>
 				</figure>
 				<ol>
 					<li><a href="getting_started.html" role="button" class="btn btn-outline-dark inline-button">Install Animate workbench</a> if you haven't done so already.</li>
 					<li>Open a file in FreeCAD.</li>
 					<li>Select Animate workbench on the workbench toolbar.</li>
 					<li>Click on <span class="tool">server</span>'s icon on Animate toolbar or select <span class="tool">server</span> in Animate menu.</li>
-					<li>Open a Combo View ( <span class="instruction">View > Panels > Combo View</span> ).</li>
+					<li>Open a Combo View (&nbsp;<span class="instruction">View > Panels > Combo View</span>&nbsp;).</li>
 					<li>Select <span class="tool">server</span> tool in a tree view on a Model Tab inside the Combo View.</li>
 					<li>Go to <span class="property">Server Settings</span> on a Data Tab inside the Combo View.</li>
-					<li>Select an IP <span class="property">Address</span> and a TCP <span class="property">Port</span> you want to connect the <span class="tool">server</span> to.</li>
+					<li>Select an IP&nbsp;<span class="property">Address</span> and a TCP&nbsp;<span class="property">Port</span> you want to connect the <span class="tool">server</span> to.</li>
 					<li>To start/stop the <span class="tool">server</span> tool double-click it in the tree view on a Model Tab inside the Combo View.</li>
 					<li>Send python command strings from other programs to be executed.</li>
 				</ol>
