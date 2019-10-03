@@ -2,21 +2,27 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no">
 	<title>Animate: Control</title>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css" integrity="sha256-zmfNZmXoNWBMemUOo1XUGFfc0ihGGLYdgtJS3KCr/l0=" crossorigin="anonymous" />
 	<link rel="stylesheet" href="CSS/guide_style.css">
-	<!--<link rel="stylesheet" href="css/fixed.css"> -->
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script type="text/javascript">
+		$(function() {
+			// allow tooltips everywhere
+  			$('[data-toggle="tooltip"]').tooltip();
+		})
+	</script>
+	<script type="text/javascript" src="Scripts/crossroad_orientation_toggle.js"></script>
 </head>
 
-<body data-spy="scroll" data-target="#side-nav" data-offset="0">
+<body data-spy="scroll" data-target="#side-nav" data-offset="1">
 
 <!--- Start Header --->
-<header>
+<header id="top">
 
 <!--- Navigation --->
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
@@ -24,8 +30,8 @@
 	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#animateNavbar">
 		<span class="navbar-toggler-icon"></span>
 	</button>
-	
-	<div class="collapse navbar-collapse" id="animateNavbar">
+
+	<div id="animateNavbar" class="collapse navbar-collapse">
 		<ul class="navbar-nav ml-auto">
 			<li class="nav-item">
 				<a class="nav-link active" href="../index.html">Home</a>
@@ -52,28 +58,261 @@
 </header>
 <!--- End Header --->
 
-<content class="container-fluid">
+<!--- Start Content --->
+<content id="mid-section" class="container-fluid">
 	<div class="row justify-content-center">
-		<div id="sidebar" class="col-md-3 col-xl-2 d-none d-md-block">
+
+		<!--- Sidebar --->
+		<div id="sidebar" class="col-md-3 col-lg-3 col-xl-2 d-none d-md-block">
 			<nav id="side-nav" class="navbar navbar-light bg-dark sticky-top">
 				<nav class="nav nav-pills flex-column">
-					<a class="nav-link" href="#"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
+					<a class="nav-link arrow" href="#top"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
 					<a class="nav-link" href="#intro">Introduction</a>
+					<a class="nav-link" href="#usage">Usage</a>
+					<a class="nav-link" href="#third-party">Third-party software</a>
+					<a class="nav-link" href="#properties">Properties</a>
+					<a class="nav-link arrow" href="#footerInfo"><i class="fas fa-arrow-circle-down fa-2x"></i></a>
 				</nav>
 			</nav>
 		</div>
-		<div id="doc-content" class="col-12 col-md-9 col-xl-10">
+		<!--- End Sidebar --->
+
+		<div class="col-lg-1 d-none d-lg-block"></div>
+
+		<!--- Document --->
+		<div id="doc-content" class="col-12 col-md-9 col-lg-7 col-xl-6">
+
+			<h1 id="page-title">Control</h1>
+
+			<!--- Sections --->
 			<section id="intro">
-				<h3 id="heading">Introduction</h3>
+				<h3 class="heading">Introduction</h3>
 				<div class="heading-underline"></div>
-				<p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus</p>
+				<p><span class="tool">Control</span> is a tool, that allows you to</p> 
+				<ul>
+					<li>view objects moving along their trajectories</li>
+					<li>view objects moving backwards along their trajectories</li>
+					<li>view collisions of objects moving along their trajectories</li>
+					<li>record objects moving along their trajectories (with their collisions)</li>
+					<li>export recorded videos</li>
+				</ul> 
+				<div class="alert alert-warning" role="alert">
+					<span class="tool">Control</span> requires additional <a href="#third-party" role="button" class="btn btn-outline-dark inline-button">third party software</a> to record and export videos. Namely, it requires python <span class="tooltip-info" data-toggle="tooltip" data-container="body" data-html="true" title="
+					<div>
+						<p>Tested version:</p> 
+						<p><span>ffmpeg version 3.2.4 Copyright (c) 2000-2017 the FFmpeg developers</span></p>
+						<p><span>built with gcc 6.3.0 (GCC)</span><p>
+						<p>configuration: --enable-gpl --enable-version3 --enable-d3d11va --enable-dxva2/p>
+						<p><span>libavutil      55. 34.101 / 55. 34.101</span><br>
+						<span>libavcodec     57. 64.101 / 57. 64.101</span><br>
+						<span>libavformat    57. 56.101 / 57. 56.101</span><br>
+						<span>libpostproc    54.  1.100 / 54.  1.100</span><p>
+					</div>">PyPNG</span> module and <span class="tooltip-info" data-toggle="tooltip" data-container="body" data-html="true" title="
+					<div>
+						<p>Tested version:</p> 
+						<p><span>ffmpeg version N-95183-g97450d2b6a Copyright (c) 2000-2019 the FFmpeg developers</span></p>
+						<p><span>built with gcc 9.2.1 (GCC) 20190918</span><p>
+						<p>configuration: --enable-gpl --enable-version3 --enable-sdl2 --enable-fontconfig --enable-gnutls --enable-iconv --enable-libass --enable-libdav1d --enable-libbluray --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-libopus --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libtheora --enable-libtwolame --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libzimg --enable-lzma --enable-zlib --enable-gmp --enable-libvidstab --enable-libvorbis --enable-libvo-amrwbenc --enable-libmysofa --enable-libspeex --enable-libxvid --enable-libaom --enable-libmfx --enable-ffnvcodec --enable-cuvid --enable-d3d11va --enable-nvenc --enable-nvdec --enable-dxva2 --enable-avisynth --enable-libopenmpt --enable-amf</span></p>
+						<p><span>libavutil      56. 35.100 / 56. 35.100</span><br>
+						<span>libavcodec     58. 59.101 / 58. 59.101</span><br>
+						<span>libavformat    58. 33.100 / 58. 33.100</span><br>
+						<span>libavdevice    58.  9.100 / 58.  9.100</span><br>
+						<span>libavfilter     7. 61.100 /  7. 61.100</span><br>
+						<span>libswscale      5.  6.100 /  5.  6.100</span><br>
+						<span>libswresample   3.  6.100 /  3.  6.100</span><br>
+						<span>libpostproc    55.  6.100 / 55.  6.100</span><p>
+					</div>">FFmpeg</span> codec.
+				</div>
+
+				
 			</section>
+			<section id="usage">
+				<h3 class="heading">Usage</h3>
+				<div class="heading-underline"></div>
+				<figure class="figure">
+					<img src="Images/animate_tool_tree.png" class="figure-img img-fluid rounded">
+					<figcaption class="figure-caption">Control tool position inside an example<br> Animate tool tree.</figcaption>
+				</figure>
+				<ol>
+					<li><a href="getting_started.html" role="button" class="btn btn-outline-dark inline-button">Install Animate workbench</a> if you haven't done so already.</li>
+					<li>Open a file in FreeCAD.</li>
+					<li>Select Animate workbench on the workbench toolbar.</li>
+					<li>Click on <span class="tool">control</span>'s icon on Animate toolbar or select <span class="tool">control</span> in Animate menu.</li>
+					<li>Open a Combo View (&nbsp;<span class="instruction">View > Panels > Combo View</span>&nbsp;).</li>
+					<li>Put some existing <span class="tool">trajectory</span>, <span class="tool">collision detector</span> and <span class="tool">server</span> tools inside <span class="tool">control</span> tool.
+					<li>Select <span class="tool">control</span> tool in a tree view on a Model Tab inside the Combo View.</li>
+					<li>Go to <span class="property">Timing</span> properties on a Data Tab inside the Combo View.</li>
+					<li>Set up <span class="property">Start Time</span>, <span class="property">Step Time</span> and <span class="property">Stop Time</span> so that desired <span class="property">Timestamps</span> of <span class="tool">trajectory</span> tools are in that range.</li>
+					<li> <span class="warning">If you want to record sequences and export videos </span>
+						<ol>
+							<li>Install necessary <a href="#third-party" role="button" class="btn btn-outline-dark inline-button">third party software</a>.</li>
+							<li>Select <span class="property">Export Path</span> into a directory where recorded sequences will be saved.</li>	
+							<li>Set <span class="property">Video Width</span> and <span class="property">Video Height</span>.</li>
+						</ol>
+					</li>
+					<li>Double click the <span class="tool">control</span> tool in the tree view on a Model Tab inside the Combo View.</li>
+					<li>A <span class="tool">control</span>'s dialog is opened on a Tasks tab inside the Combo view.</li>
+					<li>Use a slider in the <span class="tool">control</span>'s dialog to skim through the range you specified or click 
+						<ul>
+							<li>PLAY - to view objects following their trajectories</li>
+							<li>REWIND - to view objects moving backwards along their trajectories</li>
+							<li>RECORD - to record objects following their trajectories into a set of images</li>
+							<li>PAUSE - to pause playing, rewinding or recording</li>
+							<li>EXPORT - to export recorded sets of images into a video</li>
+						</ul>
+					<li>Change more properties according to your preferences, their meanings are explained in the <a href="#properties" role="button" class="btn btn-outline-dark inline-button">properties</a> section.</li>
+				</ol>
+			</section>
+			<section id="third-party">
+				<h3 class="heading">Third-party software</h3>
+				<div class="heading-underline"></div>
+				<h5>Installing python PyPNG module on Windows 10:</h5>
+				<ol>
+					<li>Check you have internet connection.</li>
+					<li>Open a command line window with admin privileges (Win + X, A).</li>
+					<li>Go to FreeCAD's home folder - probably <code>C:/Program&nbsp;Files/FreeCAD&nbsp;0.18/</code> and if not, then
+						<ul>
+							<li>Open FreeCAD</li>
+							<li>Open a Python console (&nbsp;<span class="instruction">View > Panels > Python console</span>&nbsp;).</li>
+							<li>Type command <code>FreeCAD.getHomePath()</code> to obtain FreeCAD's home folder path.</li>
+						</ul>
+					</li>
+					<li>Type command <code>python.exe -m pip install pyPNG</code></li>
+				</ol>
+				<h5>Installing python PyPNG module on Ubuntu 18.04:</h5>
+				<ol>
+					<li>Check you have internet connection.</li>
+					<li>Open a terminal.</li>
+					<li><span class="warning">If you installed FreeCAD using <b>Personal Package Archives (PPA)</b> and </span><code class="linux">sudo apt&#8209;get install freecad</code></li>
+						<ul>
+							<li>Type command <code class="linux">sudo python.exe -m pip install pyPNG</code></li>
+							<li>or <code class="linux"> pip install pyPNG</code><br>
+								depending on which is connected to correct python version (if you have both 2.7 and 3.x.y)</li>
+						</ul>
+					<li><span class="warning">If you installed FreeCAD using <b>snap</b> or <b>software center</b></span></li>
+						<div class="alert alert-warning" role="alert">
+						  <b>No way how to install additional python modules has been found yet.</b> So exporting videos with automatically saved framerate is unavailable.
+						</div>
+					<li><span class="warning">If you installed FreeCAD using an <b>appImage</b></span></li>
+						<div class="alert alert-warning" role="alert">
+						  <b>No way how to install additional python modules has been found yet</b> So exporting videos with automatically saved framerate is unavailable.
+						</div>
+				</ol>
+				<h5>Installing FFmpeg codec on Windows 10:</h5>
+				<ol>
+					<li>Go to <a href="https://ffmpeg.org/download.html#build-windows" role="button" class="btn btn-outline-dark inline-button">FFmpeg site</a>.</li>
+					<li>Download the latest FFmpeg build for your Windows version (64bit/32bit).</li>
+					<li>Extract it from an archive.</li>
+					<li>Put its contents (folders like <code>bin</code>, <code>doc</code> etc. and files like <code>LICENSE.txt</code> and <code>README.txt</code> ) into <code>C:\ffmpeg</code> folder.</li>
+					<li>Add <code>C:\ffmpeg\bin\</code> to your Windows 10 path (edit the system environment variables).
+				</ol>
+				<h5>Installing FFmpeg codec on Ubuntu 18.04:</h5>
+				<ol>
+					<li>Open a terminal.</li>
+					<li>Type <code class="linux">sudo apt&#8209;get install ffmpeg</code></li>
+				</ol>
+				
+			</section>
+			<section id="properties">
+				<h3 class="heading">Properties</h3>
+				<div class="heading-underline"></div>
+				<table class="table table-hover table-sm">
+					<thead class="thead-dark">
+						<tr>
+							<th scope="col">Property / <span>Property Group</span></th>
+							<th scope="col">Description</th>
+						</tr>
+					</thead>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">Base</th>
+							<th scope="col">FreeCAD properties necessary for correct display in the tree view.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Label</th>
+							<td>Name of this <span class="tool">control</span> tool shown in the tree view.</td>
+						</tr>
+						<tr>
+							<th scope="row">Group</th>
+							<td>A list of children to be shown in the tree view.</td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">Record & Export</th>
+							<th scope="col">Properties controlling look of a coordinate frame.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Export Path</th>
+							<td>Path to a folder where recorded sequences of images will be stored as well as exported videos.</td>
+						</tr>
+						<tr>
+							<th scope="row">Video Height</th>
+							<td>Height of recorded images and exported video in pixels. <span class="warning">Height range is from 32&nbsp;to&nbsp;4320.</span></td>
+						</tr>
+						<tr>
+							<th scope="row">Video Width</th>
+							<td>Width of recorded images and exported video in pixels. <span class="warning">Width range is from 32&nbsp;to&nbsp;7680.</span></td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">Timing</th>
+							<th scope="col">Properties setting up a range in which children tools are controlled.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Start Time</th>
+							<td>The beginning of a controlled range. <span class="warning">Must be smaller number than <span class="property">Stop Time</span> and can be negative.</span></td>
+						</tr>
+						<tr>
+							<th scope="row">Step Time</th>
+							<td>Step time between shown frames. <span class="warning">Must be in range from 0.01 to (<span class="property">Stop Time</span> - <span class="property">Start Time</span>).</span></td>
+						</tr>
+						<tr>
+							<th scope="row">Stop Time</th>
+							<td>The end of a controlled range. <span class="warning">Must be greater number than <span class="property">Start Time</span> and can be negative.</span></td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+			<!--- End Sections --->
+
+			<!--- Crossroad --->
+			<div id="crossroad">
+				<div id="cr-buttons" class="btn-group" role="group" aria-label="Basic example">
+					<a class="btn btn-secondary bg-light" href="trajectory.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/TrajectoryCmd.png"/>
+						<span class="btn-name">Trajectory</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="server.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/ServerCmd.png"/>
+						<span class="btn-name">Server</span>
+					</a>
+					<a class="btn btn-secondary disabled bg-light" href="control.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/ControlCmd.png"/>
+						<span class="btn-name">Control</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="collision_detector.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/CollisionDetectorCmd.png"/>
+						<span class="btn-name">Collision Detector</span>
+					</a>
+				</div>
+			</div>
+			<!--- End Crossroads --->
+
 		</div>
+		<!--- Endo Document --->
+
+		<div class="col-lg-1 col-xl-3 d-none d-lg-block"></div>
 	</div>
-	
 </content>
-
-
+<!--- End Content --->
 
 <!--- Start Footer Section --->
 <footer class="container-fluid" id="footerInfo">
@@ -89,7 +328,7 @@
 					<div class="icon">
 						<i class="fab fa-github fa-2x"></i>
 					</div>
-					<p>Animate repository</p>
+					<p>Repository</p>
 				</a><br>
 				<a href="https://github.com/JiriValasek/Animate/issues/new">
 					<div class="icon">
