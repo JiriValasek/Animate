@@ -2,21 +2,38 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no">
 	<title>Animate: Collision Detector</title>
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.2/css/all.min.css" integrity="sha256-zmfNZmXoNWBMemUOo1XUGFfc0ihGGLYdgtJS3KCr/l0=" crossorigin="anonymous" />
 	<link rel="stylesheet" href="CSS/guide_style.css">
-	<!--<link rel="stylesheet" href="css/fixed.css"> -->
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.6/MathJax.js" integrity="sha256-nlrDrBTHxJJlDDX22AS33xYI1OJHnGMDhiYMSe2U0e0=" crossorigin="anonymous">
+	    MathJax.Hub.Config({
+    		extensions: ["tex2jax.js","TeX/AMSmath.js","TeX/AMSsymbols.js"],
+	        jax: ["input/TeX", "output/HTML-CSS"],
+	        tex2jax: {
+	            inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+	            displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+	        },
+	        "HTML-CSS": { availableFonts: ["TeX"] },
+	        TeX: {
+	        	macros: {
+	        		medmuskip: "{1px}",
+	        		arraycolspep: "{1px}"
+	        	}
+	        }
+	    });
+	</script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="Scripts/crossroad_orientation_toggle.js"></script>
 </head>
 
-<body data-spy="scroll" data-target="#side-nav" data-offset="0">
+<body data-spy="scroll" data-target="#side-nav" data-offset="1">
 
 <!--- Start Header --->
-<header>
+<header id="top">
 
 <!--- Navigation --->
 <nav class="navbar navbar-expand-md navbar-dark bg-dark">
@@ -25,7 +42,7 @@
 		<span class="navbar-toggler-icon"></span>
 	</button>
 	
-	<div class="collapse navbar-collapse" id="animateNavbar">
+	<div id="animateNavbar" class="collapse navbar-collapse">
 		<ul class="navbar-nav ml-auto">
 			<li class="nav-item">
 				<a class="nav-link active" href="../index.html">Home</a>
@@ -52,26 +69,209 @@
 </header>
 <!--- End Header --->
 
-<content class="container-fluid">
+<!--- Start Content --->
+<content id="mid-section" class="container-fluid">
 	<div class="row justify-content-center">
-		<div id="sidebar" class="col-md-3 col-xl-2 d-none d-md-block">
+
+		<!--- Sidebar --->
+		<div id="sidebar" class="col-md-3 col-lg-3 col-xl-2 d-none d-md-block">
 			<nav id="side-nav" class="navbar navbar-light bg-dark sticky-top">
 				<nav class="nav nav-pills flex-column">
-					<a class="nav-link" href="#"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
+					<a class="nav-link arrow" href="#top"><i class="fas fa-arrow-circle-up fa-2x"></i></a>
 					<a class="nav-link" href="#intro">Introduction</a>
+					<a class="nav-link" href="#usage">Usage</a>
+					<a class="nav-link" href="#properties">Properties</a>
+					<a class="nav-link arrow" href="#footerInfo"><i class="fas fa-arrow-circle-down fa-2x"></i></a>
 				</nav>
 			</nav>
 		</div>
-		<div id="doc-content" class="col-12 col-md-9 col-xl-10">
+		<!--- End Sidebar --->
+
+		<div class="col-lg-1 d-none d-lg-block"></div>
+
+		<!--- Document --->
+		<div id="doc-content" class="col-12 col-md-9 col-lg-7 col-xl-6">
+
+			<h1 id="page-title">Collision Detector</h1>
+
+			<!--- Sections --->
 			<section id="intro">
-				<h3 id="heading">Introduction</h3>
+				<h3 class="heading">Introduction</h3>
 				<div class="heading-underline"></div>
-				<p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. Donec non enim in turpis pulvinar facilisis. Ut felis. Praesent dapibus, neque id cursus faucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. Aliquam erat volutpat. Nam dui mi, tincidunt quis, accumsan porttitor, facilisis luctus, metus</p>
+				<p><span class="tool">Collision detector</span> is a tool, that is able to find collisions between a set of objects and show them if requred. 
+					There are several levels of precision for detection:
+				</p>
+					<ul>
+						<li><i>Bounding box</i> - checks if boxes enveloping objects and having all sides parallel to XY, YZ and ZX planes intersect.</li>
+						<li><i>Shape distance</i> - checks if closest distance between two objects is 0. However distance 0 may signal intersection or just touching. </li>
+						<li><i>Intersection volume</i> - checks if two objects have nonzero intersection volume. Detects precisely but may take longer time.</li>
+					</ul>
+				<p>
+					Also <span class="tool">Collision detector</span> always checks if there is a collision between each pair of objects. 
+					Number of object pairs grows quickly with size of an object set. Hence, it may be advisable to use multiple instances of <span class="tool">collision detector</span> tool, if some objects are bound not to get close to each other by physical constraints, rather than one <span class="tool">collision detector</span> with enormous set of objects.
+				</p>
 			</section>
+			<section id="usage">
+				<h3 class="heading">Usage</h3>
+				<div class="heading-underline"></div>
+				<figure class="figure">
+					<img src="Images/animate_tool_tree.png" class="figure-img img-fluid rounded">
+					<figcaption class="figure-caption">Collision detector tool position inside an example<br> Animate tool tree.</figcaption>
+				</figure>
+				<ol>
+					<li><a href="getting_started.html" role="button" class="btn btn-outline-dark inline-button">Install Animate workbench</a> if you haven't done so already.</li>
+					<li>Open a file in FreeCAD.</li>
+					<li>Select Animate workbench on the workbench toolbar.</li>
+					<li>Click on <span class="tool">collision detector</span>'s icon on Animate toolbar or select <span class="tool">collision detector</span> in Animate menu.</li>
+					<li>Open a Combo View (&nbsp;<span class="instruction">View > Panels > Combo View</span>&nbsp;).</li>
+					<li>Select <span class="tool">collision detector</span> tool in a tree view on a Model Tab inside the Combo View.</li>
+					<li>Go to <span class="property">General</span> properties on a Data Tab inside the Combo View.</li>
+					<li>Select <span class="property">Observed Objects</span> and choose and objects to be checked for <i>mutual</i> collisions</li>
+					<li>Check for collisions by double-clicking the <span class="tool">collision detector</span> tool in the tree view on a Model Tab inside the Combo View.</li>
+					<li>Return highlighted objects and remove shown intersections by right-clicking <span class="tool">collision detector</span> and selecting <i>Reset collision display</i> from a context menu.</li>
+					<li>Change more properties according to your preferences, their meanings are explained in the next section.</li>
+				</ol>
+			</section>
+			<section id="properties">
+				<h3 class="heading">Properties</h3>
+				<div class="heading-underline"></div>
+				<table class="table table-hover table-sm">
+					<thead class="thead-dark">
+						<tr>
+							<th scope="col">Property / <span>Property Group</span></th>
+							<th scope="col">Description</th>
+						</tr>
+					</thead>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">Base</th>
+							<th scope="col">FreeCAD properties necessary for correct display in the tree view.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Label</th>
+							<td>Name of this <span class="tool">collision detector</span> tool shown in the tree view.</td>
+						</tr>
+						<tr>
+							<th scope="row">Group</th>
+							<td>A list of intersections to be shown in the tree view.</td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">Collided Style</th>
+							<th scope="col">Style used to highlight objects which have collided.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Collided Line Color</th>
+							<td>Color used to paint lines belonging to an object which has collided.</td>
+						</tr>
+						<tr>
+							<th scope="row">Collided Line Width</th>
+							<td>Width of lines belonging to an object which has collided.</td>
+						</tr>
+						<tr>
+							<th scope="row">Collided Shape Color</th>
+							<td>Color used to paint shape (e.g. sides of a cube) belonging to an object which has collided.</td>
+						</tr>
+						<tr>
+							<th scope="row">Collided Transparency</th>
+							<td>Transparency of lines, shape and points of an object which has collided.</td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">General</th>
+							<th scope="col">Main properties controlling overall behavior.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Checking Level</th>
+							<td>Levels of checking <i>Bounding box</i>, <i>Shape distance</i>, <i>Intersection volume</i> and <i>Intersection volume visualizations</i> from coarse and fast to slow but precise. <i>Bounding box</i> checks only if bounding boxes overlap. <i>Shape distance</i> also checks distance between shapes themselves. <i>Intersection volume</i> tests that there is an intersection with nonzero volume in addition to previous conditions. <i>Intersections volume visualizations</i> does all checks and shows the intersection.</td>
+						</tr>
+						<tr>
+							<th scope="row">Observed Objects</th>
+							<td>A list of object among which we check for collisions. If we have $n$ objects, the we will get <span style="font-size: 50%;">$\begin{pmatrix} n\\2 \end{pmatrix}$</span> couples which we need to check for collisions. Hence, it may be better to use multiple <span class="tool">collision detector</span>s to check for collision only among those objects that can physically touch.</td>
+						</tr>
+						<tr>
+							<th scope="row">Remember Collisions</th>
+							<td>Remember which objects had collided and highlight them with <span class="property">Collided style</span>.</td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">In-Collision Style</th>
+							<th scope="col">Style used to highlight objects which are currently in collision.</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">In Collision Line Color</th>
+							<td>Color used to paint lines belonging to an object which is in collision.</td>
+						</tr>
+						<tr>
+							<th scope="row">In Collision Line Width</th>
+							<td>Width of lines belonging to an object which is in collision.</td>
+						</tr>
+						<tr>
+							<th scope="row">In Collision Shape Color</th>
+							<td>Color used to paint shape (e.g. sides of a cube) belonging to an object in collision.</td>
+						</tr>
+						<tr>
+							<th scope="row">In Collision Transparency</th>
+							<td>Transparency of lines, shape and points of an object which is in collision.</td>
+						</tr>
+					</tbody>
+					<thead>
+						<tr class="table-secondary">
+							<th scope="col">Intersection Style</th>
+							<th scope="col">Style used for hightlighting itersections between objects</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<th scope="row">Intersection Color</th>
+							<td>Color used to paint a shape, lines and points of an object used for highlighting intersection volume.</td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+			<!--- End Sections --->
+
+			<!--- Crossroad --->
+			<div id="crossroad">
+				<div id="cr-buttons" class="btn-group" role="group" aria-label="Basic example">
+					<a class="btn btn-secondary bg-light" href="trajectory.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/TrajectoryCmd.png"/>
+						<span class="btn-name">Trajectory</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="server.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/ServerCmd.png"/>
+						<span class="btn-name">Server</span>
+					</a>
+					<a class="btn btn-secondary bg-light" href="control.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/ControlCmd.png"/>
+						<span class="btn-name">Control</span>
+					</a>
+					<a class="btn btn-secondary disabled bg-light" href="collision_detector.html">
+						<img class="btn-icon" src="https://raw.githubusercontent.com/JiriValasek/Animate/master/Animate/Resources/Icons/CollisionDetectorCmd.png"/>
+						<span class="btn-name">Collision Detector</span>
+					</a>
+				</div>
+			</div>
+			<!--- End Crossroads --->
+
 		</div>
+		<!--- Endo Document --->
+
+		<div class="col-lg-1 col-xl-3 d-none d-lg-block"></div>
 	</div>
-	
 </content>
+<!--- End Content --->
 
 
 
@@ -89,7 +289,7 @@
 					<div class="icon">
 						<i class="fab fa-github fa-2x"></i>
 					</div>
-					<p>Animate repository</p>
+					<p>Repository</p>
 				</a><br>
 				<a href="https://github.com/JiriValasek/Animate/issues/new">
 					<div class="icon">
