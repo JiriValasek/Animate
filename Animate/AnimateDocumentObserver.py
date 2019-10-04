@@ -2,7 +2,7 @@
 
 # ***************************************************************************
 # *                                                                         *
-# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
 # *   This file is part of the FreeCAD CAx development system.              *
@@ -143,7 +143,7 @@ Args:
             # If a Collision is removed from
             removed = set(self.group_before).difference(set(obj.Group)).pop()
             if removed.Proxy.__class__.__name__ == "CollisionProxy" and \
-                    hasattr(obj, "Proxy") and not obj.Proxy.reseting and \
+                    hasattr(obj, "Proxy") and not obj.Proxy.resetting and \
                     not obj.Proxy.checking:
                 QMessageBox.warning(
                         None, 'Forbidden action detected',
@@ -194,7 +194,7 @@ Returns:
 Method testing whether a forbidden object is in an `Animate` group object.
 
 Trajectory group objects are allowed to be stacked. Control objects can contain
-any other `Animate` object. CollisionDetector objects can accomodate only
+any other `Animate` object. CollisionDetector objects can accommodate only
 Collision objects.
 
 Args:
@@ -244,7 +244,7 @@ is going to be closed.
 Args:
     doc: A FreeCAD's `App.Document` document about to be closed.
         """
-        # Check atleast one server is in the document about to be closed
+        # Check at least one server is in the document about to be closed
         if doc.Name in self.server_proxies:
             # Notify all servers in the document
             for server_proxy in self.server_proxies[doc.Name]:
@@ -276,7 +276,7 @@ def addObserver():
     """
 Adds an `AnimateDocumentObserver` between FreeCAD's document observers safely.
 
-It's prefered to add an `AnimateDocumentObserver` using this method, because
+It's preferred to add an `AnimateDocumentObserver` using this method, because
 other ways could result in having multiple document observers added to FreeCAD.
 Having a lot of document observers slows down FreeCAD due to necessity to
 inform them all about imminent changes and so on.
