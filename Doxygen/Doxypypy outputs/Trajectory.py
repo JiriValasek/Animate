@@ -1297,6 +1297,7 @@ class ViewProviderTrajectoryProxy:
                     'Error while opening trajectory panel',
                     "Valid trajectory is necessary to open "
                     + "a trajectory panel.")
+                return True
 
             # Load the QDialog from a file and name it after this object
             new_form = [FreeCADGui.PySideUic.loadUi(path.join(PATH_TO_UI,
