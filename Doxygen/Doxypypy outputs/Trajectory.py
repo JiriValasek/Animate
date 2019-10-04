@@ -2,7 +2,7 @@
 
 # ***************************************************************************
 # *                                                                         *
-# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
 # *   This file is part of the FreeCAD CAx development system.              *
@@ -618,7 +618,7 @@ class TrajectoryProxy:
         import AnimateDocumentObserver
         AnimateDocumentObserver.addObserver()
 
-    ## @brief Metod used to change a `Trajectory`'s trajectory.
+    ## @brief Method used to change a `Trajectory`'s trajectory.
     #
     #A `traj` dictionary containing a trajectory is tested for validity and then
     #assigned to a `Trajectory` `DocumentObjectGroupPython`.
@@ -757,7 +757,7 @@ class TrajectoryProxy:
     ## @brief Method to find weighted `timestamps` indices corresponding to a given `time`.
     #
     #If a `time` is smaller than the first timestamp, the returned indices are [0,0]
-    #with weights [1,0] as that's the closest value. Simlarly, if the `time` is
+    #with weights [1,0] as that's the closest value. Similarly, if the `time` is
     #greater than the last timestamp, the returned indices are [-1,-1] pointing to
     #the last element of a `timestamps` list with weights [1,0]. If the `time` value
     #is between the first and last timestamp, the indices belong to the closest
@@ -1207,7 +1207,7 @@ class ViewProviderTrajectoryProxy:
             return self.fp.Group
         return []
 
-    ## @brief Method called by FreeCAD to ask if an object `obj` can be droped into a Group.
+    ## @brief Method called by FreeCAD to ask if an object `obj` can be dropped into a Group.
     #
     #Only FreeCAD objects of a Trajectory type are allowed to drop inside
     #a Trajectory group.
@@ -1276,7 +1276,7 @@ class ViewProviderTrajectoryProxy:
     #If no dialog is opened in the Task View, a new `TrajectoryPanel` is opened.
     #If another `TrajectoryPanel` is opened, it is closed and all its QDialogs
     #are added to a new `TrajectoryPanel`. If a `TrajectoryPanel` is already opened,
-    #the Model tab on the Combo View is swaped for the Tasks tab so that the panel
+    #the Model tab on the Combo View is swapped for the Tasks tab so that the panel
     #becomes visible. If another dialog is opened a warning is shown.
     #
     #
@@ -1541,7 +1541,7 @@ class ViewProviderTrajectoryProxy:
         return separated_axis
 
 
-## @brief Class specifing Animate workbench's Trajectory button/command.
+## @brief Class specifying Animate workbench's Trajectory button/command.
 #
 #This class provides resources for a toolbar button and a menu button.
 #It controls their behaivor(Active/Inactive) and responds to callbacks after

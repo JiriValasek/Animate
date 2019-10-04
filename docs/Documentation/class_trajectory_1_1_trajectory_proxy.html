@@ -110,7 +110,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a6078f1f22d19efc8ab3bf800e1fd68ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method to set properties during initialization or document restoration.  <a href="#a6078f1f22d19efc8ab3bf800e1fd68ad">More...</a><br /></td></tr>
 <tr class="separator:a6078f1f22d19efc8ab3bf800e1fd68ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f6d09366a0b07bc067fd12c6f4fd440"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trajectory_1_1_trajectory_proxy.html#a1f6d09366a0b07bc067fd12c6f4fd440">change_trajectory</a> (self, fp, traj)</td></tr>
-<tr class="memdesc:a1f6d09366a0b07bc067fd12c6f4fd440"><td class="mdescLeft">&#160;</td><td class="mdescRight">Metod used to change a <code><a class="el" href="namespace_trajectory.html" title="Classes related to the Trajectory component of the Animate Workbench.">Trajectory</a></code>'s trajectory.  <a href="#a1f6d09366a0b07bc067fd12c6f4fd440">More...</a><br /></td></tr>
+<tr class="memdesc:a1f6d09366a0b07bc067fd12c6f4fd440"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method used to change a <code><a class="el" href="namespace_trajectory.html" title="Classes related to the Trajectory component of the Animate Workbench.">Trajectory</a></code>'s trajectory.  <a href="#a1f6d09366a0b07bc067fd12c6f4fd440">More...</a><br /></td></tr>
 <tr class="separator:a1f6d09366a0b07bc067fd12c6f4fd440"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abf00b3c12eaf8f0e34e7b04a4b6bb33b"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_trajectory_1_1_trajectory_proxy.html#abf00b3c12eaf8f0e34e7b04a4b6bb33b">is_trajectory_property</a> (self, prop)</td></tr>
 <tr class="memdesc:abf00b3c12eaf8f0e34e7b04a4b6bb33b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Method to check that a property describes a trajectory.  <a href="#abf00b3c12eaf8f0e34e7b04a4b6bb33b">More...</a><br /></td></tr>
@@ -207,7 +207,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Metod used to change a <code><a class="el" href="namespace_trajectory.html" title="Classes related to the Trajectory component of the Animate Workbench.">Trajectory</a></code>'s trajectory. </p>
+<p>Method used to change a <code><a class="el" href="namespace_trajectory.html" title="Classes related to the Trajectory component of the Animate Workbench.">Trajectory</a></code>'s trajectory. </p>
 <p>A <code>traj</code> dictionary containing a trajectory is tested for validity and then assigned to a <code><a class="el" href="namespace_trajectory.html" title="Classes related to the Trajectory component of the Animate Workbench.">Trajectory</a></code> <code>DocumentObjectGroupPython</code>.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -287,7 +287,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Method to find weighted <code>timestamps</code> indices corresponding to a given <code>time</code>. </p>
-<p>If a <code>time</code> is smaller than the first timestamp, the returned indices are [0,0] with weights [1,0] as that's the closest value. Simlarly, if the <code>time</code> is greater than the last timestamp, the returned indices are [-1,-1] pointing to the last element of a <code>timestamps</code> list with weights [1,0]. If the <code>time</code> value is between the first and last timestamp, the indices belong to the closest higher and lower time. At the same time, if interpolation is off, the weights are 0 and 1, where one is given to the index closest to the <code>time</code>. Otherwise, the weights, whose sum equals to 1, are computed to show inverse relative distance i.e. an index with a greater weight is the closer.</p>
+<p>If a <code>time</code> is smaller than the first timestamp, the returned indices are [0,0] with weights [1,0] as that's the closest value. Similarly, if the <code>time</code> is greater than the last timestamp, the returned indices are [-1,-1] pointing to the last element of a <code>timestamps</code> list with weights [1,0]. If the <code>time</code> value is between the first and last timestamp, the indices belong to the closest higher and lower time. At the same time, if interpolation is off, the weights are 0 and 1, where one is given to the index closest to the <code>time</code>. Otherwise, the weights, whose sum equals to 1, are computed to show inverse relative distance i.e. an index with a greater weight is the closer.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fp</td><td>A <code>DocumentObjectGroupPython</code> <a class="el" href="namespace_trajectory.html" title="Classes related to the Trajectory component of the Animate Workbench.">Trajectory</a> object.</td></tr>
@@ -613,7 +613,7 @@ weights A list of two floats between 0 and 1 showing relative closeness. </dd></
 <!-- HTML footer for doxygen 1.8.15-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-	<p>Generated on Fri Oct 4 2019 10:25:05 for Animate by</p>
+	<p>Generated on Fri Oct 4 2019 15:14:58 for Animate by</p>
 </div>
 <script type="text/javascript">
  	let date_start = $("#nav-path p").text().indexOf("on");

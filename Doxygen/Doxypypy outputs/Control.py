@@ -2,7 +2,7 @@
 
 # ***************************************************************************
 # *                                                                         *
-# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
 # *   This file is part of the FreeCAD CAx development system.              *
@@ -345,7 +345,7 @@ class ControlPanel(QObject):
         for prop in self.control_proxy.PropertiesList:
             self.control_proxy.setEditorMode(prop, 0)
 
-        # Delete refrence to this panel from the view provider as the panel
+        # Delete reference to this panel from the view provider as the panel
         # will no longer exist
         self.control_proxy.ViewObject.Proxy.panel = None
 
@@ -416,7 +416,7 @@ class ControlPanel(QObject):
         self.updateCollisions()
         self.showChanges()
 
-        # Display current progres on the seek slider
+        # Display current progress on the seek slider
         self.form.sld_seek.setValue(
             numpy.round(100*(t - self.control_proxy.StartTime)
                         / (self.control_proxy.StopTime
@@ -470,7 +470,7 @@ class ControlPanel(QObject):
         self.updateCollisions()
         self.showChanges()
 
-        # Display current progres on the seek slider
+        # Display current progress on the seek slider
         self.form.sld_seek.setValue(
                 numpy.round(100*(t - self.control_proxy.StartTime)
                             / (self.control_proxy.StopTime
@@ -523,7 +523,7 @@ class ControlPanel(QObject):
         self.showChanges()
         self.saveImage()
 
-        # Display current progres on the seek slider
+        # Display current progress on the seek slider
         self.form.sld_seek.setValue(
                 numpy.round(100*(t - self.control_proxy.StartTime)
                             / (self.control_proxy.StopTime
@@ -809,7 +809,7 @@ class ControlPanel(QObject):
     #
     #Buttons are disabled, framerate is loaded from the first image chunks,
     #selected sequence name is used to create an `image name` template and
-    #a `video name` which can be used in a FFMPEG command. Such a commnad
+    #a `video name` which can be used in a FFMPEG command. Such a command
     #is executed to convert the video, if FFMPEG is installed.
     #Otherwise warnings are shown.
     #
@@ -857,7 +857,7 @@ class ControlPanel(QObject):
             else:
                 QMessageBox.warning(None, 'Something failed', str(e))
         if return_val == 0:
-            QMessageBox.information(None, 'Export successfull!',
+            QMessageBox.information(None, 'Export successful!',
                                     "FFMPEG successfully converted image "
                                     + "sequence into a video.")
         else:
@@ -925,7 +925,7 @@ class ControlPanel(QObject):
                 return True
             else:
                 FreeCAD.Console.PrintLog(
-                        "Unable to import and instal pyPNG.\n")
+                        "Unable to import and install pyPNG.\n")
                 return False
 
     ## @brief Method to write a framerate into a PNG image as one of its chunks.
@@ -951,8 +951,8 @@ class ControlPanel(QObject):
             else:
                 return False
         except Exception as e:
-            FreeCAD.Consol.PrintError(
-                "Unexpected error occured while importing pyPNG - " + str(e))
+            FreeCAD.Console.PrintError(
+                "Unexpected error occurred while importing pyPNG - " + str(e))
 
         # Read chunks already present in a PNG image
         reader = png.Reader(filename=image_path)
@@ -1258,7 +1258,7 @@ class ViewProviderControlProxy:
                 return self.fp.Group
         return []
 
-    ## @brief Method called by FreeCAD to ask if an object `obj` can be droped into a Group.
+    ## @brief Method called by FreeCAD to ask if an object `obj` can be dropped into a Group.
     #
     #FreeCAD objects of a Server, Trajectory and CollisionDetector type are allowed
     #to drop inside a Control group.
@@ -1304,7 +1304,7 @@ class ViewProviderControlProxy:
     #
     #If no dialog is opened in the Task View, a new `ControlPanel` is opened.
     #If a `ControlPanel` is already opened, the Model tab on the Combo View
-    #is swaped for the Tasks tab so that the panel becomes visible.
+    #is swapped for the Tasks tab so that the panel becomes visible.
     #If another dialog is opened a warning is shown.
     #
     #
@@ -1381,7 +1381,7 @@ class ViewProviderControlProxy:
         pass
 
 
-## @brief ControlCommand class specifing Animate workbench's Control button/command.
+## @brief ControlCommand class specifying Animate workbench's Control button/command.
 #
 #This class provides resources for a toolbar button and a menu button.
 #It controls their behaivor(Active/Inactive) and responds to callbacks after

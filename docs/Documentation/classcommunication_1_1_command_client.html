@@ -117,7 +117,7 @@ Public Attributes</h2></td></tr>
 <tr class="memdesc:a5a063ec6581e334e7fe769808e9e3914"><td class="mdescLeft">&#160;</td><td class="mdescRight">A QTcpSocket used to contact <code>CommandSErver</code> <br /></td></tr>
 <tr class="separator:a5a063ec6581e334e7fe769808e9e3914"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0022604e153a9ccd44454a5e53647ba3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcommunication_1_1_command_client.html#a0022604e153a9ccd44454a5e53647ba3">blockSize</a></td></tr>
-<tr class="memdesc:a0022604e153a9ccd44454a5e53647ba3"><td class="mdescLeft">&#160;</td><td class="mdescRight">An int representing size of incomming tcp message.  <a href="#a0022604e153a9ccd44454a5e53647ba3">More...</a><br /></td></tr>
+<tr class="memdesc:a0022604e153a9ccd44454a5e53647ba3"><td class="mdescLeft">&#160;</td><td class="mdescRight">An int representing size of incoming tcp message.  <a href="#a0022604e153a9ccd44454a5e53647ba3">More...</a><br /></td></tr>
 <tr class="separator:a0022604e153a9ccd44454a5e53647ba3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -200,10 +200,10 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p><code>Qt</code>'s slot method to print out received <code>tcpSocket</code>'s error. </p>
-<p>QAbstractSocket.RemoteHostClosedError is not printed, because it occurs naturaly when the <code>tcpSocket</code> closes after a transaction is over. Except that all errors are printed.</p>
+<p>QAbstractSocket.RemoteHostClosedError is not printed, because it occurs naturally when the <code>tcpSocket</code> closes after a transaction is over. Except that all errors are printed.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">socketError</td><td>A QAbstractSocket::SocketError enum describing occured error. </td></tr>
+    <tr><td class="paramname">socketError</td><td>A QAbstractSocket::SocketError enum describing occurred error. </td></tr>
   </table>
   </dd>
 </dl>
@@ -239,7 +239,7 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Method used to send commands from client to <code><a class="el" href="classcommunication_1_1_command_server.html" title="QTcpServer class used to receive commands and execute them.">CommandServer</a></code>. </p>
-<p>This method tries to connect to a specified host <code><a class="el" href="classcommunication_1_1_command_server.html" title="QTcpServer class used to receive commands and execute them.">CommandServer</a></code> via <code>tcpSocket</code>. If connection was successfull, the command <code>cmd</code> is sent. Then the response is expected. If the response is equal to COMMAND_EXECUTED_CONFIRMATION_MESSAGE, then the execution was successfull. The progress and result of <code>sendCommand</code> can be obtained from printed logs and return value.</p>
+<p>This method tries to connect to a specified host <code><a class="el" href="classcommunication_1_1_command_server.html" title="QTcpServer class used to receive commands and execute them.">CommandServer</a></code> via <code>tcpSocket</code>. If connection was successful, the command <code>cmd</code> is sent. Then the response is expected. If the response is equal to COMMAND_EXECUTED_CONFIRMATION_MESSAGE, then the execution was successful. The progress and result of <code>sendCommand</code> can be obtained from printed logs and return value.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">cmd</td><td>A str command to be executed.</td></tr>
@@ -265,7 +265,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>An int representing size of incomming tcp message. </p>
+<p>An int representing size of incoming tcp message. </p>
 
 <p class="definition">Definition at line <a class="el" href="communication_8py_source.html#l00336">336</a> of file <a class="el" href="communication_8py_source.html">communication.py</a>.</p>
 
@@ -315,7 +315,7 @@ Public Attributes</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.15-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-	<p>Generated on Fri Oct 4 2019 10:25:04 for Animate by</p>
+	<p>Generated on Fri Oct 4 2019 15:14:58 for Animate by</p>
 </div>
 <script type="text/javascript">
  	let date_start = $("#nav-path p").text().indexOf("on");

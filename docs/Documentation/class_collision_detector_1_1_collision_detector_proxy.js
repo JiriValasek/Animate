@@ -18,7 +18,7 @@ var class_collision_detector_1_1_collision_detector_proxy =
     [ "resetObject", "class_collision_detector_1_1_collision_detector_proxy.html#af27ee7ad52a6518566f8bc648989f7fe", null ],
     [ "setChecking", "class_collision_detector_1_1_collision_detector_proxy.html#a75aaf8f556c4fb384a8052996a6d4d26", null ],
     [ "setProperties", "class_collision_detector_1_1_collision_detector_proxy.html#acf57ec844ceebf7ab00b53ae18f847b3", null ],
-    [ "setReseting", "class_collision_detector_1_1_collision_detector_proxy.html#ac0c4e09af5697d78b66d1357750d734f", null ],
+    [ "setResetting", "class_collision_detector_1_1_collision_detector_proxy.html#a45282d36d8147b7a2250f4a3cb9cb085", null ],
     [ "visualize", "class_collision_detector_1_1_collision_detector_proxy.html#a8b3c84484d2ecd76304e2c9c6478208c", null ],
     [ "checking", "class_collision_detector_1_1_collision_detector_proxy.html#ad40d002ac05d0fe2f4135cb1128ff2c8", null ],
     [ "collided", "class_collision_detector_1_1_collision_detector_proxy.html#a407f5afb930ded47b1e29eaf31d0f6f0", null ],
@@ -27,6 +27,6 @@ var class_collision_detector_1_1_collision_detector_proxy =
     [ "in_collision", "class_collision_detector_1_1_collision_detector_proxy.html#a34f96f8b1bd6b1aadd8774d09d25d62c", null ],
     [ "observed_objects_before", "class_collision_detector_1_1_collision_detector_proxy.html#ae7b98f702bdd2593522cf2ce2ff8621b", null ],
     [ "original_styles", "class_collision_detector_1_1_collision_detector_proxy.html#ab25e2995d289f9fc3b6692a3af4be990", null ],
-    [ "reseting", "class_collision_detector_1_1_collision_detector_proxy.html#a5c28ffe2f84935819acaba25104a96f4", null ],
+    [ "resetting", "class_collision_detector_1_1_collision_detector_proxy.html#a84a37c1d6cbb4b74bee58f8e2fe076bd", null ],
     [ "shape_info", "class_collision_detector_1_1_collision_detector_proxy.html#a6e80278163272f81170640d145a532c5", null ]
 ];

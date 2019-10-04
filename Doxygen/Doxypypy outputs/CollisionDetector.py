@@ -1,9 +1,8 @@
-
 # -*- coding: utf-8 -*-
 
 # ***************************************************************************
 # *                                                                         *
-# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
 # *   This file is part of the FreeCAD CAx development system.              *
@@ -91,8 +90,8 @@ class CollisionDetectorProxy(object):
     ## @property		checking
     # A flag to signal collision checking is in progress.
 
-    ## @property		reseting
-    # A flag to signal reseting objects to previous state.
+    ## @property		resetting
+    # A flag to signal resetting objects to previous state.
     command_queue = []
 
     ## @brief Initialization method for CollsionDetectorProxy.
@@ -366,7 +365,7 @@ class CollisionDetectorProxy(object):
 
         self.fp = fp
         self.checking = False
-        self.reseting = False
+        self.resetting = False
 
         fp.setEditorMode("Group", 1)
         fp.setEditorMode("ValidObservedObjects", 2)
@@ -392,9 +391,9 @@ class CollisionDetectorProxy(object):
                     + "don't have shapes attached, or are empty groups.")
             return
 
-        # Don't check if reseting
-        if self.reseting:
-            FreeCAD.Console.PrintWarning("Can't check, Reseting!")
+        # Don't check if resetting
+        if self.resetting:
+            FreeCAD.Console.PrintWarning("Can't check, Resetting!")
             return
 
         # Don't check if already checking
@@ -574,7 +573,7 @@ class CollisionDetectorProxy(object):
     def makeCollisionObject(self, shape, cause1, cause2, color):
         # Add new object to the CollisionDetector
         collision = self.fp.newObject("Part::FeaturePython", "Collision")
-        # Attach a Proxy ot it and it's ViewObject, then purge its touched flag
+        # Attach a Proxy to it and it's ViewObject, then purge its touched flag
         CollisionProxy(collision, shape, cause1, cause2)
         ViewProviderCollisionProxy(collision.ViewObject, color)
         collision.purgeTouched()
@@ -638,7 +637,7 @@ class CollisionDetectorProxy(object):
             FreeCAD.Console.PrintWarning("Can't reset, Checking!")
             return
         else:
-            self.reseting = True
+            self.resetting = True
             self.executeLater(None, self.fp.removeObjectsFromDocument, None)
             for obj_name, style in self.original_styles.items():
                 obj = FreeCAD.ActiveDocument.getObject(obj_name)
@@ -648,8 +647,8 @@ class CollisionDetectorProxy(object):
                 obj.ViewObject.LineWidth = style["LineWidth"]
             self.in_collision = set()
             self.collided = set()
-            # set reseting to false after all objects are truly removed
-            self.executeLater(None, self.setReseting, False)
+            # set resetting to false after all objects are truly removed
+            self.executeLater(None, self.setResetting, False)
 
     ## @brief Method necessary to be able to set `checking` attribute with delayed execution.
     #
@@ -664,18 +663,18 @@ class CollisionDetectorProxy(object):
     def setChecking(self, value):
         self.checking = value
 
-    ## @brief Method necessary to be able to set `reseting` attribute with delayed execution.
+    ## @brief Method necessary for setting `resetting` attribute with delayed execution.
     #
     #In order to be able to check when a Collision is deleted/moved by user instead
-    #of a `CollisionDetector` instance owning it, it's necessary to set `reseting`
+    #of a `CollisionDetector` instance owning it, it's necessary to set `resetting`
     #attribute to `False` after all collisions are removed.
     #
     #
-    # @param		value	A bool flagging that `CollisionDetector` is reseting Collisions.
+    # @param		value	A bool flagging that `CollisionDetector` is resetting Collisions.
     #
 
-    def setReseting(self, value):
-        self.reseting = value
+    def setResetting(self, value):
+        self.resetting = value
 
     ## @brief Method to postpone execution after coin is finished (and avoid crashing coin).
     #
@@ -935,7 +934,7 @@ class ViewProviderCollisionDetectorProxy(object):
         return False
 
 
-## @brief Class specifing Animate workbench's CollisionDetector button/command.
+## @brief Class specifying Animate workbench's CollisionDetector button/command.
 #
 #This class provides resources for a toolbar button and a menu button.
 #It controls their behaivor(Active/Inactive) and responds to callbacks after

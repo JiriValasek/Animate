@@ -135,7 +135,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Adds an <code><a class="el" href="namespace_animate_document_observer.html" title="AnimateDocumentObserver and a method how to safely add it to FreeCAD.">AnimateDocumentObserver</a></code> between FreeCAD's document observers safely. </p>
-<p>It's prefered to add an <code><a class="el" href="namespace_animate_document_observer.html" title="AnimateDocumentObserver and a method how to safely add it to FreeCAD.">AnimateDocumentObserver</a></code> using this method, because other ways could result in having multiple document observers added to FreeCAD. Having a lot of document observers slows down FreeCAD due to necessity to inform them all about imminent changes and so on. </p>
+<p>It's preferred to add an <code><a class="el" href="namespace_animate_document_observer.html" title="AnimateDocumentObserver and a method how to safely add it to FreeCAD.">AnimateDocumentObserver</a></code> using this method, because other ways could result in having multiple document observers added to FreeCAD. Having a lot of document observers slows down FreeCAD due to necessity to inform them all about imminent changes and so on. </p>
 
 <p class="definition">Definition at line <a class="el" href="_animate_document_observer_8py_source.html#l00292">292</a> of file <a class="el" href="_animate_document_observer_8py_source.html">AnimateDocumentObserver.py</a>.</p>
 <div class="fragment"><div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="keyword">def </span>addObserver():</div><div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;    <span class="comment"># Check FreeCAD doesn&#39;t have an AnimateDocumentObserver already assigned</span></div><div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    <span class="comment"># and assign one</span></div><div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    <span class="keywordflow">if</span> <span class="keywordflow">not</span> hasattr(FreeCAD, <span class="stringliteral">&quot;animate_observer&quot;</span>):</div><div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        FreeCAD.animate_observer = <a class="code" href="namespace_animate_document_observer.html">AnimateDocumentObserver</a>()</div><div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;        FreeCAD.addDocumentObserver(FreeCAD.animate_observer)</div><div class="ttc" id="namespace_animate_document_observer_html"><div class="ttname"><a href="namespace_animate_document_observer.html">AnimateDocumentObserver</a></div><div class="ttdoc">AnimateDocumentObserver and a method how to safely add it to FreeCAD.</div><div class="ttdef"><b>Definition:</b> <a href="_animate_document_observer_8py_source.html#l00001">AnimateDocumentObserver.py:1</a></div></div>
@@ -202,7 +202,7 @@ Variables</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.15-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-	<p>Generated on Fri Oct 4 2019 10:25:04 for Animate by</p>
+	<p>Generated on Fri Oct 4 2019 15:14:57 for Animate by</p>
 </div>
 <script type="text/javascript">
  	let date_start = $("#nav-path p").text().indexOf("on");
