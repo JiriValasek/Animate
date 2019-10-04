@@ -2,7 +2,7 @@
 
 # ***************************************************************************
 # *                                                                         *
-# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
 # *   This file is part of the FreeCAD CAx development system.              *
@@ -41,8 +41,8 @@ from PySide2.QtCore import QThread, QByteArray, QDataStream, QIODevice
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QAbstractSocket, \
                               QHostAddress
 
-## Size of uint16 in bytes used to leave space at the beggining of each message
-# to specify tcp message lenght (maximal length is 65535 bytes).
+## Size of uint16 in bytes used to leave space at the beginning of each message
+# to specify tcp message length (maximal length is 65535 bytes).
 SIZEOF_UINT16 = 2
 
 ## Error code used in startServer() when trying to connect CommandServer to an
@@ -53,15 +53,15 @@ SERVER_ERROR_INVALID_ADDRESS = 1
 # occupied port.
 SERVER_ERROR_PORT_OCCUPIED = 2
 
-## Time to wait in miliseconds - used to wait for incomming message etc.
+## Time to wait in milliseconds - used to wait for incoming message etc.
 WAIT_TIME_MS = 30000
 
 ## Message send from a `CommandServer` to a `CommandClient.sendCommand()` or
-# `sendClientCommand()` after successfull execution of a command.
+# `sendClientCommand()` after successful execution of a command.
 COMMAND_EXECUTED_CONFIRMATION_MESSAGE = "Command executed successfully"
 
 ## `CommandClient.sendCommand()` or `sendClientCommand()` return value after
-# confirmation of successfull command execution.
+# confirmation of successful command execution.
 CLIENT_COMMAND_EXECUTED = 0
 
 ## `CommandClient.sendCommand()` or `sendClientCommand()` return value if
@@ -91,11 +91,11 @@ class CommandThread(QThread):
 
 This class describes a `QThread` used to receive a command string from
 a `QTcpSocket`, try to execute received string and send a repspondse
-whether the execution was successfull or not.
+whether the execution was successful or not.
 
 Attributes:
     socketDescriptor: A Qt's qintptr socket descriptor to initialize tcpSocket.
-    blockSize: An int representing size of incomming tcp message.
+    blockSize: An int representing size of incoming tcp message.
     """
 
     def __init__(self, socketDescriptor, parent):
@@ -119,20 +119,20 @@ Thread's functionality method.
 
 The starting point for the thread. After calling start(), the newly created
 thread calls this function. This function then tries to make QTcpSocket.
-It waits `WAIT_TIME_MS` for an incomming message. If message is received
+It waits `WAIT_TIME_MS` for an incoming message. If message is received
 it checks its a whole message using blockSize sent in the first word as
 an UINT16 number. If a whole message is received, the thread tries to execute
 the message string and sends back an appropriate response. The response is
-*Command failed - "error string"* if the execution failed, or *Commmand
+*Command failed - "error string"* if the execution failed, or *Command
 executed successfully* otherwise. Then the thread is terminated.
         """
-        # Try to connect to an incomming tcp socket using its socket descriptor
+        # Try to connect to an incoming tcp socket using its socket descriptor
         tcpSocket = QTcpSocket()
         if not tcpSocket.setSocketDescriptor(self.socketDescriptor):
             FreeCAD.Console.PrintError("Socket not accepted.\n")
             return
 
-        # Wait for an incomming message
+        # Wait for an incoming message
         if not tcpSocket.waitForReadyRead(msecs=WAIT_TIME_MS):
             FreeCAD.Console.PrintError("No request send.\n")
             return
@@ -164,7 +164,7 @@ executed successfully* otherwise. Then the thread is terminated.
                                        + str(e) + "\n")
             message = "Command failed - " + str(e)
         else:
-            FreeCAD.Console.PrintLog("Executing external command succeded!\n")
+            FreeCAD.Console.PrintLog("Executing external command succeeded!\n")
             message = COMMAND_EXECUTED_CONFIRMATION_MESSAGE
 
         # Prepare the data block to send back and inform about it
@@ -203,9 +203,9 @@ Args:
 
     def incomingConnection(self, socketDescriptor):
         """
-Method to handle an incomming connection by dispatching a `CommandThread`.
+Method to handle an incoming connection by dispatching a `CommandThread`.
 
-This method is called by Qt when an incomming connection with a socket
+This method is called by Qt when an incoming connection with a socket
 descriptor is received. A new `CommandThread` is created to serve to a received
 request from the socket description. The `CommandThread` is set to terminate
 when finished and then started.
@@ -260,7 +260,7 @@ Args:
     port: An int selecting a port to be used for the `CommandServer`.
 
 Returns:
-    An integer error code signifying that and error occured(either
+    An integer error code signifying that and error occurred(either
     `ERROR_INVALID ADDRESS` or `ERROR_PORT_OCCUPIED`) or a CommnadServer
     instance if everything went hunky-dory.
     """
@@ -298,7 +298,7 @@ Attributes:
     host: A QtHostAddress to the `CommandServer`.
     port: An int of port at which `CommandServer` is listening.
     tcpSocket: A QTcpSocket used to contact `CommandSErver`
-    blockSize: An int representing size of incomming tcp message.
+    blockSize: An int representing size of incoming tcp message.
 
     from PySide2.QtNetwork import QHostAddress
     from communication import CommandClient
@@ -327,9 +327,9 @@ Args:
 Method used to send commands from client to `CommandServer`.
 
 This method tries to connect to a specified host `CommandServer` via
-`tcpSocket`. If connection was successfull, the command `cmd` is sent.
+`tcpSocket`. If connection was successful, the command `cmd` is sent.
 Then the response is expected. If the response is equal to
-COMMAND_EXECUTED_CONFIRMATION_MESSAGE, then the execution was successfull.
+COMMAND_EXECUTED_CONFIRMATION_MESSAGE, then the execution was successful.
 The progress and result of `sendCommand` can be obtained from printed logs and
 return value.
 
@@ -425,11 +425,11 @@ Returns:
 `Qt`'s slot method to print out received `tcpSocket`'s error.
 
 QAbstractSocket.RemoteHostClosedError is not printed, because it occurs
-naturaly when the `tcpSocket` closes after a transaction is over. Except that
+naturally when the `tcpSocket` closes after a transaction is over. Except that
 all errors are printed.
 
 Args:
-    socketError: A QAbstractSocket::SocketError enum describing occured error.
+    socketError: A QAbstractSocket::SocketError enum describing occurred error.
         """
         if socketError != QAbstractSocket.RemoteHostClosedError:
             if "FreeCAD" in sys.modules:
@@ -454,7 +454,7 @@ Args:
     port: An int of port at which `CommandServer` is listening.
 
 Kwargs:
-    wait_time: An int setting miliseconds to wait for connection or message.
+    wait_time: An int setting milliseconds to wait for connection or message.
 
 Returns:
     `CLIENT_COMMAND_EXECUTED` if all went great and command was executed.
