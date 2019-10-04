@@ -2,7 +2,7 @@
 
 # ***************************************************************************
 # *                                                                         *
-# *   Animate workbench - FreeCAD Workbench for lightweigh animation        *
+# *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
 # *   This file is part of the FreeCAD CAx development system.              *
@@ -137,7 +137,7 @@ Args:
             fp.addProperty("App::PropertyIntegerConstraint", "Port",
                            "Server settings", "Port where the server will "
                            + "listen for connections.\n" +
-                           "Valid port numers are in range <0 | 65535>,\n"
+                           "Valid port numbers are in range <0 | 65535>,\n"
                            + "but some may be already taken!"
                            ).Port = (54321, 0, 65535, 1)
         else:
@@ -377,7 +377,7 @@ Args:
 
 class ServerCommand(object):
     """
-ServerCommand class specifing Animate workbench's Server button/command.
+ServerCommand class specifying Animate workbench's Server button/command.
 
 This class provides resources for a toolbar button and a menu button.
 It controls their behaivor(Active/Inactive) and responds to callbacks after
