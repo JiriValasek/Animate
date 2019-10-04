@@ -14,5 +14,5 @@ Documentation description
 In this documentation, you'll find detailed description off all tools (`Trajectory`, `Server`, `Control` and `CollisionDetector`). 
 All classes of those tools, their attributes and methods are described in here. 
 
-**What you won't find here is how to use the tools, for that I'd kindly redirect you to the **[USER GUIDE](../Guide/getting_started.html)
+**What you won't find here is how to use the tools, for that I'd kindly redirect you to the [USER GUIDE](../Guide/getting_started.html)**
 
