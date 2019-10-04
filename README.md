@@ -19,13 +19,17 @@ Then you can record this movement into series of images and export as a video af
 All you need to know you'll find out on [Animate website](https://jirivalasek.github.io/Animate/)
 So let's go take a look.
 
-## Authors
+## Future plans
 
-**Jiří VALÁŠEK**  
+The future plans include making 2 simplified trajectory tools - *Rotation* and *Translation*, these tools should be more useful for working with robots and other mechanical systems. Also server focused on working with Animate tools is planned, it should be able to send numbers in their binary form instead of string one.
 
 ## License
 
 The Animate workbench (all that is inside *Animate* folde) is licensed under [LGPL license](https://github.com/JiriValasek/Animate/blob/master/Animate/LICENSE). This license does not extend itself to the rest of this repository.
+
+## Authors
+
+**Jiří VALÁŠEK**  
 
 ## Acknowledgments
 
