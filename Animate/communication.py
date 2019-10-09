@@ -131,6 +131,7 @@ executed successfully* otherwise. Then the thread is terminated.
         if not tcpSocket.setSocketDescriptor(self.socketDescriptor):
             FreeCAD.Console.PrintError("Socket not accepted.\n")
             return
+        FreeCAD.Console.PrintLog("Socket accepted.\n")
 
         # Wait for an incoming message
         if not tcpSocket.waitForReadyRead(msecs=WAIT_TIME_MS):
@@ -144,21 +145,25 @@ executed successfully* otherwise. Then the thread is terminated.
         # Try to read the message size
         if self.blockSize == 0:
             if tcpSocket.bytesAvailable() < 2:
+                FreeCAD.Console.PrintError("Received message "
+                                           + "has too few bytes.\n")
                 return
             self.blockSize = instr.readUInt16()
 
         # Check message is sent complete
         if tcpSocket.bytesAvailable() < self.blockSize:
+            FreeCAD.Console.PrintError("Received message has less bytes "
+                                       + "then it's supposed to.\n")
             return
 
         # Read message and inform about it
-        instr = instr.readString()
+        cmd = instr.readRawData(self.blockSize).decode("UTF-8")
         FreeCAD.Console.PrintLog("CommandServer received> "
-                                 + str(instr) + "\n")
+                                 + cmd + "\n")
 
         # Try to execute the message string and prepare  a response
         try:
-            exec(str(instr))
+            exec(cmd)
         except Exception as e:
             FreeCAD.Console.PrintError("Executing external command failed:"
                                        + str(e) + "\n")
@@ -169,13 +174,11 @@ executed successfully* otherwise. Then the thread is terminated.
 
         # Prepare the data block to send back and inform about it
         FreeCAD.Console.PrintLog("CommandServer sending> " + message + " \n")
-        block = QByteArray()
+        block = QByteArray(
+                len(message.encode("UTF-8")).to_bytes(2, byteorder='big')
+                + message.encode("UTF-8"))
         outstr = QDataStream(block, QIODevice.WriteOnly)
         outstr.setVersion(QDataStream.Qt_4_0)
-        outstr.writeUInt16(0)
-        outstr.writeQString(message)
-        outstr.device().seek(0)
-        outstr.writeUInt16(block.size() - 2)
 
         # Send the block, disconnect from the socket and terminate the QThread
         tcpSocket.write(block)
@@ -359,13 +362,11 @@ Returns:
             return CLIENT_ERROR_NO_CONNECTION
 
         # Prepare a command message to be sent
-        block = QByteArray()
+        block = QByteArray(
+                len(cmd.encode("UTF-8")).to_bytes(2, byteorder='big')
+                + cmd.encode("UTF-8"))
         outstr = QDataStream(block, QIODevice.WriteOnly)
         outstr.setVersion(QDataStream.Qt_4_0)
-        outstr.writeUInt16(0)
-        outstr.writeQString(cmd)
-        outstr.device().seek(0)
-        outstr.writeUInt16(block.size() - 2)
 
         # Try to send the message
         if "FreeCAD" in sys.modules:
@@ -402,7 +403,7 @@ Returns:
 
         if self.tcpSocket.bytesAvailable() < self.blockSize:
             return CLIENT_ERROR_RESPONSE_NOT_COMPLETE
-        response = instr.readString()
+        response = instr.readRawData(self.blockSize).decode("UTF-8")
         if "FreeCAD" in sys.modules:
             FreeCAD.Console.PrintMessage("CommandClient received> "
                                          + response + "\n")
@@ -471,13 +472,11 @@ Returns:
         return CLIENT_ERROR_NO_CONNECTION
 
     # Prepare a command message to be sent
-    block = QByteArray()
+    block = QByteArray(
+            len(cmd.encode("UTF-8")).to_bytes(2, byteorder='big')
+            + cmd.encode("UTF-8"))
     outstr = QDataStream(block, QIODevice.WriteOnly)
     outstr.setVersion(QDataStream.Qt_4_0)
-    outstr.writeUInt16(0)
-    outstr.writeQString(cmd)
-    outstr.device().seek(0)
-    outstr.writeUInt16(block.size() - 2)
     tcpSocket.write(block)
 
     # Try to send the message
@@ -485,7 +484,7 @@ Returns:
         return CLIENT_ERROR_BLOCK_NOT_WRITTEN
 
     # Wait for a response from the host server
-    if not tcpSocket.waitForReadyRead(msecs=10000):
+    if not tcpSocket.waitForReadyRead(msecs=wait_time):
         return CLIENT_ERROR_NO_RESPONSE
 
     # Try to read the response
@@ -503,7 +502,8 @@ Returns:
     tcpSocket.waitForDisconnected()
 
     # Return value representing a command execution status
-    if instr.readString() == COMMAND_EXECUTED_CONFIRMATION_MESSAGE:
+    if instr.readRawData(blockSize).decode("UTF-8") \
+            == COMMAND_EXECUTED_CONFIRMATION_MESSAGE:
         return CLIENT_COMMAND_EXECUTED
     else:
         return CLIENT_COMMAND_FAILED
