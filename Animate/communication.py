@@ -303,11 +303,10 @@ Attributes:
     tcpSocket: A QTcpSocket used to contact `CommandSErver`
     blockSize: An int representing size of incoming tcp message.
 
-    from PySide2.QtNetwork import QHostAddress
-    from communication import CommandClient
-    host = QHostAddress(QHostAddress.LocalHost)
-    client = CommandClient(host,54321)
-    client.sendCommand('FreeCAD.Console.PrintWarning("Hello World\\n")\n')
+To send a commands do:
+    client = CommandClient("127.0.0.1",54321)
+    client.sendCommand('FreeCAD.Console.PrintError("Hello World\\n")\n')
+    client.sendCommand('FreeCAD.Console.PrintError("Bye Bye\\n")\n')
     """
 
     def __init__(self, host, port):
@@ -448,6 +447,10 @@ Method to be used for sending commands.
 
 This method is an alternative to using `CommandClient`. It does not print any
 logs, just returns a value saying how the execution went.
+
+To send a command using this method do:
+     sendClientCommand("127.0.0.1",54333,
+                       "FreeCAD.Console.PrintWarning('Hello World\\n')")
 
 Args:
     cmd: A str command to be executed.
