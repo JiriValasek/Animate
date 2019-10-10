@@ -96,7 +96,7 @@ namespace AnimateServerExample
             }
             catch (Exception e)
             {
-                Console.WriteLine("Exception occured: {0}", e.Message);
+                Console.WriteLine("Exception occurred: {0}", e.Message);
             }
         }
 

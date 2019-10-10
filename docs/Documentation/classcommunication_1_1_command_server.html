@@ -114,7 +114,7 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <div class="textblock"><p><code>QTcpServer</code> class used to receive commands and execute them. </p>
 <p>This class is used by a <code>ServerProxy</code> instance to provide the interprocess communication between itself and outside client. </p>
 
-<p class="definition">Definition at line <a class="el" href="communication_8py_source.html#l00196">196</a> of file <a class="el" href="communication_8py_source.html">communication.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="communication_8py_source.html#l00199">199</a> of file <a class="el" href="communication_8py_source.html">communication.py</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aa8b769ffc85dabc8560f54dcb5484236"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa8b769ffc85dabc8560f54dcb5484236">&#9670;&nbsp;</a></span>__init__()</h2>
@@ -151,8 +151,8 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="communication_8py_source.html#l00205">205</a> of file <a class="el" href="communication_8py_source.html">communication.py</a>.</p>
-<div class="fragment"><div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    <span class="keyword">def </span>__init__(self, parent=None):</div><div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;        super(CommandServer, self).__init__(parent)</div><div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="communication_8py_source.html#l00208">208</a> of file <a class="el" href="communication_8py_source.html">communication.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;    <span class="keyword">def </span>__init__(self, parent=None):</div><div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;        super(CommandServer, self).__init__(parent)</div><div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;</div></div><!-- fragment -->
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -191,8 +191,8 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="communication_8py_source.html#l00219">219</a> of file <a class="el" href="communication_8py_source.html">communication.py</a>.</p>
-<div class="fragment"><div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <span class="keyword">def </span>incomingConnection(self, socketDescriptor):</div><div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;        thread = CommandThread(socketDescriptor, self)</div><div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;        thread.finished.connect(thread.deleteLater)</div><div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;        thread.start()</div><div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;</div></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="communication_8py_source.html#l00222">222</a> of file <a class="el" href="communication_8py_source.html">communication.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    <span class="keyword">def </span>incomingConnection(self, socketDescriptor):</div><div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;        thread = CommandThread(socketDescriptor, self)</div><div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;        thread.finished.connect(thread.deleteLater)</div><div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;        thread.start()</div><div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;</div></div><!-- fragment -->
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
@@ -203,7 +203,7 @@ def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 <!-- HTML footer for doxygen 1.8.15-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-	<p>Generated on Fri Oct 4 2019 15:14:58 for Animate by</p>
+	<p>Generated on Thu Oct 10 2019 04:25:55 for Animate by</p>
 </div>
 <script type="text/javascript">
  	let date_start = $("#nav-path p").text().indexOf("on");

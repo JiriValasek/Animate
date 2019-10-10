@@ -17,7 +17,7 @@ body {
 	visibility: hidden;
 }
 
-/* improove navigation tree */
+/* improve navigation tree */
 #nav-tree {
 	background: #fff;
 	overflow-x: scroll;
@@ -67,7 +67,7 @@ div.header {
 	background: #ddd;
 }
 
-/* imporve layout */
+/* improve layout */
 #top {
 	position: fixed;
 	z-index: 100;
