@@ -25,7 +25,8 @@ The future plans include making 2 simplified trajectory tools - *Rotation* and *
 
 ## License
 
-The Animate workbench (all that is inside *Animate* folde) is licensed under [LGPL license](https://github.com/JiriValasek/Animate/blob/master/Animate/LICENSE). This license does not extend itself to the rest of this repository.
+* The Animate workbench (all that is inside *Animate* folder) is licensed under [LGPL license](https://github.com/JiriValasek/Animate/blob/master/Animate/LICENSE). This license does not extend itself to the rest of this repository.
+* The Examples (all that is inside *Examples* folder) is licensed under more permissive [MIT license](https://github.com/JiriValasek/Animate/blob/master/Examples/LICENSE). This license does not extend itself to the rest of this repository.
 
 ## Authors
 
