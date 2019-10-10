@@ -1,0 +1,14 @@
+Server - Sending commands exmaples
+----------------------------------
+
+! These examples were tested on Windows only !
+
+To use these examples proceed according to following instructions:
+
+1) Start FreeCAD
+2) Open a document
+3) Select Animate workbench on the workbench toolbar
+4) Add a Server tool to your document
+5) Run it by double clicking with
+	IP = "127.0.0.1" or "localhost"
+	Port = 54321
