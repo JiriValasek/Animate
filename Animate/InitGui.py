@@ -84,15 +84,19 @@ Afterwards a toolbar and a menu with some of those commands are created.
         import Control
         import Trajectory
         import CollisionDetector
+        import RobWorld
+        import RobRotation
+        import RobTranslation
         # A list of command names created in the line above
         self.list = ["ServerCommand", "ControlCommand", "TrajectoryCommand",
-                     "CollisionDetectorCommand"]
+                     "CollisionDetectorCommand", "RobWorldCommand",
+                     "RobRotationCommand", "RobTranslationCommand"]
         # creates a new toolbar with your commands
         self.appendToolbar("Animate", self.list)
         # creates a new menu
-        self.appendMenu("Animate", self.list)
+        self.appendMenu("Animate", self.list[:4])
         # appends a submenu to an existing menu
-        # self.appendMenu(["An existing Menu","My submenu"], self.sublist)
+        self.appendMenu(["Animate", "Robotics"], self.list[4:])
 
     def Activated(self):
         """
