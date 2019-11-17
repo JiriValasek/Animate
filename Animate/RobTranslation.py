@@ -5,7 +5,7 @@
 # *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
-# *   This file is part of the FreeCAD CAx development system.              *
+# *   This file is part of the Animate workbench.                           *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -13,15 +13,15 @@
 # *   the License, or (at your option) any later version.                   *
 # *   for detail see the LICENCE text file.                                 *
 # *                                                                         *
-# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   Animate workbench is distributed in the hope that it will be useful,  *
 # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU Lesser General Public License for more details.                   *
 # *                                                                         *
 # *   You should have received a copy of the GNU Library General Public     *
-# *   License along with FreeCAD; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-# *   USA                                                                   *
+# *   License along with Animate workbench; if not, write to the Free       *
+# *   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,        *
+# *   MA  02111-1307 USA                                                    *
 # *                                                                         *
 # ***************************************************************************/
 
@@ -58,10 +58,11 @@ Proxy class for a `DocumentObjectGroupPython` RobTranslation instance.
 
 A RobTranslationProxy instance adds properties to a `DocumentObjectGroupPython`
 RobTranslation instance and responds to their changes. It provides
-a `RobotPanel` to be able to see an object in a rotation range.
+a `RobotPanel` to be able to see an object in a displacement range.
 
 Attributes:
-    pose: A dict describing a pose - position, rotation axis, point and angle.
+    updated: A bool - True if a property was changed by a class and not user.
+    fp: A `DocumentObjectGroupPython` associated with the proxy.
 
 To connect a `Proxy` object to a `DocumentObjectGroupPython` RobTranslation do:
 
@@ -69,6 +70,8 @@ To connect a `Proxy` object to a `DocumentObjectGroupPython` RobTranslation do:
                                              "RobTranslation")
         RobTranslationProxy(a)
     """
+
+    updated = False
 
     def __init__(self, fp):
         """
@@ -89,7 +92,7 @@ Args:
         """
 Method called after `DocumentObjectGroupPython` RobTranslation was changed.
 
-A RobTranslation is checked for its validity. If the `Placement` property is
+A translation is checked for its validity. If the `Placement` property is
 changed, then `ParentFramePlacement` property of a `RobTranslation` children is
 set to equal the new `Placement`. If the `ParentFramePlacement` is changed,
 then the `Placement` property is changed.
@@ -111,10 +114,12 @@ Args:
             self.updated = True
             fp.dMinimum = (fp.dMinimum, -float("inf"), fp.dMaximum, 1)
 
-        # Check that a RobTranslation has valid format
-        elif self.is_translation_property(prop):
-            trans_valid = self.is_ValidTranslation(
-                    fp.Timestamps, fp.dSequence)
+        # Check that a translation has valid format
+        elif self.is_translation_property(prop) and \
+                hasattr(fp, "dMaximum") and \
+                hasattr(fp, "dMinimum") and \
+                hasattr(self, "fp"):
+            trans_valid = self.is_ValidTranslation(fp.Timestamps, fp.dSequence)
             if trans_valid != fp.ValidTranslation:
                 fp.ValidTranslation = trans_valid
 
@@ -141,40 +146,47 @@ Args:
         """
 Method called when recomputing a `DocumentObjectGroupPython`.
 
-If a RobTranslation is valid, then current `pose` in a parent coordinate frame
-is computed, `ObjectPlacement` and `Placement` are updated accordingly.
+New placement is computed, if a RobotPanel is active or it is not active, but
+rotation is valid. The current pose in a parent coordinate frame is computed
+using DH parameters. At last `ObjectPlacement` and `Placement` are updated
+accordingly.
 
 Args:
     fp: A `DocumentObjectGroupPython` RobTranslation object.
         """
-        # Check that current RobTranslation has valid format
-        if not fp.ValidTranslation:
-            FreeCAD.Console.PrintWarning(fp.Name + ".execute(): Translation " +
-                                         "is not in a valid format.\n")
-            return
+        # Check that joint is not controlled by a RobotPanel
+        if not fp.RobotPanelActive:
+            # Check that current translation has valid format
+            if not fp.ValidTranslation:
+                FreeCAD.Console.PrintWarning(fp.Name +
+                                             ".execute(): Translation " +
+                                             "is not in a valid format.\n")
+                return
 
-        # Update placement according to current time and RobTranslation
-        indices, weights = self.find_timestamp_indices_and_weights(fp)
+            # Update d according to current time and translation
+            indices, weights = self.find_timestamp_indices_and_weights(fp)
 
-        fp.d = (weights[0]*fp.dSequence[indices[0]]
-                + weights[1]*fp.dSequence[indices[1]])
+            fp.d = fp.dOffset \
+                + (weights[0]*fp.dSequence[indices[0]]
+                   + weights[1]*fp.dSequence[indices[1]])
 
+        # DH transformation
         T_theta = FreeCAD.Placement(FreeCAD.Vector(0, 0, 0),
                                     FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1),
-                                                     fp.Theta))
+                                                     fp.theta))
         T_d = FreeCAD.Placement(FreeCAD.Vector(0, 0, fp.d),
                                 FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1), 0))
         T_a = FreeCAD.Placement(FreeCAD.Vector(fp.a, 0, 0),
-                                FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1), 0))
+                                FreeCAD.Rotation(FreeCAD.Vector(1, 0, 0), 0))
         T_alpha = FreeCAD.Placement(FreeCAD.Vector(0, 0, 0),
-                                    FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1),
-                                                     fp.Aplha))
+                                    FreeCAD.Rotation(FreeCAD.Vector(1, 0, 0),
+                                                     fp.alpha))
 
-        fp.ObjectPlacement = T_alpha.multiply(T_a.multiply(
-                T_d.multiply(T_theta)))
+        fp.ObjectPlacement = T_theta.multiply(T_d.multiply(
+                T_a.multiply(T_alpha)))
 
-        fp.Placement = fp.ParentFramePlacement.multiply(
-                       fp.ObjectPlacement)
+        # Placement update
+        fp.Placement = fp.ParentFramePlacement.multiply(fp.ObjectPlacement)
 
     def onDocumentRestored(self, fp):
         """
@@ -201,12 +213,19 @@ The properties are set if they are not already present and an
 Args:
     fp: A restored or barebone RobTranslation object.
         """
+        # Add feature python
+        self.fp = fp
+
         # Add (and preset) properties
         # Animation properties
         if not hasattr(fp, "ValidTranslation"):
             fp.addProperty("App::PropertyBool", "ValidTranslation", "General",
                            "This property records if rotation was changed."
                            ).ValidTranslation = False
+        if not hasattr(fp, "RobotPanelActive"):
+            fp.addProperty("App::PropertyBool", "RobotPanelActive", "General",
+                           "This property records if robot panel is active."
+                           ).RobotPanelActive = False
         if not hasattr(fp, "AnimatedObjects"):
             fp.addProperty("App::PropertyLinkListGlobal", "AnimatedObjects",
                            "General", "Objects that will be animated.")
@@ -236,35 +255,35 @@ Args:
 
         # DH parameters
         if not hasattr(fp, "d"):
-            fp.addProperty("App::PropertyFloat", "d", "DHParameters",
+            fp.addProperty("App::PropertyFloat", "d", "d-hParameters",
                            "Displacement along Z axis.").d = 0
         if not hasattr(fp, "a"):
-            fp.addProperty("App::PropertyFloat", "a", "DHParameters",
+            fp.addProperty("App::PropertyFloat", "a", "d-hParameters",
                            "Displacement along X axis.").a = 0
-        if not hasattr(fp, "Alpha"):
-            fp.addProperty("App::PropertyFloat", "Alpha", "DHParameters",
-                           "Rotation angle about X axis in degrees.").Alpha = 0
-        if not hasattr(fp, "Theta"):
-            fp.addProperty("App::PropertyFloat", "Theta", "DHParameters",
-                           "Rotation angle about X axis in degrees.").Theta = 0
+        if not hasattr(fp, "alpha"):
+            fp.addProperty("App::PropertyFloat", "alpha", "d-hParameters",
+                           "Rotation angle about X axis in degrees.").alpha = 0
+        if not hasattr(fp, "theta"):
+            fp.addProperty("App::PropertyFloat", "theta", "d-hParameters",
+                           "Rotation angle about X axis in degrees.").theta = 0
 
         if not hasattr(fp, "dMaximum"):
             fp.addProperty("App::PropertyFloatConstraint", "dMaximum",
-                           "DHParameters", "Upper limit of displacement"
+                           "d-hParameters", "Upper limit of displacement"
                            + " along Z axis."
                            ).dMaximum = (1000, 0, float("inf"), 1)
         elif hasattr(fp, "dMinimum"):
             fp.dMaximum = (fp.dMaximum, fp.dMinimum, float("inf"), 1)
         if not hasattr(fp, "dMinimum"):
             fp.addProperty("App::PropertyFloatConstraint", "dMinimum",
-                           "DHParameters", "Lower limit of displacement"
+                           "d-hParameters", "Lower limit of displacement"
                            + " alon Z axis."
                            ).dMinimum = (0, -float("inf"), 1000, 1)
         elif hasattr(fp, "dMaximum"):
             fp.dMinimum = (fp.dMinimum, -float("inf"), fp.dMaximum, 1)
         if not hasattr(fp, "dOffset"):
             fp.addProperty("App::PropertyFloat", "dOffset",
-                           "DHParameters", "Offset of displacement"
+                           "d-hParameters", "Offset of displacement"
                            + " along Z axis.").dOffset = 0
 
         # Rotation properties
@@ -371,31 +390,32 @@ Args:
         # Hide some properties
         fp.setEditorMode("Placement", 2)
         fp.setEditorMode("ValidTranslation", 2)
+        fp.setEditorMode("RobotPanelActive", 2)
 
         import AnimateDocumentObserver
         AnimateDocumentObserver.addObserver()
 
-    def change_joint_sequence(self, fp, joint_sequence):
+    def change_joint_sequence(self, joint_sequence):
         """
 Method used to change a `RobTranslation`'s joint variable sequence.
 
-A `joint_sequence` dictionary containing a RobTranslation is tested for
-validity and then assigned to a `RobTranslation` `DocumentObjectGroupPython`.
+A `joint_sequence` dictionary containing a translation is tested for validity
+and then assigned to a `RobTranslation` `DocumentObjectGroupPython`.
 
 Args:
     fp: A `DocumentObjectGroupPython` RobTranslation object.
     joint_sequence: A dictionary describing a RobTranslation.
         """
         # Check that RobTranslation has a correct format and load it
-        if self.is_ValidTranslation(rotation=joint_sequence):
-            fp.Timestamps = joint_sequence["Timestamps"]
-            fp.ThetaSequence = joint_sequence["ThetaSequence"]
+        if self.is_ValidTranslation(translation=joint_sequence):
+            self.fp.Timestamps = joint_sequence["Timestamps"]
+            self.fp.dSequence = joint_sequence["dSequence"]
         else:
             FreeCAD.Console.PrintError("Invalid joint sequence!")
 
     def is_translation_property(self, prop):
         """
-Method to check that a property describes a RobTranslation.
+Method to check that a property describes a translation.
 
 It's checked whether `prop` is `Timestamps` or `dSequence`.
 
@@ -403,24 +423,23 @@ Args:
     prop: A str name of a changed property.
 
 Returns:
-    True if prop describes a RobTranslation and False otherwise.
+    True if prop describes a translation and False otherwise.
         """
-        return prop in ["Timestamps", "dSequence", "dMaximum", "dMinimum",
-                        "dOffset"]
+        return prop in ["Timestamps", "dSequence"]
 
-    def is_ValidTranslation(self, timestamps=[], d=[], translation=None):
+    def is_ValidTranslation(self, timestamps=[], ds=[], translation=None):
         """
-Method to check if a RobTranslation is valid.
+Method to check if a translation is valid.
 
 This method needs either a `translation` dictionary argument or all the other
 lists of floats. A valid translation needs to have all the necessary lists.
 All the lists must have same length. A `timestamps` list must consist of
-a sequence of strictly increasing floats. A translation axis must have always
-length equal to 1.
+a sequence of strictly increasing floats. A displacement cannot exceed joint
+limits.
 
 Args:
     timestamps: A list of floats marking timestamps.
-    d: A list of floats signifying translation diplacements along Z axis.
+    ds: A list of floats signifying translation diplacements along Z axis.
     translation: A dict containing all lists above.
 
 Returns:
@@ -434,12 +453,11 @@ Returns:
                                                  key + ".\n")
                     return False
             timestamps = translation["Timestamps"]
-            d_sequence = translation["ThetaSequence"]
+            ds = translation["thetaSequence"]
 
         # Check that all lists have the same length
         if len(timestamps) == 0 or \
-                (len(timestamps) != 0 and
-                 len(timestamps) != len(d_sequence)):
+                (len(timestamps) != 0 and len(timestamps) != len(ds)):
             FreeCAD.Console.PrintWarning("Translation has lists with "
                                          + "inconsistent or zero "
                                          + "lengths.\n")
@@ -452,10 +470,9 @@ Returns:
                                          + "list of increasing values.\n")
             return False
 
-        if any([self.fp.dMinimum <= th <= self.fp.dMaximum
-                for th in d_sequence]):
-            FreeCAD.Console.PrintWarning("Translation 'ThetaSequence' elements"
-                                         + " are out of theta range.\n")
+        if not all([self.fp.dMinimum <= d <= self.fp.dMaximum for d in ds]):
+            FreeCAD.Console.PrintWarning("Translation 'dSequence' elements"
+                                         + " are out of d range.\n")
             return False
 
         return True
@@ -510,13 +527,42 @@ Returns:
 
         return indices, weights
 
+    def __getstate__(self):
+        """
+Necessary method to avoid errors when trying to save unserializable objects.
+
+This method is used by JSON to serialize unserializable objects during
+autosave. Without this an Error would rise when JSON would try to do
+that itself.
+
+We need this for unserializable `fp` attribute, but we don't serialize it,
+because it's enough to reset it when object is restored.
+
+Returns:
+    None, because we don't serialize anything.
+        """
+        return None
+
+    def __setstate__(self, state):
+        """
+Necessary method to avoid errors when trying to restore unserializable objects.
+
+This method is used during a document restoration. We need this for
+unserializable `fp` attribute, but we do not restore it,
+because it's enough to reset them from saved parameters.
+
+Returns:
+    None, because we don't restore anything.
+        """
+        return None
+
 
 class ViewProviderRobTranslationProxy:
     """
 Proxy class for `Gui.ViewProviderDocumentObject` RobTranslation.ViewObject.
 
 A ViewProviderRobTranslationProxy instance provides a RobTranslation's icon,
-double-click response and context menu with a *Select Time* option.
+double-click response and context menu with a *Check joint range* option.
 
 Attributes:
     fp: A RobTranslation object.
@@ -568,8 +614,8 @@ Args:
 Method called by FreeCAD after initialization to attach Coin3D constructs.
 
 A coordinate frame made of RGB arrows corresponding to X, Y and Z axes. This
-frame shows current pose in a RobTranslation. This method adds RobTranslation
-as the `fp` attribute.
+frame shows current pose in a translation. This method adds RobTranslation as
+the `fp` attribute.
 
 Args:
     vp: A RobTranslation.ViewObject after initialization.
@@ -588,6 +634,7 @@ Args:
 
         self.visualisations = coin.SoSwitch()
         self.visualisations.addChild(self.frame)
+        self.visualisations.whichChild.setValue(coin.SO_SWITCH_ALL)
         vp.RootNode.addChild(self.visualisations)
 
         vp.Object.Proxy.setProperties(vp.Object)
@@ -760,14 +807,14 @@ The tree view then invokes `claimChildren()`.
         """
 Method called by FreeCAD to ask if an object `obj` can be dropped into a Group.
 
-Only FreeCAD objects of a RobTranslation type are allowed to drop inside
-a RobTranslation group.
+Only FreeCAD objects of a RobRotation and RobTranslation type are allowed to
+drop inside a RobTranslation group.
 
 Args:
     obj: An object hovering above a RobTranslation item in the Tree View.
         """
         if hasattr(obj, "Proxy") and \
-                  (obj.Proxy.__class__.__name__ == "RobTranslationProxy" or
+                  (obj.Proxy.__class__.__name__ == "RobRotationProxy" or
                    obj.Proxy.__class__.__name__ == "RobTranslationProxy"):
             return True
         return False
@@ -833,8 +880,11 @@ becomes visible. If another dialog is opened a warning is shown.
 
 Args:
     vp: A `Gui.ViewProviderDocumentObject` RobTranslation.ViewObject.
+
+Returns:
+    True - confirmation that this method was implemented.
         """
-        # Switch to the Task View if a RobTranslation panel is already opened
+        # Switch to the Task View if a RobotPanel is already opened
         if self.panel:
             FreeCADGui.Control.showTaskView()
 
@@ -859,7 +909,7 @@ Args:
                 for obj in FreeCAD.ActiveDocument.Objects:
                     if hasattr(obj, "Proxy") and \
                             (obj.Proxy.__class__.__name__
-                             == "RobTranslationProxy"
+                             == "RobRotationProxy"
                              or obj.Proxy.__class__.__name__
                              == "RobTranslationProxy"):
                         if obj.ViewObject.Proxy.panel is not None:
@@ -904,18 +954,18 @@ Args:
 
     def setupContextMenu(self, vp, menu):
         """
-Method called by the FreeCAD to customize a context menu for a RobTranslation.
+Method called by the FreeCAD to customize a RobTranslation context menu.
 
 The *Transform* and *Set colors...* items are removed from the context menu
 shown upon right click on `DocumentObjectGroupPython` RobTranslation
-in the Tree View. The option to *Select Time* is added instead.
+in the Tree View. The option to *Check joint range* is added instead.
 
 Args:
     vp: A right-clicked RobTranslation.ViewObject.
     menu: A Qt's QMenu to be edited.
         """
         menu.clear()
-        action = menu.addAction("Select Time")
+        action = menu.addAction("Check joint range")
         action.triggered.connect(lambda f=self.doubleClicked,
                                  arg=vp: f(arg))
 
@@ -923,7 +973,7 @@ Args:
         """
 Method which makes Coin3D labels to be displayed in the FreeCAD View.
 
-Frame labels for axes X, Y and Z and a label for rotation axis are made.
+Frame labels for axes X, Y and Z are made.
 The labels have the same color as the axes.
 
 Returns:
