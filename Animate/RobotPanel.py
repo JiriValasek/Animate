@@ -5,7 +5,7 @@
 # *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
-# *   This file is part of the FreeCAD CAx development system.              *
+# *   This file is part of the Animate workbench.                           *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -13,22 +13,23 @@
 # *   the License, or (at your option) any later version.                   *
 # *   for detail see the LICENCE text file.                                 *
 # *                                                                         *
-# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   Animate workbench is distributed in the hope that it will be useful,  *
 # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU Lesser General Public License for more details.                   *
 # *                                                                         *
 # *   You should have received a copy of the GNU Library General Public     *
-# *   License along with FreeCAD; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-# *   USA                                                                   *
+# *   License along with Animate workbench; if not, write to the Free       *
+# *   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,        *
+# *   MA  02111-1307 USA                                                    *
 # *                                                                         *
 # ***************************************************************************/
 
 """@package RobotPanel
 RobotPanel class for the Animate Workbench.
 
-This class is used by RobTranslation and RobRotation components.
+This class is used by RobTranslation and RobRotation components to let the user
+see whole joint range.
 """
 
 import FreeCAD
@@ -44,7 +45,7 @@ Class providing funcionality to a RobRotation panel inside the TaskView.
 
 This class enables user to see a manipulator in different configurations.
 It provides a dialogs to be shown in the TaskView. These dialogs have sliders
-which allow user to go through a rotation range.
+which allow user to go through a joint range.
 
 Attributes:
     robot_joints: A list of RobRotation and RobTranslation instances.
@@ -56,10 +57,12 @@ Attributes:
 Initialization method for RobotPanel.
 
 A class instance is created. A list of proxies for associated `RobRotation`
-instances are loaded as well as corresponding QDialog forms.
-Previously visible properties are set to be read-only as not to change when a
-`RobotPanel` is open. Finally all sliders on dialogs are moved to
-a position corresponding to a `RobRotation` angle.
+and `RobTranslation` instances are loaded as well as corresponding QDialog
+forms. Previously visible properties are set to be read-only as not to change
+when a `RobotPanel` is open. Finally all sliders on dialogs are moved to
+a position corresponding to current a `RobRotation` angle / `RobTranslation`
+displacement. If current value exceeds given joint range, the slider is placed
+to minimum or maximum.
 
 Args:
     robot_joints: A list of RobRotation and RobTranslation instances.
@@ -68,20 +71,22 @@ Args:
         super(RobotPanel, self).__init__()
         self.robot_joints = robot_joints
 
-        # Disable editing of RobRotation properties and store previous
-        # joint variable values
+        # Disable editing of RobRotation properties, leave some properties
+        # hidden and store previous joint variable values
         self.previous_joint_values = []
         for joint in robot_joints:
             if joint.Proxy.__class__.__name__ == "RobRotationProxy":
-                self.previous_joint_values.append(joint.Theta)
+                self.previous_joint_values.append(joint.theta)
+                joint.setEditorMode("ValidRotation", 2)
             elif joint.Proxy.__class__.__name__ == "RobTranslationProxy":
                 self.previous_joint_values.append(joint.d)
+                joint.setEditorMode("ValidTranslation", 2)
 
             for prop in joint.PropertiesList:
                 joint.setEditorMode(prop, 1)
-            # Leave some properties hidden
             joint.setEditorMode("Placement", 2)
-            joint.setEditorMode("ValidRotation", 2)
+            joint.setEditorMode("RobotPanelActive", 2)
+            joint.RobotPanelActive = True
 
         # Add QDialogs to be displayed in freeCAD
         self.form = forms
@@ -89,17 +94,18 @@ Args:
         # Add callbacks to sliders on all forms and move sliders to a position
         # corresponding with time values
         for i in range(len(forms)):
+            rj = robot_joints[i]
             forms[i].sld_value.valueChanged.connect(
-                lambda value, form=forms[i], joint=robot_joints[i]:
+                lambda value, form=forms[i], joint=rj:
                 self.sliderChanged(value, form, joint))
-            if joint.Proxy.__class__.__name__ == "RobRotationProxy":
-                val = (100 * (robot_joints[i].Theta
-                              - robot_joints[i].ThetaMinimum)) / \
-                      (joint.ThetaMaximum - joint.ThetaMinimum)
-            elif joint.Proxy.__class__.__name__ == "RobTranslationProxy":
-                val = (100 * (robot_joints[i].d
-                              - robot_joints[i].dMinimum)) / \
-                      (joint.dMaximum - joint.dMinimum)
+            if rj.Proxy.__class__.__name__ == "RobRotationProxy":
+                val = (100 * (rj.theta - rj.thetaOffset - rj.thetaMinimum)) / \
+                      (rj.thetaMaximum - rj.thetaMinimum)
+                val = min([100, max([val, 0])])
+            elif rj.Proxy.__class__.__name__ == "RobTranslationProxy":
+                val = (100 * (rj.d - rj.dOffset - rj.dMinimum)) / \
+                      (rj.dMaximum - rj.dMinimum)
+                val = min([100, max([val, 0])])
 
             forms[i].sld_value.setValue(val)
 
@@ -118,12 +124,12 @@ Args:
         """
         # Compute a time from the slider position and joint variable range
         if joint.Proxy.__class__.__name__ == "RobRotationProxy":
-                val = value * (joint.ThetaMaximum - joint.ThetaMinimum) / 100 \
-                      + joint.ThetaMinimum
-                joint.Theta = val
+                val = value * (joint.thetaMaximum - joint.thetaMinimum) / 100 \
+                      + joint.thetaMinimum + joint.thetaOffset
+                joint.theta = val
         elif joint.Proxy.__class__.__name__ == "RobTranslationProxy":
                 val = value * (joint.dMaximum - joint.dMinimum) / 100 \
-                      + joint.dMinimum
+                      + joint.dMinimum + joint.dOffset
                 joint.d = val
 
         form.lbl_value.setText("Value: " + ("%5.3f" % val))
@@ -146,29 +152,31 @@ RobRotation and RobTranslation joint variables are set to the original values.
         for i in range(len(self.robot_joints)):
             if self.robot_joints[i].Proxy.__class__.__name__ \
                     == "RobRotationProxy":
-                self.robot_joints[i].Theta = self.previous_joint_values[i]
+                self.robot_joints[i].theta = self.previous_joint_values[i]
             elif self.robot_joints[i].Proxy.__class__.__name__ \
                     == "RobTranslationProxy":
                 self.robot_joints[i].d = self.previous_joint_values[i]
 
         # Close the panel and recompute the document to show changes
-        # Allow editing of Trajecotry properties again
+        # Allow editing of properties again
         for joint in self.robot_joints:
             for prop in joint.PropertiesList:
                 joint.setEditorMode(prop, 0)
             joint.ViewObject.Proxy.panel = None
 
-            # Keep some properties read-only state if they were in it before
+            # Keep some properties in read-only or hidden state
+            # if they were in it before
             joint.setEditorMode("ObjectPlacement", 1)
             joint.setEditorMode("ParentFramePlacement", 1)
             if joint.Proxy.__class__.__name__ == "RobRotationProxy":
-                joint.setEditorMode("Theta", 1)
+                joint.setEditorMode("theta", 1)
+                joint.setEditorMode("ValidRotation", 2)
             elif joint.Proxy.__class__.__name__ == "RobTranslationProxy":
                 joint.setEditorMode("d", 1)
-
-            # Keep some properties hidden state if they were hidden before
+                joint.setEditorMode("ValidTranslation", 2)
             joint.setEditorMode("Placement", 2)
-            joint.setEditorMode("ValidRotation", 2)
+            joint.setEditorMode("RobotPanelActive", 2)
+            joint.RobotPanelActive = False
 
         FreeCADGui.Control.closeDialog()
         FreeCAD.ActiveDocument.recompute()
