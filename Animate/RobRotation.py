@@ -5,7 +5,7 @@
 # *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
-# *   This file is part of the FreeCAD CAx development system.              *
+# *   This file is part of the Animate workbench.                           *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -13,15 +13,15 @@
 # *   the License, or (at your option) any later version.                   *
 # *   for detail see the LICENCE text file.                                 *
 # *                                                                         *
-# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   Animate workbench is distributed in the hope that it will be useful,  *
 # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU Lesser General Public License for more details.                   *
 # *                                                                         *
 # *   You should have received a copy of the GNU Library General Public     *
-# *   License along with FreeCAD; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-# *   USA                                                                   *
+# *   License along with Animate workbench; if not, write to the Free       *
+# *   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,        *
+# *   MA  02111-1307 USA                                                    *
 # *                                                                         *
 # ***************************************************************************/
 
@@ -61,7 +61,8 @@ RobRotation instance and responds to their changes. It provides
 a `RobotPanel` to be able to see an object in a rotation range.
 
 Attributes:
-    pose: A dict describing a pose - position, rotation axis, point and angle.
+    updated: A bool - True if a property was changed by a class and not user.
+    fp: A `DocumentObjectGroupPython` associated with the proxy.
 
 To connect this `Proxy` object to a `DocumentObjectGroupPython` RobRotation do:
 
@@ -69,6 +70,8 @@ To connect this `Proxy` object to a `DocumentObjectGroupPython` RobRotation do:
                                              "RobRotation")
         RobRotationProxy(a)
     """
+
+    updated = False
 
     def __init__(self, fp):
         """
@@ -89,7 +92,7 @@ Args:
         """
 Method called after `DocumentObjectGroupPython` RobRotation was changed.
 
-A RobRotation is checked for its validity. If the `Placement` property is
+A rotation is checked for its validity. If the `Placement` property is
 changed, then `ParentFramePlacement` property of a `RobRotation` children is
 set to equal the new `Placement`. If the `ParentFramePlacement` is changed,
 then the `Placement` property is changed.
@@ -98,29 +101,28 @@ Args:
     fp: A `DocumentObjectGroupPython` RobRotation object.
     prop: A str name of a changed property.
         """
-        # ignore updates to ranges
+        # Ignore updates to ranges
         if self.updated:
             self.updated = False
             return
 
         # Control allowed theta range limits
-        elif prop == "ThetaMinimum" and hasattr(fp, "ThetaMaximum"):
+        elif prop == "thetaMinimum" and hasattr(fp, "thetaMaximum"):
             self.updated = True
-            fp.ThetaMaximum = (fp.ThetaMaximum, fp.ThetaMinimum,
+            fp.thetaMaximum = (fp.thetaMaximum, fp.thetaMinimum,
                                float("inf"), 1)
-        elif prop == "ThetaMaximum" and hasattr(fp, "ThetaMinimum"):
+        elif prop == "thetaMaximum" and hasattr(fp, "thetaMinimum"):
             self.updated = True
-            fp.ThetaMinimum = (fp.ThetaMinimum, -float("inf"),
-                               fp.ThetaMaximum, 1)
+            fp.thetaMinimum = (fp.thetaMinimum, -float("inf"),
+                               fp.thetaMaximum, 1)
 
-        # Check that a RobRotation has valid format
-        elif self.is_rotation_property(prop):
+        # Check that the rotation has valid format
+        elif self.is_rotation_property(prop) and \
+                hasattr(fp, "thetaMaximum") and \
+                hasattr(fp, "thetaMinimum") and \
+                hasattr(self, "fp"):
             traj_valid = self.is_ValidRotation(
-                    fp.Timestamps, fp.TranslationX, fp.TranslationY,
-                    fp.TranslationZ, fp.RotationPointX, fp.RotationPointY,
-                    fp.RotationPointZ, fp.RotationAxisX, fp.RotationAxisY,
-                    fp.RotationAxisZ, fp.RotationAngle)
-#            traj_valid = self.is_ValidRotation(RobRotation=traj)
+                    fp.Timestamps, fp.thetaSequence)
             if traj_valid != fp.ValidRotation:
                 fp.ValidRotation = traj_valid
 
@@ -147,40 +149,47 @@ Args:
         """
 Method called when recomputing a `DocumentObjectGroupPython`.
 
-If a RobRotation is valid, then current `pose` in a parent coordinate frame is
-computed, `ObjectPlacement` and `Placement` are updated accordingly.
+New placement is computed, if a RobotPanel is active or it is not active, but
+rotation is valid. The current pose in a parent coordinate frame is computed
+using DH parameters. At last `ObjectPlacement` and `Placement` are updated
+accordingly.
 
 Args:
     fp: A `DocumentObjectGroupPython` RobRotation object.
         """
-        # Check that current RobRotation has valid format
-        if not fp.ValidRotation:
-            FreeCAD.Console.PrintWarning(fp.Name + ".execute(): RobRotation " +
-                                         "is not in a valid format.\n")
-            return
+        # Check that joint is not controlled by a RobotPanel
+        if not fp.RobotPanelActive:
+            # Check that current rotation has valid format
+            if not fp.ValidRotation:
+                FreeCAD.Console.PrintWarning(fp.Name +
+                                             ".execute(): Rotation " +
+                                             "is not in a valid format.\n")
+                return
 
-        # Update placement according to current time and RobRotation
-        indices, weights = self.find_timestamp_indices_and_weights(fp)
+            # Update theta according to current time and rotation
+            indices, weights = self.find_timestamp_indices_and_weights(fp)
 
-        self.fp.Theta = (weights[0]*fp.RotationAngle[indices[0]]
-                         + weights[1]*fp.RotationAngle[indices[1]])
+            fp.theta = fp.thetaOffset \
+                + (weights[0]*fp.thetaSequence[indices[0]]
+                   + weights[1]*fp.thetaSequence[indices[1]])
 
+        # DH transformation
         T_theta = FreeCAD.Placement(FreeCAD.Vector(0, 0, 0),
                                     FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1),
-                                                     self.fp.Theta))
+                                                     fp.theta))
         T_d = FreeCAD.Placement(FreeCAD.Vector(0, 0, fp.d),
                                 FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1), 0))
         T_a = FreeCAD.Placement(FreeCAD.Vector(fp.a, 0, 0),
-                                FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1), 0))
+                                FreeCAD.Rotation(FreeCAD.Vector(1, 0, 0), 0))
         T_alpha = FreeCAD.Placement(FreeCAD.Vector(0, 0, 0),
-                                    FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1),
-                                                     fp.Aplha))
+                                    FreeCAD.Rotation(FreeCAD.Vector(1, 0, 0),
+                                                     fp.alpha))
 
-        fp.ObjectPlacement = T_alpha.multiply(T_a.multiply(
-                T_d.multiply(T_theta)))
+        fp.ObjectPlacement = T_theta.multiply(T_d.multiply(
+                T_a.multiply(T_alpha)))
 
-        fp.Placement = fp.ParentFramePlacement.multiply(
-                       fp.ObjectPlacement)
+        # Placement update
+        fp.Placement = fp.ParentFramePlacement.multiply(fp.ObjectPlacement)
 
     def onDocumentRestored(self, fp):
         """
@@ -207,12 +216,19 @@ The properties are set if they are not already present and an
 Args:
     fp: A restored or barebone `DocumentObjectGroupPython` RobRotation object.
         """
+        # Add feature python
+        self.fp = fp
+
         # Add (and preset) properties
         # Animation properties
         if not hasattr(fp, "ValidRotation"):
             fp.addProperty("App::PropertyBool", "ValidRotation", "General",
                            "This property records if rotation was changed."
                            ).ValidRotation = False
+        if not hasattr(fp, "RobotPanelActive"):
+            fp.addProperty("App::PropertyBool", "RobotPanelActive", "General",
+                           "This property records if robot panel is active."
+                           ).RobotPanelActive = False
         if not hasattr(fp, "AnimatedObjects"):
             fp.addProperty("App::PropertyLinkListGlobal", "AnimatedObjects",
                            "General", "Objects that will be animated.")
@@ -242,45 +258,45 @@ Args:
 
         # DH parameters
         if not hasattr(fp, "d"):
-            fp.addProperty("App::PropertyFloat", "d", "DHParameters",
+            fp.addProperty("App::PropertyFloat", "d", "d-hParameters",
                            "Displacement along Z axis.").d = 0
         if not hasattr(fp, "a"):
-            fp.addProperty("App::PropertyFloat", "a", "DHParameters",
+            fp.addProperty("App::PropertyFloat", "a", "d-hParameters",
                            "Displacement along X axis.").a = 0
-        if not hasattr(fp, "Alpha"):
-            fp.addProperty("App::PropertyFloat", "Alpha", "DHParameters",
-                           "Rotation angle about X axis in degrees.").Alpha = 0
-        if not hasattr(fp, "Theta"):
-            fp.addProperty("App::PropertyFloat", "Theta", "DHParameters",
-                           "Rotation angle about X axis in degrees.").Theta = 0
-        if not hasattr(fp, "ThetaMaximum"):
-            fp.addProperty("App::PropertyFloatConstraint", "ThetaMaximum",
-                           "DHParameters", "Upper limit of rotation angle"
+        if not hasattr(fp, "alpha"):
+            fp.addProperty("App::PropertyFloat", "alpha", "d-hParameters",
+                           "Rotation angle about X axis in degrees.").alpha = 0
+        if not hasattr(fp, "theta"):
+            fp.addProperty("App::PropertyFloat", "theta", "d-hParameters",
+                           "Rotation angle about X axis in degrees.").theta = 0
+        if not hasattr(fp, "thetaMaximum"):
+            fp.addProperty("App::PropertyFloatConstraint", "thetaMaximum",
+                           "d-hParameters", "Upper limit of rotation angle"
                            + " about Z axis in degrees."
-                           ).ThetaMaximum = (360, 0, float("inf"), 1)
-        elif hasattr(fp, "ThetaMinimum"):
-            fp.ThetaMaximum = (fp.ThetaMaximum, fp.ThetaMinimum,
+                           ).thetaMaximum = (360, 0, float("inf"), 1)
+        elif hasattr(fp, "thetaMinimum"):
+            fp.thetaMaximum = (fp.thetaMaximum, fp.thetaMinimum,
                                float("inf"), 1)
-        if not hasattr(fp, "ThetaMinimum"):
-            fp.addProperty("App::PropertyFloatConstraint", "ThetaMinimum",
-                           "DHParameters", "Lower limit of rotation angle"
+        if not hasattr(fp, "thetaMinimum"):
+            fp.addProperty("App::PropertyFloatConstraint", "thetaMinimum",
+                           "d-hParameters", "Lower limit of rotation angle"
                            + " about Z axis in degrees."
-                           ).ThetaMinimum = (0, -float("inf"), 360, 1)
-        elif hasattr(fp, "ThetaMaximum"):
-            fp.ThetaMinimum = (fp.ThetaMinimum, -float("inf"),
-                               fp.ThetaMaximum, 1)
-        if not hasattr(fp, "ThetaOffset"):
-            fp.addProperty("App::PropertyFloat", "ThetaOffset",
-                           "DHParameters", "Offset of rotation angle"
-                           + " about Z axis in degrees.").ThetaOffset = 0
+                           ).thetaMinimum = (0, -float("inf"), 360, 1)
+        elif hasattr(fp, "thetaMaximum"):
+            fp.thetaMinimum = (fp.thetaMinimum, -float("inf"),
+                               fp.thetaMaximum, 1)
+        if not hasattr(fp, "thetaOffset"):
+            fp.addProperty("App::PropertyFloat", "thetaOffset",
+                           "d-hParameters", "Offset of rotation angle"
+                           + " about Z axis in degrees.").thetaOffset = 0
 
         # Rotation properties
         if not hasattr(fp, "Timestamps"):
             fp.addProperty("App::PropertyFloatList", "Timestamps",
                            "Rotation", "Timestamps at which we define\n"
                            + "translation and rotation.")
-        if not hasattr(fp, "ThetaSequence"):
-            fp.addProperty("App::PropertyFloatList", "ThetaSequence",
+        if not hasattr(fp, "thetaSequence"):
+            fp.addProperty("App::PropertyFloatList", "thetaSequence",
                            "Rotation", "Rotation angles about Z axis in"
                            + " degrees.")
 
@@ -374,60 +390,60 @@ Args:
         # Make some properties read-only
         fp.setEditorMode("ObjectPlacement", 1)
         fp.setEditorMode("ParentFramePlacement", 1)
-        fp.setEditorMode("Theta", 1)
+        fp.setEditorMode("theta", 1)
 
         # Hide some properties
         fp.setEditorMode("Placement", 2)
         fp.setEditorMode("ValidRotation", 2)
+        fp.setEditorMode("RobotPanelActive", 2)
 
         import AnimateDocumentObserver
         AnimateDocumentObserver.addObserver()
 
-    def change_joint_sequence(self, fp, joint_sequence):
+    def change_joint_sequence(self, joint_sequence):
         """
 Method used to change a `RobRotation`'s joint variable sequence.
 
-A `joint_sequence` dictionary containing a RobRotation is tested for validity
+A `joint_sequence` dictionary containing a rotation is tested for validity
 and then assigned to a `RobRotation` `DocumentObjectGroupPython`.
 
 Args:
-    fp: A `DocumentObjectGroupPython` RobRotation object.
-    joint_sequence: A dictionary describing a RobRotation.
+    joint_sequence: A dictionary describing a rotation.
         """
         # Check that RobRotation has a correct format and load it
         if self.is_ValidRotation(rotation=joint_sequence):
-            fp.Timestamps = joint_sequence["Timestamps"]
-            fp.ThetaSequence = joint_sequence["ThetaSequence"]
+            self.fp.Timestamps = joint_sequence["Timestamps"]
+            self.fp.thetaSequence = joint_sequence["thetaSequence"]
         else:
             FreeCAD.Console.PrintError("Invalid joint sequence!")
 
     def is_rotation_property(self, prop):
         """
-Method to check that a property describes a RobRotation.
+Method to check that a property describes a rotation.
 
-It's checked whether `prop` is `Timestamps` or `ThetaSequence`.
+It's checked whether `prop` is `Timestamps` or `thetaSequence`.
 
 Args:
     prop: A str name of a changed property.
 
 Returns:
-    True if prop describes a RobRotation and False otherwise.
+    True if prop describes a rotation and False otherwise.
         """
-        return prop in ["Timestamps", "ThetaSequence"]
+        return prop in ["Timestamps", "thetaSequence"]
 
-    def is_ValidRotation(self, timestamps=[], theta=[], rotation=None):
+    def is_ValidRotation(self, timestamps=[], thetas=[], rotation=None):
         """
-Method to check if a RobRotation is valid.
+Method to check if a rotation is valid.
 
 This method needs either a `rotation` dictionary argument or all the other
 lists of floats. A valid rotation needs to have all the necessary lists.
 All the lists must have same length. A `timestamps` list must consist of
-a sequence of strictly increasing floats. A rotation axis must have always
-length equal to 1.
+a sequence of strictly increasing floats. A rotation angle cannot exceed
+joint limits.
 
 Args:
     timestamps: A list of floats marking timestamps.
-    theta: A list of floats signifying rotation angles about Z axis.
+    thetas: A list of floats signifying rotation angles about Z axis.
     rotation: A dict containing all lists above.
 
 Returns:
@@ -435,18 +451,17 @@ Returns:
         """
         # Check all keys are included and record lengths of their lists
         if rotation is not None and isinstance(rotation, dict):
-            for key in ["Timestamps", "ThetaSequence"]:
+            for key in ["Timestamps", "thetaSequence"]:
                 if key not in rotation.keys():
                     FreeCAD.Console.PrintWarning("Rotation misses key " +
                                                  key + ".\n")
                     return False
             timestamps = rotation["Timestamps"]
-            theta_sequence = rotation["ThetaSequence"]
+            thetas = rotation["thetaSequence"]
 
         # Check that all lists have the same length
         if len(timestamps) == 0 or \
-                (len(timestamps) != 0 and
-                 len(timestamps) != len(theta_sequence)):
+                (len(timestamps) != 0 and len(timestamps) != len(thetas)):
             FreeCAD.Console.PrintWarning("Rotation has lists with "
                                          + "inconsistent or zero "
                                          + "lengths.\n")
@@ -459,9 +474,9 @@ Returns:
                                          + "list of increasing values.\n")
             return False
 
-        if any([self.fp.ThetaMinimum <= th <= self.fp.ThetaMaximum
-                for th in theta_sequence]):
-            FreeCAD.Console.PrintWarning("Rotation 'ThetaSequence' elements"
+        if not all([self.fp.thetaMinimum <= th <= self.fp.thetaMaximum
+                    for th in thetas]):
+            FreeCAD.Console.PrintWarning("Rotation 'thetaSequence' elements"
                                          + " are out of theta range.\n")
             return False
 
@@ -517,13 +532,42 @@ Returns:
 
         return indices, weights
 
+    def __getstate__(self):
+        """
+Necessary method to avoid errors when trying to save unserializable objects.
+
+This method is used by JSON to serialize unserializable objects during
+autosave. Without this an Error would rise when JSON would try to do
+that itself.
+
+We need this for unserializable `fp` attribute, but we don't serialize it,
+because it's enough to reset it when object is restored.
+
+Returns:
+    None, because we don't serialize anything.
+        """
+        return None
+
+    def __setstate__(self, state):
+        """
+Necessary method to avoid errors when trying to restore unserializable objects.
+
+This method is used during a document restoration. We need this for
+unserializable `fp` attribute, but we do not restore it,
+because it's enough to reset them from saved parameters.
+
+Returns:
+    None, because we don't restore anything.
+        """
+        return None
+
 
 class ViewProviderRobRotationProxy:
     """
 Proxy class for `Gui.ViewProviderDocumentObject` RobRotation.ViewObject.
 
 A ViewProviderRobRotationProxy instance provides a RobRotation's icon,
-double-click response and context menu with a *Select Time* option.
+double-click response and context menu with a *Check joint range* option.
 
 Attributes:
     fp: A RobRotation object.
@@ -575,7 +619,7 @@ Args:
 Method called by FreeCAD after initialization to attach Coin3D constructs.
 
 A coordinate frame made of RGB arrows corresponding to X, Y and Z axes. This
-frame shows current pose in a RobRotation. This method adds RobRotation as
+frame shows current pose in a rotation. This method adds RobRotation as
 the `fp` attribute.
 
 Args:
@@ -595,6 +639,7 @@ Args:
 
         self.visualisations = coin.SoSwitch()
         self.visualisations.addChild(self.frame)
+        self.visualisations.whichChild.setValue(coin.SO_SWITCH_ALL)
         vp.RootNode.addChild(self.visualisations)
 
         vp.Object.Proxy.setProperties(vp.Object)
@@ -611,7 +656,7 @@ representing frame arrowheads will change their radius accordingly.
 
 Args:
     fp: A `DocumentObjectGroupPython` RobRotation object.
-    prop: A str name of a changed property.
+    prop: A str name of the changed property.
         """
         # Placement changes
         if prop == "Placement" and hasattr(fp, "Placement"):
@@ -767,8 +812,8 @@ then invokes `claimChildren()`.
         """
 Method called by FreeCAD to ask if an object `obj` can be dropped into a Group.
 
-Only FreeCAD objects of a RobRotation type are allowed to drop inside
-a RobRotation group.
+Only FreeCAD objects of a RobRotation and RobTranslation type are allowed to
+drop inside a RobRotation group.
 
 Args:
     obj: A FreeCAD object hovering above a RobRotation item in the Tree View.
@@ -840,8 +885,11 @@ becomes visible. If another dialog is opened a warning is shown.
 
 Args:
     vp: A `Gui.ViewProviderDocumentObject` RobRotation.ViewObject.
+
+Returns:
+    True - confirmation that this method was implemented.
         """
-        # Switch to the Task View if a RobRotation panel is already opened
+        # Switch to the Task View if a RobotPanel is already opened
         if self.panel:
             FreeCADGui.Control.showTaskView()
 
@@ -911,18 +959,18 @@ Args:
 
     def setupContextMenu(self, vp, menu):
         """
-Method called by the FreeCAD to customize a context menu for a RobRotation.
+Method called by the FreeCAD to customize a RobRotation context menu.
 
 The *Transform* and *Set colors...* items are removed from the context menu
 shown upon right click on `DocumentObjectGroupPython` RobRotation in the Tree
-View. The option to *Select Time* is added instead.
+View. The option to *Check joint range* is added instead.
 
 Args:
     vp: A rightclicked `Gui.ViewProviderDocumentObject` RobRotation.ViewObject.
     menu: A Qt's QMenu to be edited.
         """
         menu.clear()
-        action = menu.addAction("Select Time")
+        action = menu.addAction("Check joint range")
         action.triggered.connect(lambda f=self.doubleClicked,
                                  arg=vp: f(arg))
 
@@ -930,7 +978,7 @@ Args:
         """
 Method which makes Coin3D labels to be displayed in the FreeCAD View.
 
-Frame labels for axes X, Y and Z and a label for rotation axis are made.
+Frame labels for axes X, Y and Z are made.
 The labels have the same color as the axes.
 
 Returns:
