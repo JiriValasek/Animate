@@ -5,7 +5,7 @@
 # *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
-# *   This file is part of the FreeCAD CAx development system.              *
+# *   This file is part of the Animate workbench.                           *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -13,15 +13,15 @@
 # *   the License, or (at your option) any later version.                   *
 # *   for detail see the LICENCE text file.                                 *
 # *                                                                         *
-# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   Animate workbench is distributed in the hope that it will be useful,  *
 # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU Lesser General Public License for more details.                   *
 # *                                                                         *
 # *   You should have received a copy of the GNU Library General Public     *
-# *   License along with FreeCAD; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-# *   USA                                                                   *
+# *   License along with Animate workbench; if not, write to the Free       *
+# *   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,        *
+# *   MA  02111-1307 USA                                                    *
 # *                                                                         *
 # ***************************************************************************/
 
@@ -36,7 +36,6 @@ used in a workbench.
 import FreeCAD
 import FreeCADGui
 
-from PySide2.QtWidgets import QMessageBox
 from pivy import coin
 from os import path
 
@@ -257,9 +256,6 @@ Args:
                            "Current placement for animated objects in "
                            + "world frame.")
 
-        # Make some properties read-only
-        fp.setEditorMode("ParentFramePlacement", 1)
-
         # Hide some properties
         fp.setEditorMode("Placement", 2)
 
@@ -344,6 +340,7 @@ Args:
 
         self.visualisations = coin.SoSwitch()
         self.visualisations.addChild(self.frame)
+        self.visualisations.whichChild.setValue(coin.SO_SWITCH_ALL)
         vp.RootNode.addChild(self.visualisations)
 
         vp.Object.Proxy.setProperties(vp.Object)
@@ -516,15 +513,14 @@ then invokes `claimChildren()`.
         """
 Method called by FreeCAD to ask if an object `obj` can be dropped into a Group.
 
-Only FreeCAD objects of a RobWorld type are allowed to drop inside
-a RobWorld group.
+Only FreeCAD objects of a RobRotation and RobTranslation type are allowed to
+drop inside a RobWorld group.
 
 Args:
     obj: A FreeCAD object hovering above a RobWorld item in the Tree View.
         """
         if hasattr(obj, "Proxy") and \
-           (obj.Proxy.__class__.__name__ == "RobWorldProxy" or
-           obj.Proxy.__class__.__name__ == "RobRotationProxy" or
+           (obj.Proxy.__class__.__name__ == "RobRotationProxy" or
            obj.Proxy.__class__.__name__ == "RobTranslationProxy"):
             return True
         return False
@@ -588,7 +584,7 @@ context.
 Args:
     vp: A `Gui.ViewProviderDocumentObject` RobWorld.ViewObject.
 
-Returns"
+Returns:
     True - confirmation that this method was implemented.
         """
         return True
@@ -626,7 +622,7 @@ Returns:
         # axis translation
         self.label_translations.append(coin.SoTranslation())
         self.labels = []
-        for i in range(4):
+        for i in range(3):
             label_group = coin.SoSeparator()
             label_group.addChild(self.label_translations[0])
             frame_axis_color = coin.SoPackedColor()
@@ -736,7 +732,7 @@ Returns:
     a path to a command icon, a text to be shown in a menu and
     a tooltip message.
         """
-        return {'Pixmap': path.join(PATH_TO_ICONS, "RobWorldCmd.xpm"),
+        return {'Pixmap': path.join(PATH_TO_ICONS, "RobWorldCmd.png"),
                 'MenuText': "RobWorld",
                 'ToolTip': "Create RobWorld instance."}
 
