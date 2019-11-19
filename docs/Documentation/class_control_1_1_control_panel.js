@@ -8,7 +8,7 @@ var class_control_1_1_control_panel =
     [ "exportConfirmed", "class_control_1_1_control_panel.html#a946f0939d30addc67dc6ad5571c2c9f4", null ],
     [ "findSequences", "class_control_1_1_control_panel.html#a5541d41f355d1cff0376683382d26c42", null ],
     [ "getStandardButtons", "class_control_1_1_control_panel.html#a22828769a0d1a61289db39a74b4e26de", null ],
-    [ "installPyPNG", "class_control_1_1_control_panel.html#ab35ff845839099ba3e0078deda7d79d2", null ],
+    [ "installPyPNGNotice", "class_control_1_1_control_panel.html#a8d675269379ecb3b4209e63b02bf5689", null ],
     [ "isAllowedAlterDocument", "class_control_1_1_control_panel.html#a38433cef4aa5a86b21a7329852affb9a", null ],
     [ "isAllowedAlterSelection", "class_control_1_1_control_panel.html#a64c57265ab7778ee29b9e24719a47cb6", null ],
     [ "isAllowedAlterView", "class_control_1_1_control_panel.html#a725b36cfe363093c68f998d048c49c1e", null ],
