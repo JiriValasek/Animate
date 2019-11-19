@@ -10,6 +10,7 @@ var class_rob_rotation_1_1_rob_rotation_proxy =
     [ "is_ValidRotation", "class_rob_rotation_1_1_rob_rotation_proxy.html#a9b4972600ee30af7902fa5164d6f364f", null ],
     [ "onChanged", "class_rob_rotation_1_1_rob_rotation_proxy.html#a31eb46c2d1d202dc3d421acd6de695bd", null ],
     [ "onDocumentRestored", "class_rob_rotation_1_1_rob_rotation_proxy.html#a74ffd75852df96cf4c841b273a17261b", null ],
+    [ "printt", "class_rob_rotation_1_1_rob_rotation_proxy.html#a049690ed685a302961a056316ea420aa", null ],
     [ "setProperties", "class_rob_rotation_1_1_rob_rotation_proxy.html#a599839d1e1a1d784695d59f66dae9a35", null ],
     [ "fp", "class_rob_rotation_1_1_rob_rotation_proxy.html#ab5500197d4ec737e4449aff32d6db029", null ],
     [ "updated", "class_rob_rotation_1_1_rob_rotation_proxy.html#afb7897284876654d58f45585701dfef4", null ]

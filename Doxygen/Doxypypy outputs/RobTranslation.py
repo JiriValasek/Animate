@@ -171,9 +171,8 @@ class RobTranslationProxy:
             # Update d according to current time and translation
             indices, weights = self.find_timestamp_indices_and_weights(fp)
 
-            fp.d = fp.dOffset \
-                + (weights[0]*fp.dSequence[indices[0]]
-                   + weights[1]*fp.dSequence[indices[1]])
+            fp.d = fp.dOffset + (weights[0]*fp.dSequence[indices[0]]
+                                 + weights[1]*fp.dSequence[indices[1]])
 
         # DH transformation
         T_theta = FreeCAD.Placement(FreeCAD.Vector(0, 0, 0),
@@ -218,9 +217,6 @@ class RobTranslationProxy:
     #
 
     def setProperties(self, fp):
-        # Add feature python
-        self.fp = fp
-
         # Add (and preset) properties
         # Animation properties
         if not hasattr(fp, "ValidTranslation"):
@@ -262,16 +258,6 @@ class RobTranslationProxy:
         if not hasattr(fp, "d"):
             fp.addProperty("App::PropertyFloat", "d", "d-hParameters",
                            "Displacement along Z axis.").d = 0
-        if not hasattr(fp, "a"):
-            fp.addProperty("App::PropertyFloat", "a", "d-hParameters",
-                           "Displacement along X axis.").a = 0
-        if not hasattr(fp, "alpha"):
-            fp.addProperty("App::PropertyFloat", "alpha", "d-hParameters",
-                           "Rotation angle about X axis in degrees.").alpha = 0
-        if not hasattr(fp, "theta"):
-            fp.addProperty("App::PropertyFloat", "theta", "d-hParameters",
-                           "Rotation angle about X axis in degrees.").theta = 0
-
         if not hasattr(fp, "dMaximum"):
             fp.addProperty("App::PropertyFloatConstraint", "dMaximum",
                            "d-hParameters", "Upper limit of displacement"
@@ -290,15 +276,15 @@ class RobTranslationProxy:
             fp.addProperty("App::PropertyFloat", "dOffset",
                            "d-hParameters", "Offset of displacement"
                            + " along Z axis.").dOffset = 0
-
-        # Rotation properties
-        if not hasattr(fp, "Timestamps"):
-            fp.addProperty("App::PropertyFloatList", "Timestamps",
-                           "Translation", "Timestamps at which we define\n"
-                           + "translation.")
-        if not hasattr(fp, "dSequence"):
-            fp.addProperty("App::PropertyFloatList", "dSequence",
-                           "Translation", "Displacements along Z axis.")
+        if not hasattr(fp, "a"):
+            fp.addProperty("App::PropertyFloat", "a", "d-hParameters",
+                           "Displacement along X axis.").a = 0
+        if not hasattr(fp, "alpha"):
+            fp.addProperty("App::PropertyFloat", "alpha", "d-hParameters",
+                           "Rotation angle about X axis in degrees.").alpha = 0
+        if not hasattr(fp, "theta"):
+            fp.addProperty("App::PropertyFloat", "theta", "d-hParameters",
+                           "Rotation angle about X axis in degrees.").theta = 0
 
         # Frame properties
         if not hasattr(fp, "ShowFrame"):
@@ -387,6 +373,18 @@ class RobTranslationProxy:
                            "Current placement for animated objects in "
                            + "world frame.")
 
+        # Rotation properties
+        if not hasattr(fp, "Timestamps"):
+            fp.addProperty("App::PropertyFloatList", "Timestamps",
+                           "Translation", "Timestamps at which we define\n"
+                           + "translation.")
+        if not hasattr(fp, "dSequence"):
+            fp.addProperty("App::PropertyFloatList", "dSequence",
+                           "Translation", "Displacements along Z axis.")
+
+        # Add feature python
+        self.fp = fp
+
         # Make some properties read-only
         fp.setEditorMode("ObjectPlacement", 1)
         fp.setEditorMode("ParentFramePlacement", 1)
@@ -458,7 +456,7 @@ class RobTranslationProxy:
                                                  key + ".\n")
                     return False
             timestamps = translation["Timestamps"]
-            ds = translation["thetaSequence"]
+            ds = translation["dSequence"]
 
         # Check that all lists have the same length
         if len(timestamps) == 0 or \
@@ -797,20 +795,13 @@ class ViewProviderRobTranslationProxy:
             self.font.size.setValue(fp.FontSize)
 
         elif prop == "DistanceToAxis" and hasattr(fp, "DistanceToAxis") and \
-            hasattr(fp, "ShowFrameArrowheads") and \
-                hasattr(fp, "ShowAxisArrowhead"):
+                hasattr(fp, "ShowFrameArrowheads"):
             if fp.ShowFrameArrowheads and hasattr(fp, "FrameArrowheadLength"):
                 self.label_translations[0].translation.setValue(
                     0, fp.FrameArrowheadLength/2 + fp.DistanceToAxis, 0)
             elif hasattr(fp, "ShaftLength"):
                 self.label_translations[0].translation.setValue(
                     0, fp.ShaftLength + fp.DistanceToAxis, 0)
-            if fp.ShowAxisArrowhead and hasattr(fp, "AxisArrowheadLength"):
-                self.label_translations[1].translation.setValue(
-                    0, fp.AxisArrowheadLength/2 + fp.DistanceToAxis, 0)
-            elif hasattr(fp, "AxisLength"):
-                self.label_translations[1].translation.setValue(
-                    0, fp.AxisLength + fp.DistanceToAxis, 0)
 
     ## @brief Method called after RobTranslation.ViewObject was changed.
     #

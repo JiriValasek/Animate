@@ -52,7 +52,6 @@ ALLOWED_IN_CONTROL = ["TrajectoryProxy", "ServerProxy",
                       "RobRotationProxy", "RobTranslationProxy"]
 
 
-
 ## @brief Class that keeps `Animate` workbench objects in recommended structures.
 #
 #
@@ -177,9 +176,17 @@ class AnimateDocumentObserver(object):
     #
 
     def isAnimateGroup(self, obj):
+        # If a proxy is NoneType extrapolate it from object name
         if not hasattr(obj, "Proxy"):
             return False
-        elif obj.Proxy.__class__.__name__ not in ANIMATE_OBJECT_GROUP_CLASSES:
+        else:
+            if obj.Proxy.__class__.__name__ == "NoneType":
+                obj_type = obj.Name.rstrip('0123456789') + "Proxy"
+            else:
+                obj_type = obj.Proxy.__class__.__name__
+
+        # Check if proxy is an Animate group class
+        if obj_type not in ANIMATE_OBJECT_GROUP_CLASSES:
             return False
         else:
             return True
@@ -195,9 +202,17 @@ class AnimateDocumentObserver(object):
     #
 
     def isAnimateObject(self, obj):
+        # If a proxy is NoneType extrapolate it from object name
         if not hasattr(obj, "Proxy"):
             return False
-        elif obj.Proxy.__class__.__name__ not in ANIMATE_CLASSES:
+        else:
+            if obj.Proxy.__class__.__name__ == "NoneType":
+                obj_type = obj.Name.rstrip('0123456789') + "Proxy"
+            else:
+                obj_type = obj.Proxy.__class__.__name__
+
+        # Check if proxy is an Animate object class
+        if obj_type not in ANIMATE_CLASSES:
             return False
         else:
             return True
@@ -217,29 +232,37 @@ class AnimateDocumentObserver(object):
     #
 
     def foreignObjectInAnimateGroup(self, obj, group):
+        # If an obj proxy is NoneType extrapolate it from object name
+        if not hasattr(obj, "Proxy"):
+            return False
+        else:
+            if obj.Proxy.__class__.__name__ == "NoneType":
+                obj_type = obj.Name.rstrip('0123456789') + "Proxy"
+            else:
+                obj_type = obj.Proxy.__class__.__name__
+
+        # If an obj proxy is NoneType extrapolate it from object name
+        if group.Proxy.__class__.__name__ == "NoneType":
+            group_type = group.Name.rstrip('0123456789') + "Proxy"
+        else:
+            group_type = group.Proxy.__class__.__name__
+
         # Only a Trajectory can be in a Trajectory group
-        if group.Proxy.__class__.__name__ == "TrajectoryProxy" and \
-                hasattr(obj, "Proxy") and \
-                obj.Proxy.__class__.__name__ == "TrajectoryProxy":
+        if group_type == "TrajectoryProxy" and obj_type == "TrajectoryProxy":
             return False
 
         # Only some objects can be in a Control group
-        elif group.Proxy.__class__.__name__ == "ControlProxy" and \
-                hasattr(obj, "Proxy") and \
-                obj.Proxy.__class__.__name__ in ALLOWED_IN_CONTROL:
+        elif group_type == "ControlProxy" and obj_type in ALLOWED_IN_CONTROL:
             return False
 
-        elif group.Proxy.__class__.__name__ == "CollisionDetectorProxy" and \
+        elif group_type == "CollisionDetectorProxy" and \
                 obj.Name.find("Collision") != -1:
             return False
         # Only RobRotation and RobTranslation can be in RobWorld, RobRotation
         # and RobTRanslation groups
-        elif (group.Proxy.__class__.__name__ == "RobWorldProxy" or
-              group.Proxy.__class__.__name__ == "RobRotationProxy" or
-              group.Proxy.__class__.__name__ == "RobTranslationProxy") and \
-                hasattr(obj, "Proxy") and \
-                (obj.Proxy.__class__.__name__ == "RobRotationProxy" or
-                 obj.Proxy.__class__.__name__ == "RobTranslationProxy"):
+        elif (group_type in ["RobWorldProxy", "RobRotationProxy",
+                             "RobTranslationProxy"]) and \
+                (obj_type in ["RobRotationProxy", "RobTranslationProxy"]):
             return False
         return True
 

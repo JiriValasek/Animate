@@ -2,17 +2,29 @@
 An animation FreeCAD workbench
 
 The aim of this workbench is to facilitate an easy way to make animations of your mechanical project.
-At this point, it provides 4 tools:
+At this point, it provides 7 tools:
 
-* Server
-* Trajectory
-* Control
-* Collision Detector
+* General tools:
+	* Server
+	* Trajectory
+	* Control
+	* Collision Detector
 
 Using them you can move objects along trajectories. A trajectory is specified by assigned poses at given times. 
 Then you can record this movement into series of images and export as a video afterwards.
 
 ![](animation_example.gif)
+
+* Tools focused on robotics
+	* RobWorld
+	* RobRotation
+	* RobTranslation
+
+These tools can be used to control a robot consisting of separate parts/links. Motion of those parts is 
+described using Denavit-Hartenbergs notation for Revolute and Prismatic joints represented by 
+RobRotation and RobTranslation tools respectively. For more info check [User Guide](https://jirivalasek.github.io/Animate/), [Documentation](https://jirivalasek.github.io/Animate/Documentation/index.html) or [Double pendulum example](https://github.com/JiriValasek/Animate/tree/master/Examples/Robotics/Double%20pendulum).
+
+![](animation_example2.gif)
 
 ## Getting Started, User Guide & Documentation 
 
@@ -21,7 +33,7 @@ So let's go take a look.
 
 ## Future plans
 
-The future plans include making 2 simplified trajectory tools - *Rotation* and *Translation*, these tools should be more useful for working with robots and other mechanical systems. Also server focused on working with Animate tools is planned, it should be able to send numbers in their binary form instead of string one.
+The future plans include making Camera and Endpoint tool. Camera tool will change viewport's location and shape in time according to setting and Endpoint tool will make a graph of it's position (velocity, acceleration) in time. Also server focused on working with Animate tools is planned, it should be able to send numbers in their binary form instead of string one.
 
 ## License
 

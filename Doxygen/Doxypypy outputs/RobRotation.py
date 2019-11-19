@@ -78,6 +78,9 @@ class RobRotationProxy:
 
     updated = False
 
+    def printt(self):
+        print("This is RobRotation")
+
     ## @brief Initialization method for RobRotationProxy.
     #
     #A class instance is created and made a `Proxy` for a generic
@@ -221,9 +224,6 @@ class RobRotationProxy:
     #
 
     def setProperties(self, fp):
-        # Add feature python
-        self.fp = fp
-
         # Add (and preset) properties
         # Animation properties
         if not hasattr(fp, "ValidRotation"):
@@ -294,16 +294,6 @@ class RobRotationProxy:
             fp.addProperty("App::PropertyFloat", "thetaOffset",
                            "d-hParameters", "Offset of rotation angle"
                            + " about Z axis in degrees.").thetaOffset = 0
-
-        # Rotation properties
-        if not hasattr(fp, "Timestamps"):
-            fp.addProperty("App::PropertyFloatList", "Timestamps",
-                           "Rotation", "Timestamps at which we define\n"
-                           + "translation and rotation.")
-        if not hasattr(fp, "thetaSequence"):
-            fp.addProperty("App::PropertyFloatList", "thetaSequence",
-                           "Rotation", "Rotation angles about Z axis in"
-                           + " degrees.")
 
         # Frame properties
         if not hasattr(fp, "ShowFrame"):
@@ -391,6 +381,19 @@ class RobRotationProxy:
             fp.addProperty("App::PropertyPlacement", "Placement", "Base",
                            "Current placement for animated objects in "
                            + "world frame.")
+
+        # Rotation properties
+        if not hasattr(fp, "Timestamps"):
+            fp.addProperty("App::PropertyFloatList", "Timestamps",
+                           "Rotation", "Timestamps at which we define\n"
+                           + "translation and rotation.")
+        if not hasattr(fp, "thetaSequence"):
+            fp.addProperty("App::PropertyFloatList", "thetaSequence",
+                           "Rotation", "Rotation angles about Z axis in"
+                           + " degrees.")
+
+        # Add feature python
+        self.fp = fp
 
         # Make some properties read-only
         fp.setEditorMode("ObjectPlacement", 1)
@@ -802,20 +805,13 @@ class ViewProviderRobRotationProxy:
             self.font.size.setValue(fp.FontSize)
 
         elif prop == "DistanceToAxis" and hasattr(fp, "DistanceToAxis") and \
-            hasattr(fp, "ShowFrameArrowheads") and \
-                hasattr(fp, "ShowAxisArrowhead"):
+                hasattr(fp, "ShowFrameArrowheads"):
             if fp.ShowFrameArrowheads and hasattr(fp, "FrameArrowheadLength"):
                 self.label_translations[0].translation.setValue(
                     0, fp.FrameArrowheadLength/2 + fp.DistanceToAxis, 0)
             elif hasattr(fp, "ShaftLength"):
                 self.label_translations[0].translation.setValue(
                     0, fp.ShaftLength + fp.DistanceToAxis, 0)
-            if fp.ShowAxisArrowhead and hasattr(fp, "AxisArrowheadLength"):
-                self.label_translations[1].translation.setValue(
-                    0, fp.AxisArrowheadLength/2 + fp.DistanceToAxis, 0)
-            elif hasattr(fp, "AxisLength"):
-                self.label_translations[1].translation.setValue(
-                    0, fp.AxisLength + fp.DistanceToAxis, 0)
 
     ## @brief Method called after RobRotation.ViewObject was changed.
     #
