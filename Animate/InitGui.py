@@ -65,7 +65,7 @@ for the `Animate` workbench.
         import os
         self.__class__.Icon = os.path.join(FreeCAD.getHomePath(), "Mod",
                                            "Animate", "Resources", "Icons",
-                                           "Animate.xpm")
+                                           "Animate.png")
         self.__class__.MenuText = "Animate"
         self.__class__.ToolTip = "Animation workbench"
 
