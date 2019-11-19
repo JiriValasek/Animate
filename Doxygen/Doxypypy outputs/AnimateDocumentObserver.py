@@ -5,7 +5,7 @@
 # *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
-# *   This file is part of the FreeCAD CAx development system.              *
+# *   This file is part of the Animate workbench.                           *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -13,15 +13,15 @@
 # *   the License, or (at your option) any later version.                   *
 # *   for detail see the LICENCE text file.                                 *
 # *                                                                         *
-# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   Animate workbench is distributed in the hope that it will be useful,  *
 # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU Lesser General Public License for more details.                   *
 # *                                                                         *
 # *   You should have received a copy of the GNU Library General Public     *
-# *   License along with FreeCAD; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-# *   USA                                                                   *
+# *   License along with Animate workbench; if not, write to the Free       *
+# *   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,        *
+# *   MA  02111-1307 USA                                                    *
 # *                                                                         *
 # ***************************************************************************/
 
@@ -37,16 +37,20 @@ from PySide2.QtWidgets import QMessageBox
 
 ## All the DocumentObjectGroupPython classes in the Animate workbench
 ANIMATE_OBJECT_GROUP_CLASSES = ["TrajectoryProxy", "ControlProxy",
-                                "CollisionDetectorProxy"]
+                                "CollisionDetectorProxy", "RobWorldProxy",
+                                "RobRotationProxy", "RobTranslationProxy"]
 
 ## All the FeaturePython and DocumentObjectGroupPython  classes in the animate
 # toolbox
 ANIMATE_CLASSES = ["TrajectoryProxy", "ControlProxy", "ServerProxy",
-                   "CollisionDetectorProxy", "CollisionProxy"]
+                   "CollisionDetectorProxy", "CollisionProxy", "RobWorldProxy",
+                   "RobRotationProxy", "RobTranslationProxy"]
 
 ## Classes allowed in the Control group
 ALLOWED_IN_CONTROL = ["TrajectoryProxy", "ServerProxy",
-                      "CollisionDetectorProxy"]
+                      "CollisionDetectorProxy", "RobWorldProxy",
+                      "RobRotationProxy", "RobTranslationProxy"]
+
 
 
 ## @brief Class that keeps `Animate` workbench objects in recommended structures.
@@ -227,6 +231,15 @@ class AnimateDocumentObserver(object):
 
         elif group.Proxy.__class__.__name__ == "CollisionDetectorProxy" and \
                 obj.Name.find("Collision") != -1:
+            return False
+        # Only RobRotation and RobTranslation can be in RobWorld, RobRotation
+        # and RobTRanslation groups
+        elif (group.Proxy.__class__.__name__ == "RobWorldProxy" or
+              group.Proxy.__class__.__name__ == "RobRotationProxy" or
+              group.Proxy.__class__.__name__ == "RobTranslationProxy") and \
+                hasattr(obj, "Proxy") and \
+                (obj.Proxy.__class__.__name__ == "RobRotationProxy" or
+                 obj.Proxy.__class__.__name__ == "RobTranslationProxy"):
             return False
         return True
 

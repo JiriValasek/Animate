@@ -39,7 +39,7 @@ var NAVTREE =
       [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
       [ "Class Members", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
-        [ "Functions", "functions_func.html", null ],
+        [ "Functions", "functions_func.html", "functions_func" ],
         [ "Variables", "functions_vars.html", null ]
       ] ]
     ] ],
@@ -52,7 +52,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_animate_document_observer_8py_source.html",
-"classes.html"
+"class_rob_world_1_1_rob_world_command.html#ab324d7692264310c5673b9aba881ede1"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

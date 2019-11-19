@@ -61,9 +61,15 @@ body {
 	}
 }
 .navbar-dark .navbar-nav .dropdown-header {
+	padding-bottom: 0.25rem;
 	font-size: .8rem;
 	font-weight: 700;
 	text-align: center;
+	color: #f5c527;
+}
+.navbar-dark .navbar-nav .dropdown-divider {
+	margin-top: 0rem;
+	margin-bottom: 0.25rem;
 }
 .navbar-dark .navbar-nav .dropdown-item{
 	color: #ccc;

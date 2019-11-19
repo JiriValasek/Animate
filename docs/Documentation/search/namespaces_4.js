@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['trajectory',['Trajectory',['../namespace_trajectory.html',1,'']]]
+  ['server',['Server',['../namespace_server.html',1,'']]]
 ];

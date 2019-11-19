@@ -137,8 +137,8 @@ Variables</h2></td></tr>
 <p>Adds an <code><a class="el" href="namespace_animate_document_observer.html" title="AnimateDocumentObserver and a method how to safely add it to FreeCAD.">AnimateDocumentObserver</a></code> between FreeCAD's document observers safely. </p>
 <p>It's preferred to add an <code><a class="el" href="namespace_animate_document_observer.html" title="AnimateDocumentObserver and a method how to safely add it to FreeCAD.">AnimateDocumentObserver</a></code> using this method, because other ways could result in having multiple document observers added to FreeCAD. Having a lot of document observers slows down FreeCAD due to necessity to inform them all about imminent changes and so on. </p>
 
-<p class="definition">Definition at line <a class="el" href="_animate_document_observer_8py_source.html#l00292">292</a> of file <a class="el" href="_animate_document_observer_8py_source.html">AnimateDocumentObserver.py</a>.</p>
-<div class="fragment"><div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="keyword">def </span>addObserver():</div><div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;    <span class="comment"># Check FreeCAD doesn&#39;t have an AnimateDocumentObserver already assigned</span></div><div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;    <span class="comment"># and assign one</span></div><div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    <span class="keywordflow">if</span> <span class="keywordflow">not</span> hasattr(FreeCAD, <span class="stringliteral">&quot;animate_observer&quot;</span>):</div><div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        FreeCAD.animate_observer = <a class="code" href="namespace_animate_document_observer.html">AnimateDocumentObserver</a>()</div><div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;        FreeCAD.addDocumentObserver(FreeCAD.animate_observer)</div><div class="ttc" id="namespace_animate_document_observer_html"><div class="ttname"><a href="namespace_animate_document_observer.html">AnimateDocumentObserver</a></div><div class="ttdoc">AnimateDocumentObserver and a method how to safely add it to FreeCAD.</div><div class="ttdef"><b>Definition:</b> <a href="_animate_document_observer_8py_source.html#l00001">AnimateDocumentObserver.py:1</a></div></div>
+<p class="definition">Definition at line <a class="el" href="_animate_document_observer_8py_source.html#l00305">305</a> of file <a class="el" href="_animate_document_observer_8py_source.html">AnimateDocumentObserver.py</a>.</p>
+<div class="fragment"><div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="keyword">def </span>addObserver():</div><div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    <span class="comment"># Check FreeCAD doesn&#39;t have an AnimateDocumentObserver already assigned</span></div><div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    <span class="comment"># and assign one</span></div><div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;    <span class="keywordflow">if</span> <span class="keywordflow">not</span> hasattr(FreeCAD, <span class="stringliteral">&quot;animate_observer&quot;</span>):</div><div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        FreeCAD.animate_observer = <a class="code" href="namespace_animate_document_observer.html">AnimateDocumentObserver</a>()</div><div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;        FreeCAD.addDocumentObserver(FreeCAD.animate_observer)</div><div class="ttc" id="namespace_animate_document_observer_html"><div class="ttname"><a href="namespace_animate_document_observer.html">AnimateDocumentObserver</a></div><div class="ttdoc">AnimateDocumentObserver and a method how to safely add it to FreeCAD.</div><div class="ttdef"><b>Definition:</b> <a href="_animate_document_observer_8py_source.html#l00001">AnimateDocumentObserver.py:1</a></div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -154,10 +154,10 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;=  [<span class="stringliteral">&quot;TrajectoryProxy&quot;</span>, <span class="stringliteral">&quot;ServerProxy&quot;</span>,</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                      <span class="stringliteral">&quot;CollisionDetectorProxy&quot;</span>]</div></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;=  [<span class="stringliteral">&quot;TrajectoryProxy&quot;</span>, <span class="stringliteral">&quot;ServerProxy&quot;</span>,</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                      <span class="stringliteral">&quot;CollisionDetectorProxy&quot;</span>, <span class="stringliteral">&quot;RobWorldProxy&quot;</span>,</div><div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                      <span class="stringliteral">&quot;RobRotationProxy&quot;</span>, <span class="stringliteral">&quot;RobTranslationProxy&quot;</span>]</div></div><!-- fragment -->
 <p>Classes allowed in the <a class="el" href="namespace_control.html" title="Classes related to the Control component of the Animate Workbench.">Control</a> group. </p>
 
-<p class="definition">Definition at line <a class="el" href="_animate_document_observer_8py_source.html#l00048">48</a> of file <a class="el" href="_animate_document_observer_8py_source.html">AnimateDocumentObserver.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_animate_document_observer_8py_source.html#l00050">50</a> of file <a class="el" href="_animate_document_observer_8py_source.html">AnimateDocumentObserver.py</a>.</p>
 
 </div>
 </div>
@@ -172,10 +172,10 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;=  [<span class="stringliteral">&quot;TrajectoryProxy&quot;</span>, <span class="stringliteral">&quot;ControlProxy&quot;</span>, <span class="stringliteral">&quot;ServerProxy&quot;</span>,</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                   <span class="stringliteral">&quot;CollisionDetectorProxy&quot;</span>, <span class="stringliteral">&quot;CollisionProxy&quot;</span>]</div></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;=  [<span class="stringliteral">&quot;TrajectoryProxy&quot;</span>, <span class="stringliteral">&quot;ControlProxy&quot;</span>, <span class="stringliteral">&quot;ServerProxy&quot;</span>,</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                   <span class="stringliteral">&quot;CollisionDetectorProxy&quot;</span>, <span class="stringliteral">&quot;CollisionProxy&quot;</span>, <span class="stringliteral">&quot;RobWorldProxy&quot;</span>,</div><div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                   <span class="stringliteral">&quot;RobRotationProxy&quot;</span>, <span class="stringliteral">&quot;RobTranslationProxy&quot;</span>]</div></div><!-- fragment -->
 <p>All the FeaturePython and DocumentObjectGroupPython classes in the animate toolbox. </p>
 
-<p class="definition">Definition at line <a class="el" href="_animate_document_observer_8py_source.html#l00044">44</a> of file <a class="el" href="_animate_document_observer_8py_source.html">AnimateDocumentObserver.py</a>.</p>
+<p class="definition">Definition at line <a class="el" href="_animate_document_observer_8py_source.html#l00045">45</a> of file <a class="el" href="_animate_document_observer_8py_source.html">AnimateDocumentObserver.py</a>.</p>
 
 </div>
 </div>
@@ -190,7 +190,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;=  [<span class="stringliteral">&quot;TrajectoryProxy&quot;</span>, <span class="stringliteral">&quot;ControlProxy&quot;</span>,</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                <span class="stringliteral">&quot;CollisionDetectorProxy&quot;</span>]</div></div><!-- fragment -->
+<b>Initial value:</b><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;=  [<span class="stringliteral">&quot;TrajectoryProxy&quot;</span>, <span class="stringliteral">&quot;ControlProxy&quot;</span>,</div><div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;                                <span class="stringliteral">&quot;CollisionDetectorProxy&quot;</span>, <span class="stringliteral">&quot;RobWorldProxy&quot;</span>,</div><div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;                                <span class="stringliteral">&quot;RobRotationProxy&quot;</span>, <span class="stringliteral">&quot;RobTranslationProxy&quot;</span>]</div></div><!-- fragment -->
 <p>All the DocumentObjectGroupPython classes in the Animate workbench. </p>
 
 <p class="definition">Definition at line <a class="el" href="_animate_document_observer_8py_source.html#l00039">39</a> of file <a class="el" href="_animate_document_observer_8py_source.html">AnimateDocumentObserver.py</a>.</p>
@@ -202,7 +202,7 @@ Variables</h2></td></tr>
 <!-- HTML footer for doxygen 1.8.15-->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
-	<p>Generated on Thu Oct 10 2019 04:25:55 for Animate by</p>
+	<p>Generated on Mon Nov 18 2019 02:40:33 for Animate by</p>
 </div>
 <script type="text/javascript">
  	let date_start = $("#nav-path p").text().indexOf("on");

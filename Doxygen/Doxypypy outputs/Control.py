@@ -5,7 +5,7 @@
 # *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
-# *   This file is part of the FreeCAD CAx development system.              *
+# *   This file is part of the Animate workbench.                           *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -13,15 +13,15 @@
 # *   the License, or (at your option) any later version.                   *
 # *   for detail see the LICENCE text file.                                 *
 # *                                                                         *
-# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   Animate workbench is distributed in the hope that it will be useful,  *
 # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU Lesser General Public License for more details.                   *
 # *                                                                         *
 # *   You should have received a copy of the GNU Library General Public     *
-# *   License along with FreeCAD; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-# *   USA                                                                   *
+# *   License along with Animate workbench; if not, write to the Free       *
+# *   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,        *
+# *   MA  02111-1307 USA                                                    *
 # *                                                                         *
 # ***************************************************************************/
 
@@ -560,8 +560,12 @@ class ControlPanel(QObject):
         # if they are Trajectories
         while len(objects) > 0:
             obj = objects.pop(0)
-            if obj.Proxy.__class__.__name__ == "TrajectoryProxy":
+            if obj.Proxy.__class__.__name__ == "TrajectoryProxy" or \
+               obj.Proxy.__class__.__name__ == "RobRotationProxy" or \
+               obj.Proxy.__class__.__name__ == "RobTranslationProxy":
                 obj.Time = t
+                objects += obj.Group
+            elif obj.Proxy.__class__.__name__ == "RobWorldProxy":
                 objects += obj.Group
 
     ## @brief Method to update collisions from CollisionDetector children.
@@ -1272,7 +1276,10 @@ class ViewProviderControlProxy:
         if hasattr(obj, "Proxy") and \
            (obj.Proxy.__class__.__name__ == "ServerProxy" or
            obj.Proxy.__class__.__name__ == "TrajectoryProxy" or
-           obj.Proxy.__class__.__name__ == "CollisionDetectorProxy"):
+           obj.Proxy.__class__.__name__ == "CollisionDetectorProxy" or
+           obj.Proxy.__class__.__name__ == "RobWorldProxy" or
+           obj.Proxy.__class__.__name__ == "RobRotationProxy" or
+           obj.Proxy.__class__.__name__ == "RobTranslationProxy"):
             return True
         return False
 
@@ -1285,7 +1292,7 @@ class ViewProviderControlProxy:
     #
 
     def getIcon(self):
-        return path.join(PATH_TO_ICONS, "Control.xpm")
+        return path.join(PATH_TO_ICONS, "Control.png")
 
     ## @brief Method to hide unused properties.
     #
@@ -1399,7 +1406,7 @@ class ControlCommand(object):
     #
 
     def GetResources(self):
-        return {'Pixmap': path.join(PATH_TO_ICONS, "ControlCmd.xpm"),
+        return {'Pixmap': path.join(PATH_TO_ICONS, "ControlCmd.png"),
                 'MenuText': "Control",
                 'ToolTip': "Create Control instance."}
 

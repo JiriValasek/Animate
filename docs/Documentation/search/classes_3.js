@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['trajectorycommand',['TrajectoryCommand',['../class_trajectory_1_1_trajectory_command.html',1,'Trajectory']]],
-  ['trajectorypanel',['TrajectoryPanel',['../class_trajectory_1_1_trajectory_panel.html',1,'Trajectory']]],
-  ['trajectoryproxy',['TrajectoryProxy',['../class_trajectory_1_1_trajectory_proxy.html',1,'Trajectory']]]
+  ['servercommand',['ServerCommand',['../class_server_1_1_server_command.html',1,'Server']]],
+  ['serverproxy',['ServerProxy',['../class_server_1_1_server_proxy.html',1,'Server']]]
 ];

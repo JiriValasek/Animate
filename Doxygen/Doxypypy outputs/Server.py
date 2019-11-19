@@ -5,7 +5,7 @@
 # *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
-# *   This file is part of the FreeCAD CAx development system.              *
+# *   This file is part of the Animate workbench.                           *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -13,15 +13,15 @@
 # *   the License, or (at your option) any later version.                   *
 # *   for detail see the LICENCE text file.                                 *
 # *                                                                         *
-# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   Animate workbench is distributed in the hope that it will be useful,  *
 # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU Lesser General Public License for more details.                   *
 # *                                                                         *
 # *   You should have received a copy of the GNU Library General Public     *
-# *   License along with FreeCAD; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-# *   USA                                                                   *
+# *   License along with Animate workbench; if not, write to the Free       *
+# *   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,        *
+# *   MA  02111-1307 USA                                                    *
 # *                                                                         *
 # ***************************************************************************/
 
@@ -162,13 +162,13 @@ class ServerProxy(object):
             self.cmd_server = com.startServer(fp.Address, fp.Port)
             if self.cmd_server == com.SERVER_ERROR_INVALID_ADDRESS:
                 fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
-                                                      "Server.xpm")
+                                                      "Server.png")
                 QMessageBox.warning(None, 'Error while starting server',
                                     "The address was not in supported format.")
                 fp.Running = False
             elif self.cmd_server == com.SERVER_ERROR_PORT_OCCUPIED:
                 fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
-                                                      "Server.xpm")
+                                                      "Server.png")
                 QMessageBox.warning(None, 'Error while starting server',
                                     "The port requested is already occupied.")
                 fp.Running = False
@@ -177,7 +177,7 @@ class ServerProxy(object):
                 fp.setEditorMode("Port", 1)
                 fp.Running = True
                 fp.ViewObject.Proxy._icon = path.join(PATH_TO_ICONS,
-                                                      "ServerRunning.xpm")
+                                                      "ServerRunning.png")
 
         # Make an document observer to be notified when document will be closed
         import AnimateDocumentObserver
@@ -241,7 +241,7 @@ class ViewProviderServerProxy(object):
     ## @var _icon
     # @hideinitializer
     # @protected
-    _icon = path.join(PATH_TO_ICONS, "Server.xpm")
+    _icon = path.join(PATH_TO_ICONS, "Server.png")
 
     ## @brief Initialization method for ViewProviderServerProxy.
     #
@@ -311,13 +311,13 @@ class ViewProviderServerProxy(object):
                 vp.Object.setEditorMode("Address", 1)
                 vp.Object.setEditorMode("Port", 1)
                 vp.Object.Running = True
-                self._icon = path.join(PATH_TO_ICONS, "ServerRunning.xpm")
+                self._icon = path.join(PATH_TO_ICONS, "ServerRunning.png")
         elif vp.Object.Running:
             vp.Object.Proxy.cmd_server.close()
             vp.Object.setEditorMode("Address", 0)
             vp.Object.setEditorMode("Port", 0)
             vp.Object.Running = False
-            self._icon = path.join(PATH_TO_ICONS, "Server.xpm")
+            self._icon = path.join(PATH_TO_ICONS, "Server.png")
         return True
 
     ## @brief Method called by the FreeCAD to customize a context menu for a Server.
@@ -379,9 +379,9 @@ class ViewProviderServerProxy(object):
         vp.setEditorMode("Visibility", 2)
 
         if vp.Object.Running:
-            self._icon = path.join(PATH_TO_ICONS, "ServerRunning.xpm")
+            self._icon = path.join(PATH_TO_ICONS, "ServerRunning.png")
         else:
-            self._icon = path.join(PATH_TO_ICONS, "Server.xpm")
+            self._icon = path.join(PATH_TO_ICONS, "Server.png")
 
 
 ## @brief ServerCommand class specifying Animate workbench's Server button/command.
@@ -402,7 +402,7 @@ class ServerCommand(object):
     #
 
     def GetResources(self):
-        return {'Pixmap': path.join(PATH_TO_ICONS, "ServerCmd.xpm"),
+        return {'Pixmap': path.join(PATH_TO_ICONS, "ServerCmd.png"),
                 'MenuText': "Server",
                 'ToolTip': "Create Server instance."}
 

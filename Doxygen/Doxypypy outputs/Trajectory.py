@@ -5,7 +5,7 @@
 # *   Animate workbench - FreeCAD Workbench for lightweight animation       *
 # *   Copyright (c) 2019 Jiří Valášek jirka362@gmail.com                    *
 # *                                                                         *
-# *   This file is part of the FreeCAD CAx development system.              *
+# *   This file is part of the Animate workbench.                           *
 # *                                                                         *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU Lesser General Public License (LGPL)    *
@@ -13,15 +13,15 @@
 # *   the License, or (at your option) any later version.                   *
 # *   for detail see the LICENCE text file.                                 *
 # *                                                                         *
-# *   FreeCAD is distributed in the hope that it will be useful,            *
+# *   Animate workbench is distributed in the hope that it will be useful,  *
 # *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 # *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
 # *   GNU Lesser General Public License for more details.                   *
 # *                                                                         *
 # *   You should have received a copy of the GNU Library General Public     *
-# *   License along with FreeCAD; if not, write to the Free Software        *
-# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
-# *   USA                                                                   *
+# *   License along with Animate workbench; if not, write to the Free       *
+# *   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,        *
+# *   MA  02111-1307 USA                                                    *
 # *                                                                         *
 # ***************************************************************************/
 
@@ -951,6 +951,7 @@ class ViewProviderTrajectoryProxy:
         self.visualisations = coin.SoSwitch()
         self.visualisations.addChild(self.rot_axis)
         self.visualisations.addChild(self.frame)
+        self.visualisations.whichChild.setValue(coin.SO_SWITCH_ALL)
         vp.RootNode.addChild(self.visualisations)
 
         vp.Object.Proxy.setProperties(vp.Object)
@@ -1231,7 +1232,7 @@ class ViewProviderTrajectoryProxy:
     #
 
     def getIcon(self):
-        return path.join(PATH_TO_ICONS, "Trajectory.xpm")
+        return path.join(PATH_TO_ICONS, "Trajectory.png")
 
     ## @brief Necessary method to avoid errors when trying to save unserializable objects.
     #
@@ -1559,7 +1560,7 @@ class TrajectoryCommand(object):
     #
 
     def GetResources(self):
-        return {'Pixmap': path.join(PATH_TO_ICONS, "TrajectoryCmd.xpm"),
+        return {'Pixmap': path.join(PATH_TO_ICONS, "TrajectoryCmd.png"),
                 'MenuText': "Trajectory",
                 'ToolTip': "Create Trajectory instance."}
 

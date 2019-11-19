@@ -39,6 +39,11 @@
 					<a class="dropdown-item" href="Guide/server.html">Server</a>
 					<a class="dropdown-item" href="Guide/control.html">Control</a>
 					<a class="dropdown-item" href="Guide/collision_detector.html">Collision Detector</a>
+					<div class="dropdown-header">Robotic Tools</div>
+					<div class="dropdown-divider"></div>
+					<a class="dropdown-item" href="Guide/robworld.html">RobWorld</a>
+					<a class="dropdown-item" href="Guide/robrotation.html">RobRotation</a>
+					<a class="dropdown-item" href="Guide/robtranslation.html">RobTranslation</a>
 				</div>
 			</li>
 			<li class="nav-item">
@@ -89,6 +94,7 @@
 		      <li data-target="#carouselWithCaptions" data-slide-to="0" data-interval="5000" class="active"></li>
 		      <li data-target="#carouselWithCaptions" data-slide-to="1" data-interval="5000"></li>
 		      <li data-target="#carouselWithCaptions" data-slide-to="2" data-interval="5000"></li>
+		      <li data-target="#carouselWithCaptions" data-slide-to="3" data-interval="5000"></li>
 		    </ol>
 		    <div class="carousel-inner">
 		      <div class="carousel-item active">
@@ -112,6 +118,13 @@
 		          <p>Combine all animate tools and create animations.</p>
 		        </div>
 		      </div>
+		      <div class="carousel-item">
+		        <img src="Homepage_Images/animate_robotics.png" class="d-block w-100" alt="animate robotics">
+		        <div class="carousel-caption d-none d-md-block">
+		          <h5>Animate robots</h5>
+		          <p>Use robotic tools to animate robots.</p>
+		        </div>
+		      </div>
 		    </div>
 		    <a class="carousel-control-prev" href="#carouselWithCaptions" role="button" data-slide="prev">
 		      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -132,10 +145,11 @@
 <div id="intro" class="container-fluid">
 	<div class="row">
 		<div id="text" class="col-12">
-			<p>Animate is a free and open-source workbench for FreeCAD. It has four tools - <b>Trajectory</b>, <b>Server</b>, <b>Collision Detenction</b> and <b>Control</b>.<br>
+			<p>Animate is a free and open-source workbench for FreeCAD. It has seven tools - general tools such as <b>Server</b>, <b>Collision Detenction</b>, <b>Control</b>, <b>Trajectory</b> and robotic tools <b>RobWorld</b>, <b>RobRotation</b> and <b>RobTranslation</b>.<br>
 			Those tools allow you to:</p>
 			<ul>
 				<li>Move a set of objects along predefind trajectory</li>
+				<li>Build a robot using Denavit-Hartenberg notation to define world frame, revolute and prismatic joints</li>
 				<li>Run a TCP server which will execute received messages as FreeCAD commands</li>
 				<li>Detect colisions between multiple objects or sets of objects</li>
 				<li>Control all this through a control panel, record animations and export them</li>
