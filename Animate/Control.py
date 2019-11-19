@@ -226,6 +226,16 @@ animation is played/recorded.
             QMessageBox.warning(None, 'Error while playing',
                                 "The animation is at the end.")
             self.pauseClicked()
+
+        # Check that Export Path is valid
+        elif not os.access(self.control_proxy.ExportPath, os.W_OK | os.R_OK):
+            # Show error if not
+            QMessageBox.warning(None, 'Invalid Export Path',
+                                "You don't have access to read and write\n"
+                                + "in folder specified by Export Path.\n"
+                                + "Change it to be able to record images.")
+            self.pauseClicked()
+
         else:
             # Reset collisions
             self.resetCollisions()
@@ -244,6 +254,16 @@ Invalid buttons are disabled. An `Export Path` is checked for files. The files
 are checked for sequences. Sequences are shown with buttons to confirm or
 cancel the selection.
         """
+        # Check that Export Path is valid
+        if not os.access(self.control_proxy.ExportPath, os.W_OK | os.R_OK):
+            # Show error if not
+            QMessageBox.warning(None, 'Invalid Export Path',
+                                "You don't have access to read and write\n"
+                                + "in folder specified by Export Path.\n"
+                                + "Change it to be able to record images.")
+            self.pauseClicked()
+            return
+
         # Disable everything
         self.last_clicked = "export"
         self.setInvalidButtons()
@@ -610,14 +630,14 @@ Finally the image number is incremented.
                 self.control_proxy.VideoWidth, self.control_proxy.VideoHeight)
 
         # Write a framerate chunk into the first image
-        # TODO
         if self.image_number == 0:
             if not self.writeFramerateChunk(1 / self.control_proxy.StepTime,
                                             image_path):
                 QMessageBox.warning(
                             None, 'Saving framerate failed',
                             "Framerate was not saved, this recorded image\n"
-                            + "sequence will not be able to be exported.\n"
+                            + "sequence will have to be exported using\n"
+                            + "current Step Time to compute framerate.\n"
                             + "Check Report View for more info.")
         self.image_number += 1
 
@@ -808,15 +828,16 @@ Otherwise warnings are shown.
         # Load framerate
         image_name = selected_seq + "-" + (NAME_NUMBER_FORMAT % 0) + ".png"
         image_path = path.join(self.control_proxy.ExportPath, image_name)
-        #TODO load fps from the first image
+        # load fps from the first image
         fps = self.readFramerateChunk(image_path)
         if fps == -1.0:
+            fps = 1 / self.control_proxy.StepTime
             QMessageBox.warning(
                             None, 'Loading framerate failed',
                             "Framerate was not loaded, this recorded image\n"
-                            + "sequence cannot to be exported.\n"
-                            + "Check Report View for more info.")
-            return
+                            + "sequence will be exported using current\n"
+                            + "Step Time: FPS = 1/(Step Time) = "
+                            + str(fps) + ".")
 
         image_name = '"' + path.normpath(
                 path.join(self.control_proxy.ExportPath, selected_seq + "-"
@@ -879,37 +900,44 @@ is returned to the default state (the same as if pause button was pressed).
         self.last_clicked = "pause"
         self.setInvalidButtons()
 
-    def installPyPNG(self):
+    def installPyPNGNotice(self):
         """
-Method to install necessary pyPNG library into FreeCAD.
+Method telling user that pyPNG library ought to be installed into FreeCAD.
 
 The pyPNG library is not part of FreeCAD and so we need to add it using pip.
-This method tries to do so. It may prove crutial to run FreeCAD as
-administrator to receive permissions required by pip.
-
-Returns:
-    True if pyPNG was installed successfully and False otherwise.
+This method tells user to do so.
         """
-        import pip
-        if hasattr(pip, "main"):
-            FreeCAD.Console.PrintLog("Installing pyPNG.\n")
-            if pip.main(["install", "pyPNG"]) != 0:
-                FreeCAD.Console.PrintError("pyPNG installation failed.\n")
-                return False
-            FreeCAD.Console.PrintLog("Installation successful.\n")
-            return True
-        else:
-            import pip._internal
-            if hasattr(pip._internal, "main"):
-                if pip._internal.main(["install", "pyPNG"]) != 0:
-                    FreeCAD.Console.PrintError("pyPNG installation failed.\n")
-                    return False
-                FreeCAD.Console.PrintLog("Installation successful.\n")
-                return True
-            else:
-                FreeCAD.Console.PrintLog(
-                        "Unable to import and install pyPNG.\n")
-                return False
+        QMessageBox.information(
+                None, "Install PyPNG", "PyPNG is missing from your FreeCAD\n"
+                + "Please follow these instructions to install it:\n\n"
+                + "Windows:\n"
+                + "   1) Open a command line window with admin privileges\n"
+                + '        Press "Win + X" and "A"\n\n'
+                + "   2) Go to the bin folder in your FreeCAD installation\n"
+                + '        Type "CD ' + FreeCAD.getHomePath() + 'bin"\n\n'
+                + "   3) Install PyPNG\n"
+                + '        Type "python.exe -m pip install pyPNG"\n\n\n'
+                + "Ubuntu (installed using PPA):\n"
+                + "   1) Open a terminal window\n\n"
+                + "   2) Install PyPNG\n"
+                + '        Type "sudo python.exe -m pip install pyPNG"\n')
+
+#        Alternative way to install it directly from FreeCAD
+#        import pip
+#        if hasattr(pip, "main"):
+#            FreeCAD.Console.PrintLog("Installing pyPNG.\n")
+#            if pip.main(["install", "pyPNG"]) != 0:
+#                FreeCAD.Console.PrintError("pyPNG installation failed.\n")
+#            FreeCAD.Console.PrintLog("Installation successful.\n")
+#        else:
+#            import pip._internal
+#            if hasattr(pip._internal, "main"):
+#                if pip._internal.main(["install", "pyPNG"]) != 0:
+#                    FreeCAD.Console.PrintError("pyPNG installation failed.\n")
+#                FreeCAD.Console.PrintLog("Installation successful.\n")
+#            else:
+#                FreeCAD.Console.PrintLog(
+#                        "Unable to import and install pyPNG.\n")
 
     def writeFramerateChunk(self, framerate, image_path):
         """
@@ -929,10 +957,8 @@ Args:
         try:
             import png
         except ModuleNotFoundError:
-            if self.installPyPNG():
-                import png
-            else:
-                return False
+            self.installPyPNGNotice()
+            return False
         except Exception as e:
             FreeCAD.Console.PrintError(
                 "Unexpected error occurred while importing pyPNG - " + str(e))
@@ -969,10 +995,8 @@ Returns:
         try:
             import png
         except ModuleNotFoundError:
-            if self.installPyPNG():
-                import png
-            else:
-                return -1.0
+            self.installPyPNGNotice()
+            return -1.0
         # Read chunks already present in a PNG image
         reader = png.Reader(filename=image_path)
         chunks = list(reader.chunks())
