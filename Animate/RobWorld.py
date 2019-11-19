@@ -103,9 +103,9 @@ Z, Y and X axes originating in (0, 0, 0).
 Args:
     fp: A `DocumentObjectGroupPython` RobWorld object.
         """
-        rotation = FreeCAD.Rotation(fp.YawAngle, fp.PitchAngle, fp.RollAngle)
+        rotation = FreeCAD.Rotation(fp.AngleYaw, fp.AnglePitch, fp.AngleRoll)
         rotation_center = FreeCAD.Vector(0, 0, 0)
-        position = FreeCAD.Vector(fp.XPosition, fp.YPosition, fp.ZPosition)
+        position = FreeCAD.Vector(fp.PositionX, fp.PositionY, fp.PositionZ)
         fp.Placement = FreeCAD.Placement(position, rotation, rotation_center)
 
     def onDocumentRestored(self, fp):
@@ -139,35 +139,30 @@ Args:
             fp.addProperty("App::PropertyBool", "AllowServer", "General",
                            "Should this object allow a Server object to "
                            + "change it.").AllowServer = True
-        if not hasattr(fp, "AllowControl"):
-            fp.addProperty("App::PropertyBool", "AllowControl", "General",
-                           "Should this object allow a Control object "
-                           + " to change it."
-                           ).AllowControl = True
 
         # Frame Placement
-        if not hasattr(fp, "XPosition"):
-            fp.addProperty("App::PropertyFloat", "XPosition", "FramePlacement",
-                           "X position of the world frame.").XPosition = 0
-        if not hasattr(fp, "YPosition"):
-            fp.addProperty("App::PropertyFloat", "YPosition", "FramePlacement",
-                           "Y position of the world frame.").YPosition = 0
-        if not hasattr(fp, "ZPosition"):
-            fp.addProperty("App::PropertyFloat", "ZPosition", "FramePlacement",
-                           "Z position of the world frame.").ZPosition = 0
-        if not hasattr(fp, "YawAngle"):
-            fp.addProperty("App::PropertyFloat", "YawAngle", "FramePlacement",
+        if not hasattr(fp, "PositionX"):
+            fp.addProperty("App::PropertyFloat", "PositionX", "FramePlacement",
+                           "X position of the world frame.").PositionX = 0
+        if not hasattr(fp, "PositionY"):
+            fp.addProperty("App::PropertyFloat", "PositionY", "FramePlacement",
+                           "Y position of the world frame.").PositionY = 0
+        if not hasattr(fp, "PositionZ"):
+            fp.addProperty("App::PropertyFloat", "PositionZ", "FramePlacement",
+                           "Z position of the world frame.").PositionZ = 0
+        if not hasattr(fp, "AngleYaw"):
+            fp.addProperty("App::PropertyFloat", "AngleYaw", "FramePlacement",
                            "Yaw angle (rotation about Z axis) of the world"
-                           + " frame in degrees.").YawAngle = 0
-        if not hasattr(fp, "PitchAngle"):
-            fp.addProperty("App::PropertyFloat", "PitchAngle",
+                           + " frame in degrees.").AngleYaw = 0
+        if not hasattr(fp, "AnglePitch"):
+            fp.addProperty("App::PropertyFloat", "AnglePitch",
                            "FramePlacement", "Pitch angle (rotation about Y"
                            + " axis) of the world frame in degrees."
-                           ).PitchAngle = 0
-        if not hasattr(fp, "RollAngle"):
-            fp.addProperty("App::PropertyFloat", "RollAngle", "FramePlacement",
+                           ).AnglePitch = 0
+        if not hasattr(fp, "AngleRoll"):
+            fp.addProperty("App::PropertyFloat", "AngleRoll", "FramePlacement",
                            "Roll angle (rotation about X axis) of the world"
-                           + " frame in degrees.").RollAngle = 0
+                           + " frame in degrees.").AngleRoll = 0
 
         # Frame properties
         if not hasattr(fp, "ShowFrame"):
@@ -463,20 +458,13 @@ Args:
             self.font.size.setValue(fp.FontSize)
 
         elif prop == "DistanceToAxis" and hasattr(fp, "DistanceToAxis") and \
-            hasattr(fp, "ShowFrameArrowheads") and \
-                hasattr(fp, "ShowAxisArrowhead"):
+                hasattr(fp, "ShowFrameArrowheads"):
             if fp.ShowFrameArrowheads and hasattr(fp, "FrameArrowheadLength"):
                 self.label_translations[0].translation.setValue(
                     0, fp.FrameArrowheadLength/2 + fp.DistanceToAxis, 0)
             elif hasattr(fp, "ShaftLength"):
                 self.label_translations[0].translation.setValue(
                     0, fp.ShaftLength + fp.DistanceToAxis, 0)
-            if fp.ShowAxisArrowhead and hasattr(fp, "AxisArrowheadLength"):
-                self.label_translations[1].translation.setValue(
-                    0, fp.AxisArrowheadLength/2 + fp.DistanceToAxis, 0)
-            elif hasattr(fp, "AxisLength"):
-                self.label_translations[1].translation.setValue(
-                    0, fp.AxisLength + fp.DistanceToAxis, 0)
 
     def onChanged(self, vp, prop):
         """
