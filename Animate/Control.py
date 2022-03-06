@@ -403,7 +403,7 @@ Args:
     t: An animation time to generate an animation frame at.
         """
         # Load current time
-        time_ = time.clock()
+        time_ = time.time()
 
         # Check pause button was not pressed
         if self.last_clicked == "pause":
@@ -434,7 +434,7 @@ Args:
         # Compute pause period so that animaiton time roughly corresponds to
         # the real time
         pause = round(1000*(self.control_proxy.StepTime + time_
-                            - time.clock()))
+                            - time.time()))
         pause = pause*(pause > 0)
 
         # Setup a timer to show next frame if animaiton wasn't paused
@@ -457,7 +457,7 @@ Args:
     t: An animation time to generate an animation frame at.
         """
         # Load current time
-        time_ = time.clock()
+        time_ = time.time()
 
         # Check pause button was not pressed
         if self.last_clicked == "pause":
@@ -488,7 +488,7 @@ Args:
         # Compute pause period so that animaiton time roughly corresponds to
         # the real time
         pause = round(1000*(self.control_proxy.StepTime + time_
-                            - time.clock()))
+                            - time.time()))
         pause = pause*(pause > 0)
 
         # Setup a timer to show next frame if animaiton wasn't paused
